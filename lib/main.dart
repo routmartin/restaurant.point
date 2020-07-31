@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'utilities/size.cofig.dart';
 import 'widget/loading.slash.dart';
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) {
+    runApp(new MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -13,9 +17,21 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext constraints) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        // print(constraints.maxWidth);
+        // if (constraints.maxWidth < 450) {
+        //   SystemChrome.setPreferredOrientations([
+        //     DeviceOrientation.portraitUp,
+        //   ]);
+        // } else {
+        //   print('work');
+        //   SystemChrome.setPreferredOrientations([
+        //     DeviceOrientation.landscapeLeft,
+        //     DeviceOrientation.landscapeLeft,
+        //   ]);
+        // }
         return OrientationBuilder(
           builder: (context, orientation) {
-            SizeConfig().init(constraints, orientation);
+            // SizeConfig().init(constraints, orientation);
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
