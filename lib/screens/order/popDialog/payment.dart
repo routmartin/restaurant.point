@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/screens/order/components/event_button.dart';
 import 'package:pointrestaurant/screens/order/components/order_list.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
@@ -12,12 +10,12 @@ void payDialog(context, size) {
         return Dialog(
             backgroundColor: Colors.transparent,
             child: Container(
-              padding: EdgeInsets.only(top: 10.0),
+              width: size.width * 0.8,
+              height: size.height * 0.6,
               child: Stack(
                 children: <Widget>[
                   Container(
-                      height: size.height * 0.7,
-                      width: size.width * 0.8,
+                      margin: EdgeInsets.all(5.0),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(10)),
                           color: Colors.white),
@@ -78,8 +76,7 @@ void payDialog(context, size) {
                                                     style: TextStyle(
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color:
-                                                            kPrimaryColor)),
+                                                        color: kPrimaryColor)),
                                               ],
                                             )),
                                       ),
@@ -142,16 +139,40 @@ void payDialog(context, size) {
                           )
                         ],
                       )),
-                  Positioned(
-                    child: Icon(
-                      FontAwesomeIcons.solidTimesCircle,
-                      color: Colors.red,
-                    ),
-                    top: 0,
-                    right: 0,
-                  )
+                  _buildCancelButton(context)
                 ],
               ),
             ));
       });
+}
+
+_buildCancelButton(BuildContext context) {
+  return Positioned(
+    top: 0,
+    right: 0,
+    child: Material(
+      color: Color(0xffcc2d2d),
+      borderRadius: BorderRadius.circular(15),
+      child: InkWell(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        splashColor: Colors.white38,
+        child: Container(
+          width: 25,
+          height: 25,
+          child: Center(
+            child: Text(
+              'x',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: "San-francisco",
+                fontWeight: FontWeight.w200,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
