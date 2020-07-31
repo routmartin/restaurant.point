@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../utilities/path.dart';
+import '../main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -178,11 +179,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Color(red)),
                       child: InkWell(
                         onTap: () {
-                          if (checkPass != null && checkUser != null) {
-                          } else {
-                            print('no data');
-                            return;
-                          }
+                          Navigator.push(
+                              context,
+                              // ignore: missing_return
+                              MaterialPageRoute(
+                                  builder: (_) => MainScreenPage()));
                         },
                         child: Center(
                           child: Text(
