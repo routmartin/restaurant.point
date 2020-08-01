@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 class BottomMiddleButton extends StatelessWidget {
   final Widget sign;
   final double width;
-  const BottomMiddleButton({
-    Key key,
-    this.sign,
-    this.width: 20,
-  }) : super(key: key);
+  const BottomMiddleButton({this.sign, this.width: 20});
 
   @override
   Widget build(BuildContext context) {

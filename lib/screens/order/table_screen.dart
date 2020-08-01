@@ -19,6 +19,8 @@ class _TableScreenState extends State<TableScreen> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    var orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     return Scaffold(
       body: SafeArea(
           child: Stack(
@@ -40,23 +42,7 @@ class _TableScreenState extends State<TableScreen> {
                   ]),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        IconbuttonType(
-                          title: 'Dine In',
-                          isActive: false,
-                        ),
-                        IconbuttonType(
-                          title: 'Table',
-                          isActive: true,
-                        ),
-                        IconbuttonType(
-                          title: 'Take Out',
-                          isActive: false,
-                        ),
-                      ],
-                    ),
+                    child: _buildHeaderChoice(),
                   ),
                 ),
                 SizedBox(
@@ -68,7 +54,8 @@ class _TableScreenState extends State<TableScreen> {
                     height: double.infinity,
                     child: VerticalTabs(
                       indicatorColor: Color(0xffb01105),
-                      tabsWidth: 90,
+                      tabsWidth:
+                          orientation ? size.width * .09 : size.width * .09,
                       selectedTabBackgroundColor: null,
                       contentScrollAxis: Axis.vertical,
                       tabs: List.generate(5, (index) {
@@ -96,6 +83,26 @@ class _TableScreenState extends State<TableScreen> {
           OrderLabelCheckOut()
         ],
       )),
+    );
+  }
+
+  _buildHeaderChoice() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        IconbuttonType(
+          title: 'Dine In',
+          isActive: false,
+        ),
+        IconbuttonType(
+          title: 'Table',
+          isActive: true,
+        ),
+        IconbuttonType(
+          title: 'Take Out',
+          isActive: false,
+        ),
+      ],
     );
   }
 }

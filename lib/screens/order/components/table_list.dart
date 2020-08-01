@@ -9,19 +9,21 @@ class TableList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     return Container(
-      height: MediaQuery.of(context).size.height * .64,
       child: SingleChildScrollView(
         child: GridView.count(
           shrinkWrap: true,
           physics: ScrollPhysics(),
           scrollDirection: Axis.vertical,
-          childAspectRatio: MediaQuery.of(context).size.height / 1000,
-          crossAxisCount: MediaQuery.of(context).size.width <= 800.0
-              ? 3
-              : MediaQuery.of(context).size.width >= 1000.0 ? 2 : 3,
+          childAspectRatio:
+              orientation ? size.height / 800 : size.height / 1000,
+          crossAxisCount:
+              size.width <= 800.0 ? 3 : size.width >= 1000.0 ? 5 : 4,
           children: new List<Widget>.generate(
-            9,
+            10,
             (index) {
               return TableCard();
             },
