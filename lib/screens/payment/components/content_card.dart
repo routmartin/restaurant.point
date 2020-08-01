@@ -32,15 +32,16 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   BoxDecoration cardShadow = BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(5),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black26,
-          offset: Offset(0, 3),
-          blurRadius: 20,
-        )
-      ]);
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(5),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black26,
+        offset: Offset(0, 3),
+        blurRadius: 20,
+      )
+    ],
+  );
   @override
   Widget build(BuildContext context) {
     return Container(
