@@ -174,26 +174,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 35.0,
                     ),
-                    Container(
-                      width: textfieldWidth,
-                      height: 50.0,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(40.0),
-                          color: Color(red)),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(40.0),
+                      child: Material(
+                        borderRadius: BorderRadius.circular(40.0),
+                        color: Color(red),
+                        child: InkWell(
+                          splashColor: Colors.white24,
+                          onTap: () {
+                            Navigator.push(
                               context,
                               // ignore: missing_return
                               MaterialPageRoute(
-                                  builder: (_) => MainScreenPage()));
-                        },
-                        child: Center(
-                          child: Text(
-                            "LOGIN",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700),
+                                builder: (_) => MainScreenPage(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: textfieldWidth,
+                            height: 50.0,
+                            child: Center(
+                              child: Text(
+                                "LOGIN",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
