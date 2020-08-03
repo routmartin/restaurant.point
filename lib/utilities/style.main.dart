@@ -52,3 +52,14 @@ var mainBackground = LinearGradient(
     Color(0xFFbd0420),
   ],
 );
+BoxDecoration cardShadow = BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(5),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black26,
+      offset: Offset(0, 3),
+      blurRadius: 20,
+    )
+  ],
+);

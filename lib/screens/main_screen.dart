@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pointrestaurant/screens/payment/payment_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/order/order_screen.dart';
 import '../utilities/style.main.dart';
@@ -23,8 +24,8 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       HomeScreen(),
       TableScreen(),
-      OrderScreen(),
-      HomeScreen(),
+      PaymentScreen(),
+      PaymentScreen(),
     ];
   }
 
@@ -82,11 +83,11 @@ class _MainScreenPageState extends State<MainScreenPage> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.access_time,
+                Icons.attach_money,
                 size: 30,
               ),
               title: Text(
-                'PENDING',
+                'Payment',
               ),
             ),
             BottomNavigationBarItem(

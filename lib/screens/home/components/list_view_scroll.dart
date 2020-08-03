@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 
-
 import 'restaurent_card.dart';
 
 class ListScrollHome extends StatelessWidget {
@@ -29,14 +28,17 @@ class ListScrollHome extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 10,
+          height: MediaQuery.of(context).orientation == Orientation.landscape
+              ? size.height * .003
+              : size.height * .001,
         ),
         Container(
-          height: size.height * .28,
-          width: double.infinity,
+          height: MediaQuery.of(context).orientation == Orientation.landscape
+              ? size.height * 0.28
+              : size.height * 0.2,
           child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: 4,
+              itemCount: 10,
               itemBuilder: (BuildContext ctx, int index) {
                 return RestaurantCard(
                   title: 'Point Restaurant',

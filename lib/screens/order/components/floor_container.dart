@@ -42,10 +42,11 @@ class FloorContainer extends StatelessWidget {
             'Point Restaurant',
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: Color(0xff121010),
-                fontFamily: "San-francisco",
-                fontWeight: FontWeight.bold,
-                fontSize: 11),
+              color: Color(0xff121010),
+              fontFamily: "San-francisco",
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
           SizedBox(
             height: 5,
