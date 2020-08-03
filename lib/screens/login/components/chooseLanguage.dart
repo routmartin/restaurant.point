@@ -26,7 +26,7 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
           backgroundColor: Colors.transparent,
           builder: (builder) {
             return Container(
-              height: size.height * 0.2,
+              height: size.height * 0.20,
               // margin: EdgeInsets.all(
               //     (MediaQuery.of(context).size.width - size.width * 0.4) / 2),
               margin: screeOrientation == Orientation.landscape
@@ -173,9 +173,7 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
             ),
             Container(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-              width: screeOrientation == Orientation.landscape
-                  ? size.width * 0.4
-                  : size.width,
+              width: buttonWidth,
               height: 50.0,
               decoration: BoxDecoration(
                   border: Border.all(width: 1.0, color: Colors.white),
