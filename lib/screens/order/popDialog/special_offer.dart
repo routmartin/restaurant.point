@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/screens/order/components/event_button.dart';
 
 void specialRequest(context, size) {
+  var screeOrientation = MediaQuery.of(context).orientation;
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -13,8 +14,12 @@ void specialRequest(context, size) {
               children: <Widget>[
                 Container(
                   padding: EdgeInsets.only(top: 20),
-                  height: size.height * 0.6,
-                  width: size.width * 0.8,
+                  height: screeOrientation == Orientation.landscape
+                      ? size.height * 0.8
+                      : size.height * 0.58,
+                  width: screeOrientation == Orientation.landscape
+                      ? size.width * 0.4
+                      : double.infinity,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15.0),
                       color: Colors.white),
@@ -199,19 +204,19 @@ void specialRequest(context, size) {
                         child: Container(
                           padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.09),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
-                              Expanded(
-                                child: Button(
-                                  buttonName: "Reset All",
-                                ),
+                              Button(
+                                buttonName: "Reset All",
                               ),
                               SizedBox(
-                                width: 20,
+                                width: screeOrientation == Orientation.landscape
+                                    ? 100
+                                    : 20,
                               ),
-                              Expanded(
-                                child: Button(
-                                  buttonName: "Ok +9.99",
-                                ),
+                              Button(
+                                buttonName: "Ok +9.99",
                               )
                             ],
                           ),

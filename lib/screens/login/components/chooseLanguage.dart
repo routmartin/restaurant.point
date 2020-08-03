@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'dart:html';
 
 class ChooseLanguage extends StatefulWidget {
   @override
@@ -31,9 +30,10 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
               // margin: EdgeInsets.all(
               //     (MediaQuery.of(context).size.width - size.width * 0.4) / 2),
               margin: screeOrientation == Orientation.landscape
-                  ? EdgeInsets.only(left: 5, right: 5, bottom: 5)
-                  : EdgeInsets.only(
-                      left: modalMargin, bottom: 10.0, right: modalMargin),
+                  ? EdgeInsets.only(
+                      left: modalMargin, right: modalMargin, bottom: 10)
+                  : EdgeInsets.only(left: 5, bottom: 5, right: 5),
+              // margin: EdgeInsets.all(100.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 // borderRadius: BorderRadius.only(

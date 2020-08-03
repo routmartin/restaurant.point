@@ -9,20 +9,34 @@ class Button extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    return Material(
+    var screeOrientation = MediaQuery.of(context).orientation;
+    return ClipRRect(
       borderRadius: BorderRadius.circular(20.0),
-      color: kPrimaryColor,
-      child: InkWell(
-        onTap: press,
-        child: Container(
-          width: size.width * 0.25,
-          height: size.height * 0.045,
-          alignment: Alignment.center,
-          child: Text(
-            buttonName,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white,
+      child: Material(
+        borderRadius: BorderRadius.circular(20.0),
+        color: kPrimaryColor,
+        child: InkWell(
+          splashColor: Colors.white24,
+          onTap: press,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 14,
+            ),
+            width: 120,
+            height: screeOrientation == Orientation.landscape
+                ? size.height * 0.06
+                : size.height * 0.045,
+            child: Center(
+              child: Text(
+                buttonName,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontFamily: 'San-francisco',
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ),
           ),
         ),

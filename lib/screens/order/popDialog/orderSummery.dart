@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/screens/order/components/event_button.dart';
 import 'package:pointrestaurant/screens/order/components/order_list.dart';
+import 'package:pointrestaurant/utilities/animation.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 
 import 'payment.dart';
@@ -10,9 +11,9 @@ bool showPassword = true;
 String checkUser = '';
 String checkPass = '';
 var _chosenValue = "Google";
-
 void orderSummary({context, size}) {
   Color bnkColor = Colors.white;
+  var screeOrientation = MediaQuery.of(context).orientation;
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -27,8 +28,12 @@ void orderSummary({context, size}) {
                   borderRadius: BorderRadius.circular(10),
                   color: bnkColor,
                 ),
-                height: size.height * 0.58,
-                width: double.infinity,
+                height: screeOrientation == Orientation.landscape
+                    ? size.height * 0.8
+                    : size.height * 0.58,
+                width: screeOrientation == Orientation.landscape
+                    ? size.width * 0.4
+                    : double.infinity,
                 child: Column(
                   children: <Widget>[
                     _buildHeaderTitle(size),
@@ -44,6 +49,27 @@ void orderSummary({context, size}) {
         ),
       );
     },
+  );
+}
+
+show(context) {
+  return showGeneralDialog(
+    transitionBuilder: (context, _animation, _secondaryAnimation, _child) {
+      return Transform.scale(
+        scale: _animation.value,
+        child: Opacity(
+          opacity: _animation.value,
+          child: AlertDialog(
+            title: Text('data'),
+          ),
+        ),
+      );
+    },
+    pageBuilder: (_animation, _secondaryAnimation, _child) {},
+    context: context,
+    barrierLabel: '',
+    barrierDismissible: true,
+    transitionDuration: Duration(microseconds: 1000),
   );
 }
 
@@ -80,7 +106,7 @@ _buildCancelButton(BuildContext context) {
 
 _buildHeaderTitle(size) {
   return Container(
-    height: size.height * 0.07,
+    height: size.height * 0.1,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.only(
         topLeft: Radius.circular(10),
@@ -99,73 +125,78 @@ _buildHeaderTitle(size) {
 }
 
 _buildButtonContainer(size, BuildContext context) {
+  var screeOrientation = MediaQuery.of(context).orientation;
   return Container(
-    height: size.height * 0.08,
+    height: screeOrientation == Orientation.landscape
+        ? size.height * 0.1
+        : size.height * 0.08,
     margin: EdgeInsets.symmetric(horizontal: 10),
-    child: FittedBox(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Button(
-            buttonName: "Continue",
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {},
-              child: Container(
-                width: size.width * 0.25,
-                height: size.height * 0.045,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: kPrimaryColor,
-                ),
-                child: DropdownButton<String>(
-                  value: _chosenValue,
-                  underline: Container(), // this is the magic
-                  items: <String>['Google', 'Apple', 'Amazon', 'Tesla']
-                      .map<DropdownMenuItem<String>>(
-                    (String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.black,
-                          ),
-                        ),
-                      );
-                    },
-                  ).toList(),
-                  onChanged: (String value) {
-                    // setState(
-                    //   () {
-                    //     _chosenValue = value;
-                    //   },
-                    // );
-                  },
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          Button(
-            buttonName: "Confirm",
-            press: () {
-              payDialog(context, size);
-            },
-          )
-        ],
-      ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Button(
+          buttonName: "Continue",
+        ),
+        SizedBox(
+          width: 10,
+        ),
+        Button(
+          buttonName: "Option",
+        ),
+        SizedBox(
+          width: 10,
+        ),
+        // Material(
+        //   color: Colors.transparent,
+        //   child: InkWell(
+        //     onTap: () {},
+        //     child: Container(
+        //       width: size.width * 0.25,
+        //       height: size.height * 0.045,
+        //       alignment: Alignment.center,
+        //       decoration: BoxDecoration(
+        //         borderRadius: BorderRadius.circular(20.0),
+        //         color: kPrimaryColor,
+        //       ),
+        //       child: DropdownButton<String>(
+        //         value: _chosenValue,
+        //         underline: Container(), // this is the magic
+        //         items: <String>['Google', 'Apple', 'Amazon', 'Tesla']
+        //             .map<DropdownMenuItem<String>>(
+        //           (String value) {
+        //             return DropdownMenuItem<String>(
+        //               value: value,
+        //               child: Text(
+        //                 value,
+        //                 textAlign: TextAlign.center,
+        //                 style: TextStyle(
+        //                   fontSize: 13,
+        //                   color: Colors.black,
+        //                 ),
+        //               ),
+        //             );
+        //           },
+        //         ).toList(),
+        //         onChanged: (String value) {
+        //           // setState(
+        //           //   () {
+        //           //     _chosenValue = value;
+        //           //   },
+        //           // );
+        //         },
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        Button(
+          buttonName: "Confirm",
+          press: () {
+            payDialog(context, size);
+            // show(context);
+          },
+        )
+      ],
     ),
   );
 }
