@@ -3,8 +3,10 @@ import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/widget/botton_middle_button.dart';
 
 class TableCard extends StatelessWidget {
+  final int index;
   const TableCard({
     Key key,
+    this.index,
   }) : super(key: key);
 
   @override
@@ -35,14 +37,14 @@ class TableCard extends StatelessWidget {
                 children: <Widget>[
                   Container(
                     margin: EdgeInsets.only(
-                      top: orientation ? size.height * .02 : size.height * .1,
+                      top: orientation ? size.height * .02 : size.height * .01,
                     ),
                     child: FadeInImage.assetNetwork(
                       placeholder: preLoading,
                       image:
                           'https://thumbs.dreamstime.com/b/modern-restaurant-table-tablecloth-coffe-mugs-flowers-two-chairs-bright-colored-cartoon-vector-modern-restaurant-table-115024181.jpg',
                       height:
-                          orientation ? size.height * .12 : size.height * .1,
+                          orientation ? size.height * .12 : size.height * .05,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     ),
@@ -57,39 +59,44 @@ class TableCard extends StatelessWidget {
                         SizedBox(
                           height: orientation
                               ? size.height * .02
-                              : size.height * .1,
+                              : size.height * .01,
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            Text(
-                              'VIP001',
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xff121010),
-                                fontFamily: "San-francisco",
-                                fontWeight: FontWeight.bold,
-                                fontSize: orientation ? 17 : 13,
+                        FittedBox(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              Text(
+                                'VIP' + index.toString(),
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Color(0xff121010),
+                                  fontFamily: "San-francisco",
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: orientation ? 17 : 11,
+                                ),
                               ),
-                            ),
-                            Text(
-                              '8:00 AM',
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xff121010),
-                                fontFamily: "San-francisco",
-                                fontWeight: FontWeight.bold,
-                                fontSize: orientation ? 13 : 10,
+                              SizedBox(
+                                width: 4,
                               ),
-                            ),
-                          ],
+                              Text(
+                                '8:00 AM',
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Color(0xff121010),
+                                  fontFamily: "San-francisco",
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: orientation ? 13 : 10,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         SizedBox(
                           height: orientation
                               ? size.height * .01
-                              : size.height * .01,
+                              : size.height * .007,
                         ),
                         Text(
                           '\$ 5.00',
@@ -111,8 +118,8 @@ class TableCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              bottom: orientation ? 8 : 4,
-              left: MediaQuery.of(context).size.width * .05,
+              bottom: orientation ? 7 : 8,
+              left: orientation ? size.width * .056 : size.width * .035,
               child: BottomMiddleButton(
                 width: 60,
                 sign: Text(

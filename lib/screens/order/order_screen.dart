@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 
-import 'components/Iconbutton.dart';
+import 'components/header_icon_type.dart';
 import 'components/bottom_label_checkout.dart';
 import 'components/category_container.dart';
 

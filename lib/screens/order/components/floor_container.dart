@@ -29,7 +29,7 @@ class FloorContainer extends StatelessWidget {
                 child: Text(
                   'Floor' + index.toString(),
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
