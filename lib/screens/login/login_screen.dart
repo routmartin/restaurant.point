@@ -17,7 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var textfieldWidth = size.width * 0.8;
+    var textfieldWidth =
+        MediaQuery.of(context).orientation == Orientation.landscape
+            ? size.width * 0.4
+            : size.width * 0.8;
     var red = 0xffE50B2E;
     return Scaffold(
       appBar: AppBar(

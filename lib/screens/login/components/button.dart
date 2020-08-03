@@ -2,13 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../login_screen.dart';
+
 class Button extends StatelessWidget {
   final name;
   Button({this.name});
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var buttonWidth = size.width * 0.8;
+    var screeOrientation = MediaQuery.of(context).orientation;
+    var buttonWidth = screeOrientation == Orientation.landscape
+        ? size.width * 0.4
+        : size.width * 0.8;
+
     return Container(
       width: buttonWidth,
       height: 50.0,
