@@ -212,7 +212,11 @@ void specialRequest(context, size) {
                             SizedBox(
                               width: screeOrientation == Orientation.landscape
                                   ? 100
+<<<<<<< Updated upstream
                                   : size.width * 0.2,
+=======
+                                  : size.width * 0.25,
+>>>>>>> Stashed changes
                             ),
                             Button(
                               buttonName: "Ok +9.99",

@@ -27,8 +27,17 @@ void orderSummary({context, size}) {
                   borderRadius: BorderRadius.circular(10),
                   color: bnkColor,
                 ),
+<<<<<<< Updated upstream
                 height: size.height * 0.58,
                 width: double.infinity,
+=======
+                height: screeOrientation == Orientation.landscape
+                    ? size.height * 0.8
+                    : size.height * 0.61,
+                width: screeOrientation == Orientation.landscape
+                    ? size.width * 0.4
+                    : double.infinity,
+>>>>>>> Stashed changes
                 child: Column(
                   children: <Widget>[
                     _buildHeaderTitle(size),

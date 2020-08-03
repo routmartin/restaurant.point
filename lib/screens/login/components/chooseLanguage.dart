@@ -17,6 +17,15 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var buttonWidth = size.width * 0.8;
+<<<<<<< Updated upstream
+=======
+    var screeOrientation = MediaQuery.of(context).orientation;
+    var modalMargin = (size.width - size.width * 0.4) / 2;
+    var textfieldWidth =
+        MediaQuery.of(context).orientation == Orientation.landscape
+            ? size.width * 0.4
+            : size.width * 0.8;
+>>>>>>> Stashed changes
 
     void _showModalSheet() {
       showModalBottomSheet(
@@ -24,6 +33,18 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
           backgroundColor: Colors.transparent,
           builder: (builder) {
             return Container(
+<<<<<<< Updated upstream
+=======
+              height: size.height * 0.2,
+              width: textfieldWidth,
+              // margin: EdgeInsets.all(
+              //     (MediaQuery.of(context).size.width - size.width * 0.4) / 2),
+              margin: screeOrientation == Orientation.landscape
+                  ? EdgeInsets.only(
+                      left: modalMargin, right: modalMargin, bottom: 10)
+                  : EdgeInsets.only(left: 5, bottom: 5, right: 5),
+              // margin: EdgeInsets.all(100.0),
+>>>>>>> Stashed changes
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -154,7 +175,13 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
             ),
             Container(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+<<<<<<< Updated upstream
               width: buttonWidth,
+=======
+              width: screeOrientation == Orientation.landscape
+                  ? size.width * 0.4
+                  : size.width * 0.8,
+>>>>>>> Stashed changes
               height: 50.0,
               decoration: BoxDecoration(
                   border: Border.all(width: 1.0, color: Colors.white),
