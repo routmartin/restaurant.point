@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pointrestaurant/screens/order/components/table_tab_body_list.dart';
-
 import 'package:vertical_tabs/vertical_tabs.dart';
-
-import 'components/Iconbutton.dart';
-
+import 'components/header_icon_type.dart';
 import 'components/bottom_label_checkout.dart';
 import 'components/floor_container.dart';
-
 import 'components/order_label_check_out.dart';
+import 'components/table_card.dart';
 
 class TableScreen extends StatefulWidget {
   @override
@@ -51,25 +47,46 @@ class _TableScreenState extends State<TableScreen> {
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    height: double.infinity,
+                    height: size.height,
                     child: VerticalTabs(
                       indicatorColor: Color(0xffb01105),
                       tabsWidth:
-                          orientation ? size.width * .09 : size.width * .09,
+                          orientation ? size.width * .09 : size.width * .23,
                       selectedTabBackgroundColor: null,
                       contentScrollAxis: Axis.vertical,
-                      tabs: List.generate(5, (index) {
-                        return Tab(
-                          child: FloorContainer(
-                            index: index + 1,
-                          ),
-                        );
-                      }),
+                      tabs: List.generate(
+                        5,
+                        (index) {
+                          return Tab(
+                            child: FloorContainer(
+                              index: index + 1,
+                            ),
+                          );
+                        },
+                      ),
                       contents: List.generate(
                         5,
                         (index) {
-                          return TableTabBodyList(
-                            tabTitle: 'Floor Number' + (index + 1).toString(),
+                          return Column(
+                            children: <Widget>[
+                              Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                child: Text(
+                                  'Floor ' + index.toString(),
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: 'San-francisco',
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: _buildGridViewTable(orientation, size),
+                              ),
+                            ],
                           );
                         },
                       ),
@@ -86,23 +103,43 @@ class _TableScreenState extends State<TableScreen> {
     );
   }
 
+  _buildGridViewTable(bool orientation, Size size) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: ScrollPhysics(),
+      scrollDirection: Axis.vertical,
+      childAspectRatio: orientation ? size.height / 800 : size.height / 1100,
+      crossAxisCount: size.width <= 800.0 ? 3 : size.width >= 1000.0 ? 5 : 4,
+      children: List<Widget>.generate(
+        40,
+        (index) {
+          return TableCard(
+            index: index,
+          );
+        },
+      ),
+    );
+  }
+
   _buildHeaderChoice() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        IconbuttonType(
-          title: 'Dine In',
-          isActive: false,
-        ),
-        IconbuttonType(
-          title: 'Table',
-          isActive: true,
-        ),
-        IconbuttonType(
-          title: 'Take Out',
-          isActive: false,
-        ),
-      ],
+    return FittedBox(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          IconbuttonType(
+            title: 'Dine In',
+            isActive: false,
+          ),
+          IconbuttonType(
+            title: 'Table',
+            isActive: true,
+          ),
+          IconbuttonType(
+            title: 'Take Out',
+            isActive: false,
+          ),
+        ],
+      ),
     );
   }
 }

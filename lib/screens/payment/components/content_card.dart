@@ -44,6 +44,9 @@ class _ContentCardState extends State<ContentCard> {
   );
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
       child: DefaultTabController(
@@ -54,7 +57,8 @@ class _ContentCardState extends State<ContentCard> {
                 Container(
                   margin: EdgeInsets.only(bottom: 20, right: 15, left: 15),
                   padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                  height: MediaQuery.of(context).size.height * .23,
+                  height: orientation ? size.height * .23 : size.height * .23,
+                  width: orientation ? size.width * .5 : size.width * .95,
                   decoration: cardShadow,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -68,6 +72,7 @@ class _ContentCardState extends State<ContentCard> {
                 ),
                 Expanded(
                   child: Container(
+                    width: orientation ? size.width * .8 : size.width * .95,
                     decoration: cardShadow,
                     child: Column(
                       children: <Widget>[
@@ -156,15 +161,16 @@ class _ContentCardState extends State<ContentCard> {
 
   _buildMulticityTab() {
     var size = MediaQuery.of(context).size;
+    var orientation = MediaQuery.of(context).orientation;
     var textfieldWidth = size.width;
     return TabBarView(children: [
       _buildPayOnCash(size, textfieldWidth),
       _buildBankCard(size, textfieldWidth),
-      _buildMemberShip(size)
+      _buildMemberShip(size, orientation)
     ]);
   }
 
-  _buildMemberShip(Size size) {
+  _buildMemberShip(Size size, orientation) {
     return SingleChildScrollView(
       child: Container(
         padding:
@@ -173,7 +179,12 @@ class _ContentCardState extends State<ContentCard> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              child: Image.asset('assets/images/softpointcard.jpg'),
+              child: Image.asset(
+                'assets/images/softpointcard.jpg',
+                width: orientation == Orientation.landscape
+                    ? size.width * .3
+                    : size.width * .95,
+              ),
             ),
             SizedBox(
               height: size.height * .04,
@@ -186,8 +197,12 @@ class _ContentCardState extends State<ContentCard> {
                 },
                 child: Container(
                   alignment: Alignment.center,
-                  height: size.height * .083,
-                  width: size.width * .5,
+                  height: orientation == Orientation.landscape
+                      ? size.width * .3
+                      : 47,
+                  width: orientation == Orientation.landscape
+                      ? size.width * .3
+                      : size.width * .9,
                   child: Text(
                     'Scan Your Card',
                     style: TextStyle(
