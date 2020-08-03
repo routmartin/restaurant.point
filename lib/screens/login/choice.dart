@@ -10,70 +10,68 @@ class ChoiceScreen extends StatelessWidget {
     var size = MediaQuery.of(context).size;
     var screeOrientation = MediaQuery.of(context).orientation;
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: Stack(
-            children: <Widget>[
-              Image.asset(
-                'assets/images/background.png',
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: Stack(
+          children: <Widget>[
+            Image.asset(
+              'assets/images/background.png',
+              width: size.width,
+              height: size.height,
+              fit: BoxFit.cover,
+            ),
+            Positioned(
+              top: size.height * 0.2,
+              child: Container(
                 width: size.width,
-                height: size.height,
-                fit: BoxFit.cover,
-              ),
-              Positioned(
-                top: size.height * 0.1,
-                child: Container(
-                  width: size.width,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: <Widget>[
-                        Image.asset(
-                          appbarLogo,
-                          width: screeOrientation == Orientation.landscape
-                              ? size.width * 0.15
-                              : size.width * 0.3,
-                          height: screeOrientation == Orientation.landscape
-                              ? size.width * 0.15
-                              : size.width * 0.3,
-                        ),
-                        Text(
-                          "Point Restaurant",
-                          style: TextStyle(fontSize: 25, color: Colors.white),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: size.height * 0.4,
-                child: Container(
-                  width: size.width,
+                child: Align(
                   alignment: Alignment.center,
                   child: Column(
                     children: <Widget>[
-                      Button(
-                        name: "REGISTER",
+                      Image.asset(
+                        appbarLogo,
+                        width: screeOrientation == Orientation.landscape
+                            ? size.width * 0.15
+                            : size.width * 0.3,
+                        height: screeOrientation == Orientation.landscape
+                            ? size.width * 0.15
+                            : size.width * 0.3,
                       ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Button(
-                        name: "LOGIN",
-                      ),
+                      Text(
+                        "Point Restaurant",
+                        style: TextStyle(fontSize: 25, color: Colors.white),
+                      )
                     ],
                   ),
                 ),
               ),
-              Positioned(
-                bottom: size.height * 0.1,
-                child: ChooseLanguage(),
-              )
-            ],
-          ),
+            ),
+            Positioned(
+              top: size.height * 0.45,
+              child: Container(
+                width: size.width,
+                alignment: Alignment.center,
+                child: Column(
+                  children: <Widget>[
+                    Button(
+                      name: "REGISTER",
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Button(
+                      name: "LOGIN",
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: size.height * 0.1,
+              child: ChooseLanguage(),
+            )
+          ],
         ),
       ),
     );

@@ -47,46 +47,50 @@ class _ContentCardState extends State<ContentCard> {
     var size = MediaQuery.of(context).size;
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-      child: DefaultTabController(
-        child: new LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints viewportConstraints) {
-            return Column(
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.only(bottom: 20, right: 15, left: 15),
-                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                  height: orientation ? size.height * .23 : size.height * .23,
-                  width: orientation ? size.width * .5 : size.width * .95,
-                  decoration: cardShadow,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      _buildTitleRow('Grand Total', 110),
-                      _buildTitleRow('Total Pay', 150),
-                      _buildTitleRow('Return ', 40),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    width: orientation ? size.width * .8 : size.width * .95,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+        child: DefaultTabController(
+          child: new LayoutBuilder(
+            builder:
+                (BuildContext context, BoxConstraints viewportConstraints) {
+              return Column(
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20, right: 15, left: 15),
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+                    height: orientation ? size.height * .23 : size.height * .23,
+                    width: orientation ? size.width * .5 : size.width * .95,
                     decoration: cardShadow,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        _buildTabBar(),
-                        _buildContentContainer(viewportConstraints),
+                        _buildTitleRow('Grand Total', 110),
+                        _buildTitleRow('Total Pay', 150),
+                        _buildTitleRow('Return ', 40),
                       ],
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                  Expanded(
+                    child: Container(
+                      width: orientation ? size.width * .8 : size.width * .95,
+                      decoration: cardShadow,
+                      child: Column(
+                        children: <Widget>[
+                          _buildTabBar(),
+                          _buildContentContainer(viewportConstraints),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          length: 3,
         ),
-        length: 3,
       ),
     );
   }
@@ -196,13 +200,11 @@ class _ContentCardState extends State<ContentCard> {
                   _showDialog();
                 },
                 child: Container(
-                  alignment: Alignment.center,
-                  height: orientation == Orientation.landscape
-                      ? size.width * .3
-                      : 47,
+                  height: 50,
                   width: orientation == Orientation.landscape
                       ? size.width * .3
-                      : size.width * .9,
+                      : size.width * .95,
+                  alignment: Alignment.center,
                   child: Text(
                     'Scan Your Card',
                     style: TextStyle(
