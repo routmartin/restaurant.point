@@ -14,25 +14,25 @@ class TableCard extends StatelessWidget {
     var size = MediaQuery.of(context).size;
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        splashColor: Colors.black12,
-        onTap: () {},
-        child: Stack(
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(
-                bottom: 15,
-                right: 10,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  width: 1.3,
-                  color: Color(0xff0f0808),
-                ),
-              ),
+    return Stack(
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(
+            bottom: 15,
+            right: 10,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(
+              width: 1.3,
+              color: Color(0xff0f0808),
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              splashColor: Colors.black12,
+              onTap: () {},
               child: Column(
                 children: <Widget>[
                   Container(
@@ -117,23 +117,23 @@ class TableCard extends StatelessWidget {
                 ],
               ),
             ),
-            Positioned(
-              bottom: orientation ? 7 : 8,
-              left: orientation ? size.width * .056 : size.width * .035,
-              child: BottomMiddleButton(
-                width: 60,
-                sign: Text(
-                  'Bill',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            )
-          ],
+          ),
         ),
-      ),
+        Positioned(
+          bottom: orientation ? 7 : 8,
+          left: orientation ? size.width * .056 : size.width * .035,
+          child: BottomMiddleButton(
+            width: 60,
+            sign: Text(
+              'Bill',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
 }
