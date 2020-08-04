@@ -5,8 +5,6 @@ import 'components/header_icon_type.dart';
 import 'components/bottom_label_checkout.dart';
 import 'components/category_container.dart';
 
-import 'components/order_label_check_out.dart';
-
 import 'components/order_tab_body_list.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -89,7 +87,6 @@ class _OrderScreenState extends State<OrderScreen> {
             ),
           ),
           BottomLabelCheckOut(),
-          OrderLabelCheckOut()
         ],
       )),
     );

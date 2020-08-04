@@ -200,7 +200,7 @@ class _ContentCardState extends State<ContentCard> {
                   _showDialog();
                 },
                 child: Container(
-                  height: 50,
+                  height: 45,
                   width: orientation == Orientation.landscape
                       ? size.width * .3
                       : size.width * .95,
