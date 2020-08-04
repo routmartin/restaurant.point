@@ -12,33 +12,27 @@ class IconbuttonType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
-      child: Material(
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
-        color: isActive ? kPrimaryColor : Colors.transparent,
-        child: InkWell(
-          splashColor: Colors.black12,
-          onTap: () {},
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 5),
-            height: 35,
-            width: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                width: 1.5,
-                color: isActive ? kPrimaryColor : Colors.black54,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isActive ? Colors.white : kPrimaryColor,
-                  fontSize: 15,
-                  fontFamily: "Roboto",
+        child: Material(
+          color: isActive ? kPrimaryColor : Colors.grey[300],
+          child: InkWell(
+            splashColor: Colors.black12,
+            onTap: () {},
+            child: Container(
+              height: 35,
+              width: 100,
+              child: Center(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isActive ? Colors.white : Colors.black87,
+                    fontSize: 15,
+                    fontFamily: "Roboto",
+                  ),
                 ),
               ),
             ),
