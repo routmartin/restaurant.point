@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 
-
 class HeaderStack extends StatelessWidget {
   final double height;
   const HeaderStack({Key key, this.height}) : super(key: key);
@@ -28,15 +27,7 @@ class HeaderStack extends StatelessWidget {
           height: height,
         ),
         new AppBar(
-          leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios,
-                color: Colors.white,
-                size: 18,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
+          leading: null,
           backgroundColor: Colors.transparent,
           elevation: 0.0,
           centerTitle: true,

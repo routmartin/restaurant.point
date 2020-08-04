@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../utilities/path.dart';
+import '../main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -16,7 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var textfieldWidth = size.width * 0.8;
+    var textfieldWidth =
+        MediaQuery.of(context).orientation == Orientation.landscape
+            ? size.width * 0.4
+            : size.width * 0.8;
     var red = 0xffE50B2E;
     return Scaffold(
       appBar: AppBar(
@@ -170,26 +174,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 35.0,
                     ),
-                    Container(
-                      width: textfieldWidth,
-                      height: 50.0,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(40.0),
-                          color: Color(red)),
-                      child: InkWell(
-                        onTap: () {
-                          if (checkPass != null && checkUser != null) {
-                          } else {
-                            print('no data');
-                            return;
-                          }
-                        },
-                        child: Center(
-                          child: Text(
-                            "LOGIN",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(40.0),
+                      child: Material(
+                        borderRadius: BorderRadius.circular(40.0),
+                        color: Color(red),
+                        child: InkWell(
+                          splashColor: Colors.white24,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              // ignore: missing_return
+                              MaterialPageRoute(
+                                builder: (_) => MainScreenPage(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: textfieldWidth,
+                            height: 50.0,
+                            child: Center(
+                              child: Text(
+                                "LOGIN",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),

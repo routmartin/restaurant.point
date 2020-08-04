@@ -13,8 +13,11 @@ class OrderList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var screeOrientation = MediaQuery.of(context).orientation;
     return Container(
-      height: size.height * 0.35,
+      height: screeOrientation == Orientation.landscape
+          ? size.height * 0.52
+          : size.height * 0.35,
       color: Color(0xfff0f0f0),
       child: ListView.builder(
         itemCount: 10,

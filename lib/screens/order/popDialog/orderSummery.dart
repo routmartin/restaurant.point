@@ -9,10 +9,9 @@ import 'paymentMethod.dart';
 bool showPassword = true;
 String checkUser = '';
 String checkPass = '';
-var _chosenValue = "Google";
 
 void orderSummary({context, size}) {
-  Color bnkColor = Colors.white;
+  var screeOrientation = MediaQuery.of(context).orientation;
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -22,13 +21,17 @@ void orderSummary({context, size}) {
           child: Stack(
             children: <Widget>[
               Container(
+                height: screeOrientation == Orientation.landscape
+                    ? size.height * 0.8
+                    : size.height * 0.65,
+                width: screeOrientation == Orientation.landscape
+                    ? size.width * 0.4
+                    : double.infinity,
                 margin: EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: bnkColor,
+                  color: Colors.transparent,
                 ),
-                height: size.height * 0.58,
-                width: double.infinity,
                 child: Column(
                   children: <Widget>[
                     _buildHeaderTitle(size),
@@ -80,8 +83,9 @@ _buildCancelButton(BuildContext context) {
 
 _buildHeaderTitle(size) {
   return Container(
-    height: size.height * 0.07,
+    height: size.height * 0.08,
     decoration: BoxDecoration(
+      color: bkColor,
       borderRadius: BorderRadius.only(
         topLeft: Radius.circular(10),
         topRight: Radius.circular(10),
@@ -99,9 +103,19 @@ _buildHeaderTitle(size) {
 }
 
 _buildButtonContainer(size, BuildContext context) {
+  var screeOrientation = MediaQuery.of(context).orientation;
   return Container(
-    height: size.height * 0.08,
-    margin: EdgeInsets.symmetric(horizontal: 10),
+    height: screeOrientation == Orientation.landscape
+        ? size.height * 0.1
+        : size.height * 0.08,
+    padding: EdgeInsets.symmetric(horizontal: 10),
+    decoration: BoxDecoration(
+      color: bkColor,
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(10),
+        bottomRight: Radius.circular(10),
+      ),
+    ),
     child: FittedBox(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -113,55 +127,59 @@ _buildButtonContainer(size, BuildContext context) {
           SizedBox(
             width: 10,
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {},
-              child: Container(
-                width: size.width * 0.25,
-                height: size.height * 0.045,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: kPrimaryColor,
-                ),
-                child: DropdownButton<String>(
-                  value: _chosenValue,
-                  underline: Container(), // this is the magic
-                  items: <String>['Google', 'Apple', 'Amazon', 'Tesla']
-                      .map<DropdownMenuItem<String>>(
-                    (String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.black,
-                          ),
-                        ),
-                      );
-                    },
-                  ).toList(),
-                  onChanged: (String value) {
-                    // setState(
-                    //   () {
-                    //     _chosenValue = value;
-                    //   },
-                    // );
-                  },
-                ),
-              ),
-            ),
+          Button(
+            buttonName: "Option",
           ),
           SizedBox(
             width: 10,
           ),
+          // Material(
+          //   color: Colors.transparent,
+          //   child: InkWell(
+          //     onTap: () {},
+          //     child: Container(
+          //       width: size.width * 0.25,
+          //       height: size.height * 0.045,
+          //       alignment: Alignment.center,
+          //       decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(20.0),
+          //         color: kPrimaryColor,
+          //       ),
+          //       child: DropdownButton<String>(
+          //         value: _chosenValue,
+          //         underline: Container(), // this is the magic
+          //         items: <String>['Google', 'Apple', 'Amazon', 'Tesla']
+          //             .map<DropdownMenuItem<String>>(
+          //           (String value) {
+          //             return DropdownMenuItem<String>(
+          //               value: value,
+          //               child: Text(
+          //                 value,
+          //                 textAlign: TextAlign.center,
+          //                 style: TextStyle(
+          //                   fontSize: 13,
+          //                   color: Colors.black,
+          //                 ),
+          //               ),
+          //             );
+          //           },
+          //         ).toList(),
+          //         onChanged: (String value) {
+          //           // setState(
+          //           //   () {
+          //           //     _chosenValue = value;
+          //           //   },
+          //           // );
+          //         },
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Button(
             buttonName: "Confirm",
             press: () {
               payDialog(context, size);
+              // show(context);
             },
           )
         ],
