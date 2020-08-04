@@ -10,6 +10,7 @@ class Button extends StatelessWidget {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var screeOrientation = MediaQuery.of(context).orientation;
+    var lanscape = Orientation.landscape;
     return ClipRRect(
       borderRadius: BorderRadius.circular(20.0),
       child: Material(
@@ -23,7 +24,7 @@ class Button extends StatelessWidget {
               vertical: 10,
               horizontal: 14,
             ),
-            width: 120,
+            width: screeOrientation == lanscape ? 120 : size.width * 0.22,
             height: screeOrientation == Orientation.landscape
                 ? size.height * 0.06
                 : size.height * 0.045,

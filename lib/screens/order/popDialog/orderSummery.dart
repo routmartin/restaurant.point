@@ -30,7 +30,7 @@ void orderSummary({context, size}) {
                 ),
                 height: screeOrientation == Orientation.landscape
                     ? size.height * 0.8
-                    : size.height * 0.58,
+                    : size.height * 0.65,
                 width: screeOrientation == Orientation.landscape
                     ? size.width * 0.4
                     : double.infinity,
