@@ -13,7 +13,7 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
-  String userToke = '123';
+  String userToke = '';
   Future loadSharePreferenc() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('userLog');
