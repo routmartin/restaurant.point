@@ -12,10 +12,8 @@ class IconbuttonType extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: 10,
-      ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
       child: Material(
         borderRadius: BorderRadius.circular(30),
         color: isActive ? kPrimaryColor : Colors.transparent,
@@ -23,6 +21,7 @@ class IconbuttonType extends StatelessWidget {
           splashColor: Colors.black12,
           onTap: () {},
           child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 5),
             height: 35,
             width: 100,
             decoration: BoxDecoration(
