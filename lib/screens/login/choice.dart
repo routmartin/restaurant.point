@@ -48,7 +48,9 @@ class ChoiceScreen extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: size.height * 0.45,
+              top: screeOrientation == Orientation.landscape
+                  ? size.width * 0.35
+                  : size.width * 0.45,
               child: Container(
                 width: size.width,
                 alignment: Alignment.center,

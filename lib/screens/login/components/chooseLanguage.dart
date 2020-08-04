@@ -173,7 +173,9 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
             ),
             Container(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-              width: buttonWidth,
+              width: screeOrientation == Orientation.landscape
+                  ? size.width * 0.4
+                  : buttonWidth,
               height: 50.0,
               decoration: BoxDecoration(
                   border: Border.all(width: 1.0, color: Colors.white),
