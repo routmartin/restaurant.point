@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pointrestaurant/screens/order/components/event_button.dart';
 import 'package:pointrestaurant/screens/order/components/order_list.dart';
 import 'package:pointrestaurant/screens/order/popDialog/paymentMethod.dart';
-import 'package:pointrestaurant/utilities/style.main.dart';
 
 // void payDialog(context, size) {
 //   var screeOrientation = MediaQuery.of(context).orientation;
@@ -284,20 +283,22 @@ _buildButtonContainer(size, BuildContext context) {
         ? size.height * 0.1
         : size.height * 0.08,
     margin: EdgeInsets.symmetric(horizontal: 10),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Button(
-          buttonName: "Continue",
-        ),
-        SizedBox(
-          width: screeOrientation == Orientation.landscape ? 100 : 20,
-        ),
-        Button(
-          buttonName: "Pay",
-        )
-      ],
+    child: FittedBox(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Button(
+            buttonName: "Continue",
+          ),
+          SizedBox(
+            width: screeOrientation == Orientation.landscape ? 100 : 20,
+          ),
+          Button(
+            buttonName: "Pay",
+          )
+        ],
+      ),
     ),
   );
 }
