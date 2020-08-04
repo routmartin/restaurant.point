@@ -178,9 +178,10 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
                   : buttonWidth,
               height: 50.0,
               decoration: BoxDecoration(
-                  border: Border.all(width: 1.0, color: Colors.white),
-                  borderRadius: BorderRadius.circular(40.0),
-                  color: Colors.white),
+                border: Border.all(width: 1.0, color: Colors.white),
+                borderRadius: BorderRadius.circular(40.0),
+                color: Colors.white,
+              ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -201,12 +202,18 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
                             SizedBox(
                               width: 20,
                             ),
-                            Text(
-                              language,
-                              style: TextStyle(
+                            Padding(
+                              padding: screeOrientation == Orientation.landscape
+                                  ? EdgeInsets.only(top: 2)
+                                  : EdgeInsets.only(top: 7),
+                              child: Text(
+                                language,
+                                style: TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 16.0),
+                                  fontSize: 16.0,
+                                ),
+                              ),
                             ),
                           ],
                         ),

@@ -29,7 +29,11 @@ class Button extends StatelessWidget {
             onTap: () {
               if (name == "LOGIN") {
                 Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => LoginScreen()));
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LoginScreen(),
+                  ),
+                );
               }
             },
             child: Center(
