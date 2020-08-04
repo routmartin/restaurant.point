@@ -9,9 +9,8 @@ import 'paymentMethod.dart';
 bool showPassword = true;
 String checkUser = '';
 String checkPass = '';
-var _chosenValue = "Google";
+
 void orderSummary({context, size}) {
-  Color bnkColor = Colors.white;
   var screeOrientation = MediaQuery.of(context).orientation;
   showDialog(
     context: context,
@@ -48,27 +47,6 @@ void orderSummary({context, size}) {
         ),
       );
     },
-  );
-}
-
-show(context) {
-  return showGeneralDialog(
-    transitionBuilder: (context, _animation, _secondaryAnimation, _child) {
-      return Transform.scale(
-        scale: _animation.value,
-        child: Opacity(
-          opacity: _animation.value,
-          child: AlertDialog(
-            title: Text('data'),
-          ),
-        ),
-      );
-    },
-    pageBuilder: (_animation, _secondaryAnimation, _child) {},
-    context: context,
-    barrierLabel: '',
-    barrierDismissible: true,
-    transitionDuration: Duration(microseconds: 1000),
   );
 }
 
