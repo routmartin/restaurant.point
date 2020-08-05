@@ -59,7 +59,7 @@ class _TableScreenState extends State<TableScreen> {
         _registerYOffset = windowHeight;
         break;
       case 1:
-        _backgroundColor = Colors.pink;
+        _backgroundColor = Colors.white;
         _headingColor = Colors.white;
 
         _headingTop = 10;
@@ -67,7 +67,7 @@ class _TableScreenState extends State<TableScreen> {
         _loginWidth = windowWidth;
         _loginOpacity = 1;
 
-        _loginYOffset = _keyboardVisible ? 40 : 180;
+        _loginYOffset = _keyboardVisible ? 40 : 160;
         _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 190;
 
         _loginXOffset = 0;

@@ -20,6 +20,7 @@ dependencies:
   transparent_image: ^1.0.0
   slide_popup_dialog: ^0.0.2
   direct_select: ^1.0.2
+  socket_io: ^0.9.4
 
 dev_dependencies:
   flutter_test:

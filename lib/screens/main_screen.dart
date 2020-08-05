@@ -24,7 +24,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       HomeScreen(),
       TableScreen(),
-      PendingScreen(),
+      ChartScreen(),
       PaymentScreen(),
     ];
   }
