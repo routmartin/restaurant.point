@@ -36,7 +36,7 @@ class ChoiceScreen extends StatelessWidget {
                             : size.width * 0.3,
                         height: screeOrientation == Orientation.landscape
                             ? size.width * 0.15
-                            : size.width * 0.3,
+                            : size.width * 0.4,
                       ),
                       Text(
                         "Point Restaurant",
@@ -50,7 +50,7 @@ class ChoiceScreen extends StatelessWidget {
             Positioned(
               top: screeOrientation == Orientation.landscape
                   ? size.width * 0.35
-                  : size.width * 0.45,
+                  : size.width * 0.98,
               child: Container(
                 width: size.width,
                 alignment: Alignment.center,

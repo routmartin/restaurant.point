@@ -26,14 +26,12 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.0,
-        title: Text(
-          "LOGIN",
-          style: TextStyle(color: Colors.grey),
-        ),
+        centerTitle: true,
         leading: IconButton(
             icon: Icon(
               FontAwesomeIcons.chevronLeft,
-              color: Colors.grey[700],
+              color: Colors.black87,
+              size: 16,
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -66,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 15,
                     ),
                     Text(
-                      "Point Restaurant",
+                      "LOGIN",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w600,

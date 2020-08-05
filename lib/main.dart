@@ -6,11 +6,11 @@ import 'widget/loading.slash.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(new MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext constraints) {
     return LayoutBuilder(

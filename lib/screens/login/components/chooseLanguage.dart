@@ -27,19 +27,16 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
           builder: (builder) {
             return Container(
               height: size.height * 0.20,
-              // margin: EdgeInsets.all(
-              //     (MediaQuery.of(context).size.width - size.width * 0.4) / 2),
               margin: screeOrientation == Orientation.landscape
                   ? EdgeInsets.only(
                       left: modalMargin, right: modalMargin, bottom: 10)
-                  : EdgeInsets.only(left: 5, bottom: 5, right: 5),
-              // margin: EdgeInsets.all(100.0),
+                  : EdgeInsets.only(
+                      left: 15,
+                      bottom: 20,
+                      right: 15,
+                    ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                // borderRadius: BorderRadius.only(
-                //   topLeft: Radius.circular(15.0),
-                //   topRight: Radius.circular(15.0),
-                // ),
                 borderRadius: BorderRadius.circular(15.0),
               ),
               child: Column(
@@ -166,10 +163,15 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
           children: <Widget>[
             Text(
               "Please Choose Your Preferred Language",
-              style: TextStyle(fontSize: 16, color: Colors.white),
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'San-francisco',
+              ),
             ),
             SizedBox(
-              height: 15.0,
+              height: 20.0,
             ),
             Container(
               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
@@ -178,9 +180,10 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
                   : buttonWidth,
               height: 50.0,
               decoration: BoxDecoration(
-                  border: Border.all(width: 1.0, color: Colors.white),
-                  borderRadius: BorderRadius.circular(40.0),
-                  color: Colors.white),
+                border: Border.all(width: 1.0, color: Colors.white),
+                borderRadius: BorderRadius.circular(40.0),
+                color: Colors.white,
+              ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -201,12 +204,18 @@ class _ChooseLanguageState extends State<ChooseLanguage> {
                             SizedBox(
                               width: 20,
                             ),
-                            Text(
-                              language,
-                              style: TextStyle(
+                            Padding(
+                              padding: screeOrientation == Orientation.landscape
+                                  ? EdgeInsets.only(top: 1)
+                                  : EdgeInsets.only(top: 3),
+                              child: Text(
+                                language,
+                                style: TextStyle(
                                   color: Colors.red,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 16.0),
+                                  fontSize: 16.0,
+                                ),
+                              ),
                             ),
                           ],
                         ),

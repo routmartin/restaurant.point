@@ -24,10 +24,10 @@ class Button extends StatelessWidget {
               vertical: 10,
               horizontal: 14,
             ),
-            width: screeOrientation == lanscape ? 120 : size.width * 0.22,
+            width: screeOrientation == lanscape ? 120 : size.width * 0.3,
             height: screeOrientation == Orientation.landscape
                 ? size.height * 0.06
-                : size.height * 0.045,
+                : size.height * 0.05,
             child: Center(
               child: Text(
                 buttonName,
