@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
+
 import 'components/event_button.dart';
 import 'components/header_icon_type.dart';
 import 'components/bottom_label_checkout.dart';
 import 'components/floor_container.dart';
-import 'components/order_list.dart';
+import 'components/order_cal_icon.dart';
+
 import 'components/table_card.dart';
 
 class TableScreen extends StatefulWidget {
@@ -67,14 +70,14 @@ class _TableScreenState extends State<TableScreen> {
         _loginWidth = windowWidth;
         _loginOpacity = 1;
 
-        _loginYOffset = _keyboardVisible ? 40 : 160;
-        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 190;
+        _loginYOffset = _keyboardVisible ? 40 : 200;
+        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 180;
 
         _loginXOffset = 0;
         _registerYOffset = windowHeight;
         break;
       case 2:
-        _backgroundColor = Color(0xFFBD34C59);
+        _backgroundColor = Colors.white;
         _headingColor = Colors.white;
 
         _headingTop = 80;
@@ -82,8 +85,8 @@ class _TableScreenState extends State<TableScreen> {
         _loginWidth = windowWidth - 40;
         _loginOpacity = 0.7;
 
-        _loginYOffset = _keyboardVisible ? 30 : 240;
-        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 240;
+        _loginYOffset = _keyboardVisible ? 30 : 180;
+        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 180;
 
         _loginXOffset = 20;
         _registerYOffset = _keyboardVisible ? 55 : 270;
@@ -193,133 +196,399 @@ class _TableScreenState extends State<TableScreen> {
               ),
             ),
           ),
-          buildAnimatedContainerSecond(size, orientation),
-          buildAnimatedContainerThird()
+          AnimatedContainer(
+            width: _loginWidth,
+            height: _loginHeight,
+            curve: Curves.fastLinearToSlowEaseIn,
+            duration: Duration(milliseconds: 1000),
+            transform:
+                Matrix4.translationValues(_loginXOffset, _loginYOffset, 1),
+            decoration: BoxDecoration(
+              color: Color(0xfffcfcfc),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  offset: Offset(1, 5),
+                  color: Colors.black38.withOpacity(.2),
+                  blurRadius: 20,
+                  spreadRadius: 10,
+                ),
+              ],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
+            ),
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  height: orientation ? size.height * 0.8 : double.infinity,
+                  width: orientation ? size.width * 0.4 : double.infinity,
+                  child: Column(
+                    children: <Widget>[
+                      _buildHeaderTitle(size),
+                      Container(
+                        height: orientation
+                            ? size.height * 0.52
+                            : size.height * 0.35,
+                        color: Color(0xfff0f0f0),
+                        child: ListView.builder(
+                          itemCount: 10,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              alignment: Alignment.centerLeft,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                      width: 0.2, color: Colors.grey),
+                                ),
+                              ),
+                              padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Expanded(
+                                          flex: 3,
+                                          child: _buildRowTitleItem(),
+                                        ),
+                                        _buildTotalPrice(),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      CaculateIcon(),
+                                      SizedBox(width: 10),
+                                      _buildSpecilRequest(context)
+                                    ],
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      _buildTotalAmountContainer(size, context),
+                      _buildButtonContainer(size, context)
+                    ],
+                  ),
+                ),
+                _buildCancelButton(context)
+              ],
+            ),
+          ),
+          AnimatedContainer(
+            height: _registerHeight,
+            padding: EdgeInsets.all(32),
+            curve: Curves.fastLinearToSlowEaseIn,
+            duration: Duration(milliseconds: 1000),
+            transform: Matrix4.translationValues(0, _registerYOffset, 1),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
+            ),
+            child: Container(
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          height: size.height * 0.1,
+                          color: Colors.red,
+                          child: Row(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  children: <Widget>[
+                                    Container(
+                                      alignment: Alignment.topLeft,
+                                      child: Text(
+                                        "Spicy Fridge Egg",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Container(
+                                      alignment: Alignment.bottomLeft,
+                                      child: Text("\$0",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Stack(
+                                  children: <Widget>[
+                                    Positioned(
+                                      right: 10,
+                                      top: 0,
+                                      child: Container(
+                                        width: 100,
+                                        child: Image.asset(
+                                          "assets/images/food.jpg",
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          height: size.height * .3,
+                          child: Column(
+                            children: <Widget>[
+                              Expanded(
+                                  flex: 1,
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        flex: 2,
+                                        child: Column(
+                                          children: <Widget>[
+                                            Expanded(
+                                              flex: 1,
+                                              child: Container(
+                                                alignment: Alignment.topLeft,
+                                                child: Text(
+                                                  "Special Request",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Container(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  "Spicy classic",
+                                                  style: TextStyle(
+                                                      fontSize: 12.0,
+                                                      decoration: TextDecoration
+                                                          .underline),
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Column(
+                                          children: <Widget>[
+                                            Expanded(
+                                                flex: 2, child: Container()),
+                                            Expanded(
+                                                flex: 1,
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5.0),
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                  child: Text(
+                                                    "choose 1 item",
+                                                    style:
+                                                        TextStyle(fontSize: 10),
+                                                  ),
+                                                ))
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  )),
+                              Expanded(
+                                flex: 6,
+                                child: Container(
+                                  margin: EdgeInsets.only(top: 10.0),
+                                  child: ListView.builder(
+                                    itemCount: 4,
+                                    itemBuilder: (context, index) {
+                                      return Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {},
+                                          child: Container(
+                                            padding: EdgeInsets.all(10.0),
+                                            margin: EdgeInsets.only(
+                                                top: 5.0, left: 5, right: 5.0),
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                                color: Colors.white,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.5),
+                                                    spreadRadius: 1,
+                                                    blurRadius: 7,
+                                                    offset: Offset(0, 1),
+                                                  )
+                                                ]),
+                                            child: Row(
+                                              children: <Widget>[
+                                                Icon(
+                                                  FontAwesomeIcons.check,
+                                                  size: 15,
+                                                ),
+                                                SizedBox(
+                                                  width: 10.0,
+                                                ),
+                                                Text("$index Egg")
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.09),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Button(
+                                buttonName: "Reset All",
+                              ),
+                              SizedBox(
+                                width: orientation ? 100 : 20,
+                              ),
+                              Button(
+                                buttonName: "Ok +9.99",
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       )),
     );
   }
 
-  buildAnimatedContainerThird() {
-    return AnimatedContainer(
-      height: _registerHeight,
-      padding: EdgeInsets.all(32),
-      curve: Curves.fastLinearToSlowEaseIn,
-      duration: Duration(milliseconds: 1000),
-      transform: Matrix4.translationValues(0, _registerYOffset, 1),
+// special Request___________________________________
+
+  _buildSpecilRequest(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
+        border: Border.all(
+          width: 1,
+          color: Colors.black54,
         ),
+        borderRadius: BorderRadius.circular(10.0),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              Container(
-                margin: EdgeInsets.only(bottom: 20),
-                child: Text(
-                  "Create a New Account",
-                  style: TextStyle(fontSize: 20),
-                ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _pageState = 2;
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: Text(
+              "SPECIAL REQUEST",
+              style: TextStyle(
+                fontSize: 7,
+                fontFamily: 'San-francisco',
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.02,
+                color: kPrimaryColor,
               ),
-              InputWithIcon(
-                icon: Icons.email,
-                hint: "Enter Email...",
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              InputWithIcon(
-                icon: Icons.vpn_key,
-                hint: "Enter Password...",
-              )
-            ],
+            ),
           ),
-          Column(
-            children: <Widget>[
-              PrimaryButton(
-                btnText: "Create Account",
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _pageState = 1;
-                  });
-                },
-                child: OutlineBtn(
-                  btnText: "Back To Login",
-                ),
-              ),
-              SizedBox(
-                height: 200,
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  buildAnimatedContainerSecond(Size size, orientation) {
-    return AnimatedContainer(
-      width: _loginWidth,
-      height: _loginHeight,
-      curve: Curves.fastLinearToSlowEaseIn,
-      duration: Duration(milliseconds: 1000),
-      transform: Matrix4.translationValues(_loginXOffset, _loginYOffset, 1),
-      decoration: BoxDecoration(
-        // color: Colors.white.withOpacity(_loginOpacity),
-        color: Color(0xfffcfcfc),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            offset: Offset(1, 5),
-            color: Colors.black38.withOpacity(.2),
-            blurRadius: 20,
-            spreadRadius: 10,
+  _buildTotalPrice() {
+    return Expanded(
+      flex: 1,
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          "\$12.50",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
-        ],
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
         ),
-      ),
-      child: Stack(
-        children: <Widget>[
-          Container(
-            height: orientation == Orientation.landscape
-                ? size.height * 0.8
-                : double.infinity,
-            width: orientation == Orientation.landscape
-                ? size.width * 0.4
-                : double.infinity,
-            child: Column(
-              children: <Widget>[
-                _buildHeaderTitle(size),
-                OrderList(size: size),
-                _buildTotalAmountContainer(size, context),
-                _buildButtonContainer(size, context)
-              ],
-            ),
-          ),
-          _buildCancelButton(context)
-        ],
       ),
     );
   }
+
+  _buildRowTitleItem() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          "Brown Suger Jelly",
+          style: TextStyle(
+            letterSpacing: 1.1,
+            fontFamily: 'San-francisco',
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        SizedBox(
+          width: 5,
+        ),
+        Text(
+          "\$ 12.50",
+          style: TextStyle(
+            fontFamily: 'San-francisco',
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+            fontSize: 13,
+          ),
+        ),
+      ],
+    );
+  }
+
+// special Request___________________________________
 
   // orderSummery inner_width________________________
 
   _buildCancelButton(BuildContext context) {
     return Positioned(
-      top: 0,
-      right: 0,
+      top: 7,
+      right: 5,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: Material(
@@ -378,12 +647,14 @@ class _TableScreenState extends State<TableScreen> {
   }
 
   _buildButtonContainer(size, BuildContext context) {
-    var ori = MediaQuery.of(context).orientation;
+    var orientation = MediaQuery.of(context).orientation;
     return Container(
-      height:
-          ori == Orientation.landscape ? size.height * 0.1 : size.height * 0.08,
+      height: orientation == Orientation.landscape
+          ? size.height * 0.1
+          : size.height * 0.08,
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
+        // color: bkColor,
         color: bkColor,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(10),
@@ -407,48 +678,6 @@ class _TableScreenState extends State<TableScreen> {
             SizedBox(
               width: 10,
             ),
-            // Material(
-            //   color: Colors.transparent,
-            //   child: InkWell(
-            //     onTap: () {},
-            //     child: Container(
-            //       width: size.width * 0.25,
-            //       height: size.height * 0.045,
-            //       alignment: Alignment.center,
-            //       decoration: BoxDecoration(
-            //         borderRadius: BorderRadius.circular(20.0),
-            //         color: kPrimaryColor,
-            //       ),
-            //       child: DropdownButton<String>(
-            //         value: _chosenValue,
-            //         underline: Container(), // this is the magic
-            //         items: <String>['Google', 'Apple', 'Amazon', 'Tesla']
-            //             .map<DropdownMenuItem<String>>(
-            //           (String value) {
-            //             return DropdownMenuItem<String>(
-            //               value: value,
-            //               child: Text(
-            //                 value,
-            //                 textAlign: TextAlign.center,
-            //                 style: TextStyle(
-            //                   fontSize: 13,
-            //                   color: Colors.black,
-            //                 ),
-            //               ),
-            //             );
-            //           },
-            //         ).toList(),
-            //         onChanged: (String value) {
-            //           // setState(
-            //           //   () {
-            //           //     _chosenValue = value;
-            //           //   },
-            //           // );
-            //         },
-            //       ),
-            //     ),
-            //   ),
-            // ),
             Button(
               buttonName: "Confirm",
               press: () {
@@ -671,96 +900,6 @@ class _TableScreenState extends State<TableScreen> {
             isActive: false,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class InputWithIcon extends StatefulWidget {
-  final IconData icon;
-  final String hint;
-  InputWithIcon({this.icon, this.hint});
-
-  @override
-  _InputWithIconState createState() => _InputWithIconState();
-}
-
-class _InputWithIconState extends State<InputWithIcon> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          border: Border.all(color: Color(0xFFBC7C7C7), width: 2),
-          borderRadius: BorderRadius.circular(50)),
-      child: Row(
-        children: <Widget>[
-          Container(
-              width: 60,
-              child: Icon(
-                widget.icon,
-                size: 20,
-                color: Color(0xFFBB9B9B9),
-              )),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(vertical: 20),
-                  border: InputBorder.none,
-                  hintText: widget.hint),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class PrimaryButton extends StatefulWidget {
-  final String btnText;
-  PrimaryButton({this.btnText});
-
-  @override
-  _PrimaryButtonState createState() => _PrimaryButtonState();
-}
-
-class _PrimaryButtonState extends State<PrimaryButton> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Color(0xFFB40284A), borderRadius: BorderRadius.circular(50)),
-      padding: EdgeInsets.all(20),
-      child: Center(
-        child: Text(
-          widget.btnText,
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
-      ),
-    );
-  }
-}
-
-class OutlineBtn extends StatefulWidget {
-  final String btnText;
-  OutlineBtn({this.btnText});
-
-  @override
-  _OutlineBtnState createState() => _OutlineBtnState();
-}
-
-class _OutlineBtnState extends State<OutlineBtn> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          border: Border.all(color: Color(0xFFB40284A), width: 2),
-          borderRadius: BorderRadius.circular(50)),
-      padding: EdgeInsets.all(20),
-      child: Center(
-        child: Text(
-          widget.btnText,
-          style: TextStyle(color: Color(0xFFB40284A), fontSize: 16),
-        ),
       ),
     );
   }

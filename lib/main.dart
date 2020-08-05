@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pointrestaurant/services/socket.io.dart';
 
 import 'utilities/size.cofig.dart';
 import 'widget/loading.slash.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  client();
+
   runApp(new MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext constraints) {
     return LayoutBuilder(
