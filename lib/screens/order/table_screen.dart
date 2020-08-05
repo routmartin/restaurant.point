@@ -19,11 +19,6 @@ class TableScreen extends StatefulWidget {
 class _TableScreenState extends State<TableScreen> {
   int _pageState = 0;
 
-  var _backgroundColor = Colors.white;
-  var _headingColor = Color(0xFFB40284A);
-
-  double _headingTop = 100;
-
   double _loginWidth = 0;
   double _loginHeight = 0;
   double _loginOpacity = 1;
@@ -36,8 +31,6 @@ class _TableScreenState extends State<TableScreen> {
   double windowWidth = 0;
   double windowHeight = 0;
 
-  bool _keyboardVisible = false;
-
   @override
   Widget build(BuildContext context) {
     windowHeight = MediaQuery.of(context).size.height;
@@ -48,49 +41,33 @@ class _TableScreenState extends State<TableScreen> {
 
     switch (_pageState) {
       case 0:
-        _backgroundColor = Colors.white;
-        _headingColor = Color(0xFFB40284A);
-
-        _headingTop = 100;
-
         _loginWidth = windowWidth;
         _loginOpacity = 1;
 
         _loginYOffset = windowHeight;
-        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 270;
         _loginXOffset = 0;
         _registerYOffset = windowHeight;
         break;
       case 1:
-        _backgroundColor = Colors.white;
-        _headingColor = Colors.white;
-
-        _headingTop = 10;
-
         _loginWidth = windowWidth;
         _loginOpacity = 1;
 
-        _loginYOffset = _keyboardVisible ? 40 : 200;
-        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 180;
+        _loginYOffset = 190;
+        // _loginHeight = windowHeight - 170;
 
         _loginXOffset = 0;
         _registerYOffset = windowHeight;
         break;
       case 2:
-        _backgroundColor = Colors.white;
-        _headingColor = Colors.white;
-
-        _headingTop = 80;
-
         _loginWidth = windowWidth - 40;
         _loginOpacity = 0.7;
 
-        _loginYOffset = _keyboardVisible ? 30 : 180;
-        _loginHeight = _keyboardVisible ? windowHeight : windowHeight - 180;
+        _loginYOffset = 180;
+        // _loginHeight = windowHeight - 180;
 
         _loginXOffset = 20;
-        _registerYOffset = _keyboardVisible ? 55 : 270;
-        _registerHeight = _keyboardVisible ? windowHeight : windowHeight - 100;
+        _registerYOffset = 250;
+        _registerHeight = windowHeight - 100;
         break;
     }
 
@@ -105,7 +82,6 @@ class _TableScreenState extends State<TableScreen> {
           AnimatedContainer(
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
-            color: _backgroundColor,
             child: Container(
               child: Stack(
                 children: <Widget>[
@@ -232,7 +208,7 @@ class _TableScreenState extends State<TableScreen> {
                             : size.height * 0.35,
                         color: Color(0xfff0f0f0),
                         child: ListView.builder(
-                          itemCount: 10,
+                          itemCount: 3,
                           itemBuilder: (context, index) {
                             return Container(
                               alignment: Alignment.centerLeft,
@@ -281,77 +257,31 @@ class _TableScreenState extends State<TableScreen> {
                     ],
                   ),
                 ),
-                _buildCancelButton(context)
+                _pageState == 1 ? _buildCancelButton(context) : Container()
               ],
             ),
           ),
           AnimatedContainer(
             height: _registerHeight,
-            padding: EdgeInsets.all(32),
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform: Matrix4.translationValues(0, _registerYOffset, 1),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
               ),
             ),
             child: Container(
               child: Stack(
                 children: <Widget>[
                   Container(
+                    padding: EdgeInsets.all(15),
                     child: Column(
                       children: <Widget>[
                         Container(
-                          height: size.height * 0.1,
-                          color: Colors.red,
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                flex: 2,
-                                child: Column(
-                                  children: <Widget>[
-                                    Container(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        "Spicy Fridge Egg",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    Container(
-                                      alignment: Alignment.bottomLeft,
-                                      child: Text("\$0",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                child: Stack(
-                                  children: <Widget>[
-                                    Positioned(
-                                      right: 10,
-                                      top: 0,
-                                      child: Container(
-                                        width: 100,
-                                        child: Image.asset(
-                                          "assets/images/food.jpg",
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          height: size.height * .3,
+                          height: size.height * .35,
                           child: Column(
                             children: <Widget>[
                               Expanded(
@@ -381,9 +311,10 @@ class _TableScreenState extends State<TableScreen> {
                                                 child: Text(
                                                   "Spicy classic",
                                                   style: TextStyle(
-                                                      fontSize: 12.0,
-                                                      decoration: TextDecoration
-                                                          .underline),
+                                                    fontSize: 12.0,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
                                                 ),
                                               ),
                                             )
@@ -488,6 +419,7 @@ class _TableScreenState extends State<TableScreen> {
                       ],
                     ),
                   ),
+                  _pageState == 2 ? _buildCancelButton(context) : Container()
                 ],
               ),
             ),
