@@ -37,15 +37,16 @@ class ListScrollHome extends StatelessWidget {
               ? size.height * 0.28
               : size.height * 0.2,
           child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: 10,
-              itemBuilder: (BuildContext ctx, int index) {
-                return RestaurantCard(
-                  title: 'Point Restaurant',
-                  imgPath: imgPath,
-                  press: () {},
-                );
-              }),
+            scrollDirection: Axis.horizontal,
+            itemCount: 10,
+            itemBuilder: (BuildContext ctx, int index) {
+              return RestaurantCard(
+                title: 'Point Restaurant',
+                imgPath: imgPath,
+                press: () {},
+              );
+            },
+          ),
         )
       ],
     );
