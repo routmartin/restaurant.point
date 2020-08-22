@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pointrestaurant/services/table_mode_menu_service.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 
 import 'components/event_button.dart';
 import 'components/header_icon_type.dart';
 import 'components/bottom_label_checkout.dart';
-import 'components/floor_container.dart';
+
 import 'components/order_cal_icon.dart';
 
 import 'components/table_card.dart';
@@ -17,11 +18,133 @@ class TableScreen extends StatefulWidget {
 }
 
 class _TableScreenState extends State<TableScreen> {
-  int _pageState = 0;
+  Future<List<Menu>> menuData;
+  @override
+  void initState() {
+    super.initState();
+    // _requestLocationCurrently();
+    fetchMenuSevice();
+    print('calling');
+  }
 
+  // _requestOutletArea_________________________________________
+  _requestLocationCurrently() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      showGeneralDialog(
+        barrierColor: Colors.black.withOpacity(0.9),
+        transitionDuration: Duration(milliseconds: 200),
+        barrierDismissible: true,
+        barrierLabel: '',
+        context: context,
+        pageBuilder: (context, animation1, animation2) {
+          return null;
+        },
+        transitionBuilder: (context, a1, a2, widget) {
+          var size = MediaQuery.of(context).size;
+          return Transform.scale(
+            scale: a1.value,
+            child: Opacity(
+              opacity: a1.value,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+                  width: size.width * .8,
+                  height: size.height * 0.9,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    // color: Colors.white,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        'Select Mode',
+                        style: TextStyle(
+                          fontFamily: 'San-francisco',
+                          color: Colors.white,
+                          fontSize: 25,
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      SizedBox(
+                        height: size.height * .02,
+                      ),
+                      _buildSelectModeContainer(
+                          size, 'assets/images/dineinmode.jpg', 'Dine In'),
+                      SizedBox(
+                        height: size.height * .02,
+                      ),
+                      _buildSelectModeContainer(
+                          size, 'assets/images/tablemode.jpg', 'Table'),
+                      SizedBox(
+                        height: size.height * .02,
+                      ),
+                      _buildSelectModeContainer(
+                          size, 'assets/images/takoutmode.jpg', 'Take Out'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  _buildSelectModeContainer(Size size, String imgage, String title) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Material(
+        color: Colors.white,
+        child: InkWell(
+          splashColor: Colors.black12,
+          onTap: () {},
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: 10,
+            ),
+            width: 210,
+            height: size.width * .4,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  imgage,
+                  width: 140,
+                  height: 100,
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'San-francisco',
+                    color: Colors.black87,
+                    fontSize: 16,
+                    letterSpacing: .9,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // _requestOutletArea_________________________________________
+  int _pageState = 0;
   double _loginWidth = 0;
   double _loginHeight = 0;
-  double _loginOpacity = 1;
 
   double _loginYOffset = 0;
   double _loginXOffset = 0;
@@ -35,47 +158,34 @@ class _TableScreenState extends State<TableScreen> {
   Widget build(BuildContext context) {
     windowHeight = MediaQuery.of(context).size.height;
     windowWidth = MediaQuery.of(context).size.width;
-
-    _loginHeight = windowHeight - 200;
-    _registerHeight = windowHeight - 200;
+    var size = MediaQuery.of(context).size;
+    var orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     switch (_pageState) {
       case 0:
         _loginWidth = windowWidth;
-        _loginOpacity = 1;
-
         _loginYOffset = windowHeight;
         _loginXOffset = 0;
         _registerYOffset = windowHeight;
         break;
       case 1:
         _loginWidth = windowWidth;
-        _loginOpacity = 1;
-
-        _loginYOffset = 190;
-        // _loginHeight = windowHeight - 170;
-
+        _loginYOffset = orientation ? size.height * .08 : size.height * .25;
         _loginXOffset = 0;
         _registerYOffset = windowHeight;
         break;
       case 2:
         _loginWidth = windowWidth - 40;
-        _loginOpacity = 0.7;
-
         _loginYOffset = 180;
-        // _loginHeight = windowHeight - 180;
-
         _loginXOffset = 20;
         _registerYOffset = 250;
         _registerHeight = windowHeight - 100;
         break;
     }
 
-    var size = MediaQuery.of(context).size;
-    var orientation =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
           child: Stack(
         children: <Widget>[
@@ -113,7 +223,7 @@ class _TableScreenState extends State<TableScreen> {
                               }
                             });
                           },
-                          splashColor: Colors.white24,
+                          splashColor: Colors.black,
                           child: Container(
                             alignment: Alignment.center,
                             child: Column(
@@ -173,14 +283,15 @@ class _TableScreenState extends State<TableScreen> {
             ),
           ),
           AnimatedContainer(
-            width: _loginWidth,
-            height: _loginHeight,
+            alignment: Alignment.center,
+            width: orientation ? size.width * .4 : _loginWidth,
+            height: orientation ? size.height * .8 : _loginHeight,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform:
                 Matrix4.translationValues(_loginXOffset, _loginYOffset, 1),
             decoration: BoxDecoration(
-              color: Color(0xfffcfcfc),
+              // color: Color(0xfffcfcfc),
               boxShadow: <BoxShadow>[
                 BoxShadow(
                   offset: Offset(1, 5),
@@ -199,6 +310,15 @@ class _TableScreenState extends State<TableScreen> {
                 Container(
                   height: orientation ? size.height * 0.8 : double.infinity,
                   width: orientation ? size.width * 0.4 : double.infinity,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        offset: Offset(0, 4),
+                        color: Color(0xffd6d6d6),
+                        blurRadius: 20,
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: <Widget>[
                       _buildHeaderTitle(size),
@@ -208,7 +328,7 @@ class _TableScreenState extends State<TableScreen> {
                             : size.height * 0.35,
                         color: Color(0xfff0f0f0),
                         child: ListView.builder(
-                          itemCount: 3,
+                          itemCount: 6,
                           itemBuilder: (context, index) {
                             return Container(
                               alignment: Alignment.centerLeft,
@@ -262,17 +382,24 @@ class _TableScreenState extends State<TableScreen> {
             ),
           ),
           AnimatedContainer(
+            width: orientation ? size.width * .45 : size.width,
             height: _registerHeight,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform: Matrix4.translationValues(0, _registerYOffset, 1),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
-              ),
-            ),
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  topRight: Radius.circular(15),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    offset: Offset(0, 3),
+                    color: Colors.black12.withOpacity(0.3),
+                    blurRadius: 20,
+                  ),
+                ]),
             child: Container(
               child: Stack(
                 children: <Widget>[
@@ -429,7 +556,7 @@ class _TableScreenState extends State<TableScreen> {
     );
   }
 
-// special Request___________________________________
+  // special Request___________________________________
 
   _buildSpecilRequest(BuildContext context) {
     return Container(
@@ -513,7 +640,7 @@ class _TableScreenState extends State<TableScreen> {
     );
   }
 
-// special Request___________________________________
+  // special Request___________________________________
 
   // orderSummery inner_width________________________
 
@@ -529,10 +656,10 @@ class _TableScreenState extends State<TableScreen> {
           child: InkWell(
             onTap: () {
               setState(() {
-                if (_pageState != 0) {
-                  _pageState = 0;
-                } else {
+                if (_pageState == 2) {
                   _pageState = 1;
+                } else if (_pageState == 1) {
+                  _pageState = 0;
                 }
               });
             },
@@ -756,8 +883,54 @@ class _TableScreenState extends State<TableScreen> {
                   5,
                   (index) {
                     return Tab(
-                      child: FloorContainer(
-                        index: index + 1,
+                      child: Container(
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            width: 1.3,
+                            color: Color(0xff0f0808),
+                          ),
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                        color: Colors.black, width: 1.5),
+                                  ),
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 75,
+                                  child: Text(
+                                    'kk',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                )),
+                            SizedBox(
+                              height: 3,
+                            ),
+                            Text(
+                              'Point Restaurant',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xff121010),
+                                fontFamily: "San-francisco",
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -836,3 +1009,5 @@ class _TableScreenState extends State<TableScreen> {
     );
   }
 }
+
+class Menu {}

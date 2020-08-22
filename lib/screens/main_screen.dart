@@ -1,13 +1,13 @@
 import 'package:bottom_animation/source/bottomnav_item.dart';
-import 'package:bottom_animation/source/navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
 import 'package:pointrestaurant/screens/payment/payment_screen.dart';
-import 'package:pointrestaurant/screens/pending/pending_screen.dart';
+
 import '../screens/home/home_screen.dart';
 import '../utilities/style.main.dart';
 
-import 'order/table_screen.dart';
+import 'order/menu_screen.dart';
 
 class MainScreenPage extends StatefulWidget {
   final userToken;
@@ -35,7 +35,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       HomeScreen(),
       TableScreen(),
-      ChartScreen(),
+      TableModeScreen(),
       PaymentScreen(),
     ];
   }
@@ -115,43 +115,6 @@ class _MainScreenPageState extends State<MainScreenPage> {
         body: _pageList[_pageIndex],
       ),
     );
-    //   return MaterialApp(
-    //     title: 'example',
-    //     theme: ThemeData(
-    //       primarySwatch: Colors.indigo,
-    //       visualDensity: VisualDensity.adaptivePlatformDensity,
-    //     ),
-    //     home: Scaffold(
-    //       backgroundColor: Colors.white70,
-    //       bottomNavigationBar: BottomAnimation(
-    //         selectedIndex: _pageIndex,
-    //         items: items,
-    //         backgroundColor: Colors.white,
-    //         barHeight: 70,
-    //         itemHoverHeight: 40,
-    //         hoverAlignmentDuration: 400,
-    //         iconSize: 30,
-    //         onItemSelect: (value) {
-    //           setState(() {
-    //             _pageIndex = value;
-    //           });
-    //         },
-    //         itemHoverColor: kPrimaryColor,
-    //         itemHoverColorOpacity: .8,
-    //         activeIconColor: Colors.white,
-    //         deactiveIconColor: kPrimaryColor,
-    //         barRadius: 10,
-    //         textStyle: TextStyle(
-    //           color: Colors.white,
-    //           fontWeight: FontWeight.bold,
-    //           fontSize: 12,
-    //         ),
-    //         itemHoverWidth: 120,
-    //         itemHoverBorderRadius: 25,
-    //       ),
-    //       body: _pageList[_pageIndex],
-    //     ),
-    //   );
   }
 }
 
