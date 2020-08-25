@@ -34,8 +34,8 @@ class _MainScreenPageState extends State<MainScreenPage> {
     super.initState();
     _pageList = [
       HomeScreen(),
-      TableScreen(),
       TableModeScreen(),
+      MenuScreen(),
       PaymentScreen(),
     ];
   }

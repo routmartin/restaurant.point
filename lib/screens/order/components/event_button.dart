@@ -17,17 +17,17 @@ class Button extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.0),
         color: kPrimaryColor,
         child: InkWell(
-          splashColor: Colors.white24,
+          splashColor: Colors.black26,
           onTap: press,
           child: Container(
             padding: EdgeInsets.symmetric(
               vertical: 10,
               horizontal: 14,
             ),
-            width: screeOrientation == lanscape ? 120 : size.width * 0.3,
+            width: screeOrientation == lanscape ? 120 : size.width * 0.25,
             height: screeOrientation == Orientation.landscape
-                ? size.height * 0.06
-                : size.height * 0.05,
+                ? size.height * 0.054
+                : size.height * 0.045,
             child: Center(
               child: Text(
                 buttonName,

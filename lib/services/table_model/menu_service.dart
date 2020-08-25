@@ -10,18 +10,20 @@ List<Menu> parseDataMenu(String responseBody) {
   return parsed.map<Menu>((json) => Menu.fromJson(json)).toList();
 }
 
-Future<List<Menu>> fetchMenuSevice() async {
+Future<List<Menu>> fetchMenuSevice({int saleMasterId}) async {
   var dio = Dio();
   Response response = await dio.post(
-    serverIP + '/api/ListMenu',
-    data: {"userToken": 'zYa7sLhZ+viAYIjJ4PEX7Q=='},
+    serverIP + '/api/ListItem',
+    data: {
+      "userToken": 'zYa7sLhZ+viAYIjJ4PEX7Q==',
+      "sale_master_id": saleMasterId,
+    },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
 
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.data);
     return parseDataMenu(response.data);
   }
   return null;

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:pointrestaurant/services/table_mode_menu_service.dart';
+import 'package:pointrestaurant/models/menu.dart';
+import 'package:pointrestaurant/models/ordersummery.dart';
+import 'package:pointrestaurant/services/table_model/menu_service.dart';
+import 'package:pointrestaurant/services/table_model/order_items.dart';
+import 'package:pointrestaurant/services/table_model/order_summery_sevice.dart';
+import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
+import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 
 import 'components/event_button.dart';
@@ -10,29 +16,82 @@ import 'components/bottom_label_checkout.dart';
 
 import 'components/order_cal_icon.dart';
 
-import 'components/table_card.dart';
-
-class TableScreen extends StatefulWidget {
+class MenuScreen extends StatefulWidget {
+  final saleMasterId;
+  final tableId;
+  final String tableName;
+  const MenuScreen({
+    Key key,
+    this.saleMasterId,
+    this.tableId,
+    this.tableName,
+  }) : super(key: key);
   @override
-  _TableScreenState createState() => _TableScreenState();
+  _MenuScreenState createState() => _MenuScreenState();
 }
 
-class _TableScreenState extends State<TableScreen> {
+class _MenuScreenState extends State<MenuScreen> {
   Future<List<Menu>> menuData;
+  Future<List<Ordersummery>> orderSummery;
+
   @override
   void initState() {
     super.initState();
-    // _requestLocationCurrently();
-    fetchMenuSevice();
-    print('calling');
+    menuData = fetchMenuSevice(saleMasterId: widget.saleMasterId);
   }
 
-  // _requestOutletArea_________________________________________
-  _requestLocationCurrently() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      showGeneralDialog(
+//________________Open Switch Container Layout________________________
+
+  int _pageState = 0;
+  double _loginWidth = 0;
+  double _loginHeight = 0;
+
+  double _loginYOffset = 0;
+  double _loginXOffset = 0;
+  double _registerYOffset = 0;
+  double _registerHeight = 0;
+
+  double windowWidth = 0;
+  double windowHeight = 0;
+
+  int totalItems = 0;
+  double totalAmount = 0;
+//________________Close Switch Container Layout________________________
+
+  @override
+  Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    windowHeight = size.height;
+    windowWidth = size.width;
+
+    switch (_pageState) {
+      case 0:
+        _loginWidth = windowWidth;
+        _loginYOffset = windowHeight;
+        _loginXOffset = 0;
+        _registerYOffset = windowHeight;
+        break;
+      case 1:
+        _loginWidth = windowWidth;
+        _loginYOffset = orientation ? size.height * .08 : size.height * .15;
+        _loginXOffset = 0;
+        _registerYOffset = windowHeight;
+        break;
+      case 2:
+        _loginWidth = windowWidth - 40;
+        _loginYOffset = 180;
+        _loginXOffset = 0;
+        _registerYOffset = 250;
+        _registerHeight = windowHeight - 100;
+        break;
+    }
+
+    _requestNoItmesModel() {
+      return showGeneralDialog(
         barrierColor: Colors.black.withOpacity(0.9),
-        transitionDuration: Duration(milliseconds: 200),
+        transitionDuration: Duration(milliseconds: 100),
         barrierDismissible: true,
         barrierLabel: '',
         context: context,
@@ -48,42 +107,23 @@ class _TableScreenState extends State<TableScreen> {
               child: Center(
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                  width: size.width * .8,
-                  height: size.height * 0.9,
+                  width: size.width * .5,
+                  height: size.height * .3,
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
-                    // color: Colors.white,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        'Select Mode',
-                        style: TextStyle(
-                          fontFamily: 'San-francisco',
-                          color: Colors.white,
-                          fontSize: 25,
-                          fontWeight: FontWeight.w500,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                      SizedBox(
-                        height: size.height * .02,
-                      ),
-                      _buildSelectModeContainer(
-                          size, 'assets/images/dineinmode.jpg', 'Dine In'),
-                      SizedBox(
-                        height: size.height * .02,
-                      ),
-                      _buildSelectModeContainer(
-                          size, 'assets/images/tablemode.jpg', 'Table'),
-                      SizedBox(
-                        height: size.height * .02,
-                      ),
-                      _buildSelectModeContainer(
-                          size, 'assets/images/takoutmode.jpg', 'Take Out'),
-                    ],
+                  child: Center(
+                    child: Container(
+                      child: Text('No Items Orders',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontFamily: 'San-francisco',
+                            color: Colors.black,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.none,
+                          )),
+                    ),
                   ),
                 ),
               ),
@@ -91,97 +131,6 @@ class _TableScreenState extends State<TableScreen> {
           );
         },
       );
-    });
-  }
-
-  _buildSelectModeContainer(Size size, String imgage, String title) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Material(
-        color: Colors.white,
-        child: InkWell(
-          splashColor: Colors.black12,
-          onTap: () {},
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              vertical: 10,
-            ),
-            width: 210,
-            height: size.width * .4,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  imgage,
-                  width: 140,
-                  height: 100,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'San-francisco',
-                    color: Colors.black87,
-                    fontSize: 16,
-                    letterSpacing: .9,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // _requestOutletArea_________________________________________
-  int _pageState = 0;
-  double _loginWidth = 0;
-  double _loginHeight = 0;
-
-  double _loginYOffset = 0;
-  double _loginXOffset = 0;
-  double _registerYOffset = 0;
-  double _registerHeight = 0;
-
-  double windowWidth = 0;
-  double windowHeight = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    windowHeight = MediaQuery.of(context).size.height;
-    windowWidth = MediaQuery.of(context).size.width;
-    var size = MediaQuery.of(context).size;
-    var orientation =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
-    switch (_pageState) {
-      case 0:
-        _loginWidth = windowWidth;
-        _loginYOffset = windowHeight;
-        _loginXOffset = 0;
-        _registerYOffset = windowHeight;
-        break;
-      case 1:
-        _loginWidth = windowWidth;
-        _loginYOffset = orientation ? size.height * .08 : size.height * .25;
-        _loginXOffset = 0;
-        _registerYOffset = windowHeight;
-        break;
-      case 2:
-        _loginWidth = windowWidth - 40;
-        _loginYOffset = 180;
-        _loginXOffset = 20;
-        _registerYOffset = 250;
-        _registerHeight = windowHeight - 100;
-        break;
     }
 
     return Scaffold(
@@ -189,109 +138,294 @@ class _TableScreenState extends State<TableScreen> {
       body: SafeArea(
           child: Stack(
         children: <Widget>[
-          AnimatedContainer(
-            curve: Curves.fastLinearToSlowEaseIn,
-            duration: Duration(milliseconds: 1000),
-            child: Container(
-              child: Stack(
-                children: <Widget>[
-                  _buildTableContainer(size, orientation),
-                  BottomLabelCheckOut(),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: EdgeInsets.all(4),
-                      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-                      width: size.width * .28,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Material(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(4),
-                        child: InkWell(
-                          onTap: () {
-                            // orderSummary(context: context, size: size);
-                            setState(() {
-                              if (_pageState != 0) {
-                                _pageState = 0;
-                              } else {
-                                _pageState = 1;
-                              }
-                            });
-                          },
-                          splashColor: Colors.black,
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Text(
-                                  '\$ 00.00',
+          Container(
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  height: size.height,
+                  width: double.infinity,
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                          width: double.infinity,
+                          height: 50,
+                          alignment: Alignment.centerLeft,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                offset: Offset(0, 4),
+                                blurRadius: 10,
+                                color: Colors.black12,
+                              )
+                            ],
+                          ),
+                          child: Row(
+                            children: <Widget>[
+                              IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back_ios,
+                                  size: 20,
+                                ),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                              Expanded(
+                                  child: Center(
+                                child: Text(
+                                  widget.tableName,
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontFamily: 'San-francisco',
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: Colors.black,
                                   ),
                                 ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 40,
-                                      height: 22,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
+                              ))
+                            ],
+                          )),
+                      Expanded(
+                        child: FutureBuilder(
+                          future: menuData,
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (!snapshot.hasData) {
+                              return CenterLoadingIndicator();
+                            }
+                            return Container(
+                              width: double.infinity,
+                              height: size.height,
+                              child: VerticalTabs(
+                                indicatorColor: Color(0xffb01105),
+                                tabsWidth: orientation
+                                    ? size.width * .09
+                                    : size.width * .23,
+                                selectedTabBackgroundColor: null,
+                                contentScrollAxis: Axis.vertical,
+                                tabs: List.generate(
+                                  snapshot.data.length,
+                                  (index) {
+                                    return Tab(
+                                      child:
+                                          _buildMainFloorTab(snapshot, index),
+                                    );
+                                  },
+                                ),
+                                contents: List.generate(
+                                  snapshot.data.length,
+                                  (index) {
+                                    var tableList = snapshot.data[index].items;
+                                    return Container(
+                                      color: Color(0xfff5f5f5),
+                                      child: Column(
+                                        children: <Widget>[
+                                          _buildTitleHeader(snapshot, index),
+                                          Expanded(
+                                            child: GridView.count(
+                                              mainAxisSpacing: 5,
+                                              shrinkWrap: true,
+                                              physics: ScrollPhysics(),
+                                              scrollDirection: Axis.vertical,
+                                              childAspectRatio: orientation
+                                                  ? size.height / 750
+                                                  : size.height / 850,
+                                              crossAxisCount:
+                                                  size.width <= 800.0
+                                                      ? 2
+                                                      : size.width >= 1000.0
+                                                          ? 5
+                                                          : 4,
+                                              children: List<Widget>.generate(
+                                                tableList.length,
+                                                (index) {
+                                                  return Stack(
+                                                    children: <Widget>[
+                                                      Container(
+                                                        margin: EdgeInsets.only(
+                                                          bottom: 15,
+                                                          right: 10,
+                                                          left: 10,
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5),
+                                                          border: Border.all(
+                                                            width: 1.3,
+                                                            color: Color(
+                                                              0xff0f0808,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        child: Material(
+                                                          color: Colors
+                                                              .transparent,
+                                                          child: InkWell(
+                                                            splashColor:
+                                                                Colors.black12,
+                                                            onTap: () {
+                                                              addOrderItems(
+                                                                tableId: widget
+                                                                    .tableId,
+                                                                qty: 1,
+                                                                saleMasterId: widget
+                                                                    .saleMasterId,
+                                                              );
+                                                            },
+                                                            child: Column(
+                                                              children: <
+                                                                  Widget>[
+                                                                _buildImageContainer(
+                                                                  orientation,
+                                                                  size,
+                                                                  tableList,
+                                                                  index,
+                                                                ),
+                                                                _buildContainerData(
+                                                                  orientation,
+                                                                  size,
+                                                                  tableList,
+                                                                  index,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      tableList[index].qty !=
+                                                              '0'
+                                                          ? Positioned(
+                                                              bottom: 5,
+                                                              left: orientation
+                                                                  ? size.width *
+                                                                      0.055
+                                                                  : size.width *
+                                                                      0.1,
+                                                              child:
+                                                                  CaculateIcon(
+                                                                qty: tableList[
+                                                                        index]
+                                                                    .qty,
+                                                              ),
+                                                            )
+                                                          : Container()
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      child: Text(
-                                        'USA',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: kPrimaryColor,
-                                        ),
-                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                BottomLabelCheckOut(),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    margin: EdgeInsets.symmetric(vertical: 5, horizontal: 2),
+                    width: size.width * .28,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Material(
+                      color: kPrimaryColor,
+                      borderRadius: BorderRadius.circular(4),
+                      child: InkWell(
+                        onTap: widget.saleMasterId != 0
+                            ? () {
+                                orderSummery = fetchOrderSummery(
+                                  table_id: widget.tableId,
+                                  sale_master_id: widget.saleMasterId,
+                                );
+                                setState(() {
+                                  if (_pageState != 0) {
+                                    _pageState = 0;
+                                  } else {
+                                    _pageState = 1;
+                                  }
+                                });
+                              }
+                            : _requestNoItmesModel,
+                        splashColor: Colors.black,
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                '\$ 00.00',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Container(
+                                    width: 40,
+                                    height: 22,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(5),
                                     ),
-                                    SizedBox(
-                                      width: 2,
-                                    ),
-                                    Text(
-                                      'Order',
+                                    child: Text(
+                                      'USA',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: kPrimaryColor,
                                       ),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 2,
+                                  ),
+                                  Text(
+                                    'Order',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
                           ),
                         ),
                       ),
                     ),
-                  )
-                ],
-              ),
+                  ),
+                )
+              ],
             ),
           ),
           AnimatedContainer(
             alignment: Alignment.center,
-            width: orientation ? size.width * .4 : _loginWidth,
-            height: orientation ? size.height * .8 : _loginHeight,
+            width: orientation ? size.width * .4 : null,
+            height: orientation ? size.height * .8 : null,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform:
                 Matrix4.translationValues(_loginXOffset, _loginYOffset, 1),
             decoration: BoxDecoration(
-              // color: Color(0xfffcfcfc),
               boxShadow: <BoxShadow>[
                 BoxShadow(
                   offset: Offset(1, 5),
@@ -310,69 +444,179 @@ class _TableScreenState extends State<TableScreen> {
                 Container(
                   height: orientation ? size.height * 0.8 : double.infinity,
                   width: orientation ? size.width * 0.4 : double.infinity,
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        offset: Offset(0, 4),
-                        color: Color(0xffd6d6d6),
-                        blurRadius: 20,
-                      ),
-                    ],
-                  ),
                   child: Column(
                     children: <Widget>[
                       _buildHeaderTitle(size),
                       Container(
                         height: orientation
                             ? size.height * 0.52
-                            : size.height * 0.35,
+                            : size.height * 0.55,
                         color: Color(0xfff0f0f0),
-                        child: ListView.builder(
-                          itemCount: 6,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              alignment: Alignment.centerLeft,
-                              height: 70,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                      width: 0.2, color: Colors.grey),
-                                ),
-                              ),
-                              padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Expanded(
-                                          flex: 3,
-                                          child: _buildRowTitleItem(),
-                                        ),
-                                        _buildTotalPrice(),
-                                      ],
+                        child: FutureBuilder(
+                          future: orderSummery,
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (!snapshot.hasData) {
+                              return CenterLoadingIndicator();
+                            }
+                            totalItems = snapshot.data.length;
+                            return ListView.builder(
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index) {
+                                var data = snapshot.data[index];
+
+                                return Container(
+                                  alignment: Alignment.centerLeft,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        width: 0.2,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                   ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
+                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      CaculateIcon(),
-                                      SizedBox(width: 10),
-                                      _buildSpecilRequest(context)
+                                      Expanded(
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: <Widget>[
+                                            Expanded(
+                                              flex: 3,
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Text(
+                                                    data.name,
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                          'San-francisco',
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 10,
+                                                  ),
+                                                  Text(
+                                                    "\$ ${data.unitPrice}",
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                          'San-francisco',
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Colors.black,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  "\$ ${data.amount}",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 7,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          CaculateIcon(
+                                            qty: data.qty,
+                                          ),
+                                          _buildSpecilRequest(context)
+                                        ],
+                                      )
                                     ],
-                                  )
-                                ],
-                              ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
                       ),
-                      _buildTotalAmountContainer(size, context),
+                      Container(
+                        height: size.height * 0.08,
+                        color: Colors.grey[300],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Order Items',
+                                  style: TextStyle(
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: <Widget>[
+                                Text(
+                                  totalItems.toString(),
+                                  style: TextStyle(
+                                    fontSize: 17.0,
+                                    color: kPrimaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  '\$ ${totalAmount}',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
                       _buildButtonContainer(size, context)
                     ],
                   ),
@@ -560,13 +804,13 @@ class _TableScreenState extends State<TableScreen> {
 
   _buildSpecilRequest(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(5),
+      padding: EdgeInsets.all(6),
       decoration: BoxDecoration(
         border: Border.all(
-          width: 1,
-          color: Colors.black54,
+          width: 1.2,
+          color: Colors.grey[400],
         ),
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(15.0),
       ),
       child: Material(
         color: Colors.transparent,
@@ -581,10 +825,8 @@ class _TableScreenState extends State<TableScreen> {
             child: Text(
               "SPECIAL REQUEST",
               style: TextStyle(
-                fontSize: 7,
+                fontSize: 8,
                 fontFamily: 'San-francisco',
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.02,
                 color: kPrimaryColor,
               ),
             ),
@@ -593,54 +835,6 @@ class _TableScreenState extends State<TableScreen> {
       ),
     );
   }
-
-  _buildTotalPrice() {
-    return Expanded(
-      flex: 1,
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Text(
-          "\$12.50",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-
-  _buildRowTitleItem() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          "Brown Suger Jelly",
-          style: TextStyle(
-            letterSpacing: 1.1,
-            fontFamily: 'San-francisco',
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(
-          width: 5,
-        ),
-        Text(
-          "\$ 12.50",
-          style: TextStyle(
-            fontFamily: 'San-francisco',
-            fontWeight: FontWeight.w500,
-            color: Colors.black,
-            fontSize: 13,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // special Request___________________________________
 
   // orderSummery inner_width________________________
 
@@ -713,301 +907,158 @@ class _TableScreenState extends State<TableScreen> {
           : size.height * 0.08,
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        // color: bkColor,
-        color: bkColor,
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(10),
           bottomRight: Radius.circular(10),
         ),
       ),
-      child: FittedBox(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Button(
-              buttonName: "Continue",
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Button(
-              buttonName: "Option",
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Button(
-              buttonName: "Confirm",
-              press: () {
-                // payDialog(context, size);
-                // show(context);
-              },
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  _buildTotalAmountContainer(size, BuildContext context) {
-    return Container(
-      height: size.height * 0.08,
-      color: Color(0xfff0f0f0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          InkWell(
-            onTap: () {
-              // paymentMethod(context, size);
-            },
-            child: _buildCupon(),
+          Button(
+            buttonName: "Print Bill",
           ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'Quantity',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      'Total',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Text(
-                      '20',
-                      style: TextStyle(
-                        fontSize: 10.0,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      '\$538.4',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
+          SizedBox(
+            width: 10,
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          Button(
+            buttonName: "Payment",
+            press: () {},
           )
         ],
       ),
     );
   }
 
-  _buildCupon() {
+// ___________________________ Internal Widget____________________________________________________
+
+  _buildImageContainer(bool orientation, Size size, tableList, int index) {
     return Container(
-      width: 100.0,
-      height: 25.0,
-      margin: EdgeInsets.only(left: 10.0),
-      alignment: Alignment.center,
-      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Colors.black87,
-      ),
-      child: Text(
-        "Use Cupon",
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-        ),
+      child: FadeInImage.assetNetwork(
+        placeholder: preLoading,
+        image: serverIP + tableList[index].image,
+        height: orientation ? size.height * .15 : size.height * .1,
+        width: double.infinity,
+        fit: BoxFit.cover,
       ),
     );
   }
 
-  // orderSummery inner_width________________________
-
-  _buildTableContainer(Size size, bool orientation) {
+  _buildMainFloorTab(AsyncSnapshot snapshot, int index) {
     return Container(
-      height: size.height,
-      width: double.infinity,
+      margin: EdgeInsets.only(bottom: 5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          width: 1.3,
+          color: Color(0xff0f0808),
+        ),
+      ),
       child: Column(
         children: <Widget>[
           Container(
+            height: 75,
             width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(color: Colors.white, boxShadow: [
-              BoxShadow(
-                offset: Offset(0, 4),
-                blurRadius: 10,
-                color: Colors.black12,
-              )
-            ]),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _buildHeaderChoice(),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.black,
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: Image.network(
+              serverIP + snapshot.data[index].photo,
+              fit: BoxFit.cover,
+            ),
+          ),
+          SizedBox(
+            height: 3,
+          ),
+          Text(
+            snapshot.data[index].typeName,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xff121010),
+              fontFamily: "San-francisco",
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
             ),
           ),
           SizedBox(
             height: 5,
           ),
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              height: size.height,
-              child: VerticalTabs(
-                indicatorColor: Color(0xffb01105),
-                tabsWidth: orientation ? size.width * .09 : size.width * .23,
-                selectedTabBackgroundColor: null,
-                contentScrollAxis: Axis.vertical,
-                tabs: List.generate(
-                  5,
-                  (index) {
-                    return Tab(
-                      child: Container(
-                        margin: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                            width: 1.3,
-                            color: Color(0xff0f0808),
-                          ),
-                        ),
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                  ),
-                                ),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  height: 75,
-                                  child: Text(
-                                    'kk',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                )),
-                            SizedBox(
-                              height: 3,
-                            ),
-                            Text(
-                              'Point Restaurant',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xff121010),
-                                fontFamily: "San-francisco",
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                contents: List.generate(
-                  5,
-                  (index) {
-                    return Column(
-                      children: <Widget>[
-                        Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.symmetric(
-                            vertical: 10,
-                          ),
-                          child: Text(
-                            'Floor ' + index.toString(),
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'San-francisco',
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildGridViewTable(orientation, size),
-                        ),
-                      ],
-                    );
-                  },
+        ],
+      ),
+    );
+  }
+
+  _buildContainerData(bool orientation, Size size, tableList, int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          SizedBox(
+            height: orientation ? size.height * .01 : 9,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                tableList[index].itemName,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xff121010),
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  fontSize: orientation ? 15 : 14,
                 ),
               ),
-            ),
-          )
+              SizedBox(
+                height: orientation ? size.height * .005 : 4,
+              ),
+              Text(
+                '\$ ${tableList[index].price}',
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kPrimaryColor,
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  fontSize: orientation ? 13 : 14,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  _buildGridViewTable(bool orientation, Size size) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: ScrollPhysics(),
-      scrollDirection: Axis.vertical,
-      childAspectRatio: orientation ? size.height / 800 : size.height / 1100,
-      crossAxisCount: size.width <= 800.0 ? 3 : size.width >= 1000.0 ? 5 : 4,
-      children: List<Widget>.generate(
-        40,
-        (index) {
-          return TableCard(
-            index: index,
-          );
-        },
+  _buildTitleHeader(AsyncSnapshot snapshot, int index) {
+    return Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(
+        vertical: 10,
       ),
-    );
-  }
-
-  _buildHeaderChoice() {
-    return FittedBox(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          IconbuttonType(
-            title: 'Dine In',
-            isActive: false,
-          ),
-          IconbuttonType(
-            title: 'Table',
-            isActive: true,
-          ),
-          IconbuttonType(
-            title: 'Take Out',
-            isActive: false,
-          ),
-        ],
+      child: Text(
+        snapshot.data[index].typeName,
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          fontFamily: 'San-francisco',
+        ),
       ),
     );
   }
 }
-
-class Menu {}
