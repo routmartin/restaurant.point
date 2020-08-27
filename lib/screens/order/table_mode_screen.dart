@@ -53,17 +53,41 @@ class _TableModeScreenState extends State<TableModeScreen> {
   int tableId;
   String tableName;
 
-  pushToMenuScree() {
+  showSumeryModal({tableList}) {
+    tableName = tableList.tableName;
+    tableId = tableList.tableId;
+    saleMasterId = tableList.saleMasterId;
+    orderSummery = fetchOrderSummery(
+      table_id: tableList.tableId,
+      sale_master_id: tableList.saleMasterId,
+    );
+    setState(() {
+      if (_pageState != 0) {
+        _pageState = 0;
+      } else {
+        _pageState = 1;
+      }
+    });
+  }
+
+  pushToMenuScree({sale_master_id, table_id, table_name}) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => MenuScreen(
-          saleMasterId: saleMasterId,
-          tableId: tableId,
-          tableName: tableName,
+          saleMasterId: sale_master_id ?? saleMasterId,
+          tableId: table_id ?? tableId,
+          tableName: table_name ?? tableName,
         ),
       ),
-    );
+    ).then((value) => value
+        ? {
+            setState(() {
+              floorData = fetchDataFloors();
+              _pageState = 0;
+            }),
+          }
+        : null);
   }
 
   @override
@@ -84,7 +108,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
         break;
       case 1:
         _loginWidth = windowWidth;
-        _loginYOffset = orientation ? size.height * .08 : size.height * .07;
+        _loginYOffset = orientation ? size.height * .08 : size.height * .03;
         _loginXOffset = 0;
         _registerYOffset = windowHeight;
         break;
@@ -134,7 +158,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
                           builder:
                               (BuildContext context, AsyncSnapshot snapshot) {
                             if (!snapshot.hasData) {
-                              return Center(child: CircularProgressIndicator());
+                              return Center(child: CenterLoadingIndicator());
                             }
                             return Container(
                               width: double.infinity,
@@ -172,7 +196,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                               scrollDirection: Axis.vertical,
                                               childAspectRatio: orientation
                                                   ? size.height / 750
-                                                  : size.height / 900,
+                                                  : size.height / 1000,
                                               crossAxisCount:
                                                   size.width <= 800.0
                                                       ? 3
@@ -212,57 +236,22 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                                                             index]
                                                                         .saleMasterId !=
                                                                     0
-                                                                ? () {
-                                                                    tableName =
-                                                                        tableList[index]
-                                                                            .tableName;
-
-                                                                    tableId = tableList[
-                                                                            index]
-                                                                        .tableId;
-                                                                    saleMasterId =
-                                                                        tableList[index]
-                                                                            .saleMasterId;
-
-                                                                    orderSummery =
-                                                                        fetchOrderSummery(
-                                                                      table_id:
-                                                                          tableList[index]
-                                                                              .tableId,
-                                                                      sale_master_id:
-                                                                          tableList[index]
-                                                                              .saleMasterId,
-                                                                    );
-                                                                    setState(
-                                                                        () {
-                                                                      if (_pageState !=
-                                                                          0) {
-                                                                        _pageState =
-                                                                            0;
-                                                                      } else {
-                                                                        _pageState =
-                                                                            1;
-                                                                      }
-                                                                    });
-                                                                  }
-                                                                : () {
-                                                                    Navigator
-                                                                        .push(
-                                                                      context,
-                                                                      MaterialPageRoute(
-                                                                        builder:
-                                                                            (_) =>
-                                                                                MenuScreen(
-                                                                          saleMasterId:
-                                                                              tableList[index].saleMasterId,
-                                                                          tableId:
-                                                                              tableList[index].tableId,
-                                                                          tableName:
-                                                                              tableList[index].tableName,
-                                                                        ),
-                                                                      ),
-                                                                    );
-                                                                  },
+                                                                ? () =>
+                                                                    showSumeryModal(
+                                                                      tableList:
+                                                                          tableList[
+                                                                              index],
+                                                                    )
+                                                                : () => {
+                                                                      pushToMenuScree(
+                                                                        sale_master_id:
+                                                                            0,
+                                                                        table_id:
+                                                                            tableList[index].tableId,
+                                                                        table_name:
+                                                                            tableList[index].tableName,
+                                                                      )
+                                                                    },
                                                             child: Column(
                                                               children: <
                                                                   Widget>[
@@ -376,37 +365,41 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                           children: <Widget>[
                                             Expanded(
                                               flex: 3,
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  Text(
-                                                    data.name,
-                                                    style: TextStyle(
-                                                      fontFamily:
-                                                          'San-francisco',
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black,
+                                              child: SingleChildScrollView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      data.name,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: 10,
-                                                  ),
-                                                  Text(
-                                                    "\$ ${data.unitPrice}",
-                                                    style: TextStyle(
-                                                      fontFamily:
-                                                          'San-francisco',
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.black,
-                                                      fontSize: 13,
+                                                    SizedBox(
+                                                      width: 10,
                                                     ),
-                                                  ),
-                                                ],
+                                                    Text(
+                                                      "\$ ${data.unitPrice}",
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors.black,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                             Expanded(
@@ -520,30 +513,33 @@ class _TableModeScreenState extends State<TableModeScreen> {
                         ),
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Button(
-                                buttonName: "Continue",
-                                press: () {
-                                  pushToMenuScree();
-                                },
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Button(
-                                buttonName: "Print Bill",
-                                press: () {},
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Button(
-                                buttonName: "Payment",
-                                press: () {},
-                              )
-                            ],
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Button(
+                                  buttonName: "Continue",
+                                  press: () {
+                                    pushToMenuScree();
+                                  },
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Button(
+                                  buttonName: "Print Bill",
+                                  press: () {},
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Button(
+                                  buttonName: "Payment",
+                                  press: () {},
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -740,58 +736,55 @@ class _TableModeScreenState extends State<TableModeScreen> {
         children: <Widget>[
           tableList[index].tableStatus != 'free'
               ? SizedBox(
-                  height: orientation ? size.height * .015 : 3,
+                  height: orientation ? size.height * .015 : 4,
                 )
               : SizedBox(
-                  height: orientation ? size.height * .03 : 15,
+                  height: orientation ? size.height * .03 : 12,
                 ),
-          FittedBox(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  tableList[index].tableName,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xff121010),
-                    fontFamily: "San-francisco",
-                    fontWeight: FontWeight.bold,
-                    fontSize: orientation ? 18 : 11,
-                  ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                tableList[index].tableName,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xff121010),
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  fontSize: orientation ? 18 : 11,
                 ),
-                tableList[index].tableStatus != 'free'
-                    ? SizedBox(
-                        height: orientation ? size.height * .015 : 1,
-                      )
-                    : SizedBox(
-                        height: orientation ? size.height * .014 : 3,
+              ),
+              tableList[index].tableStatus != 'free'
+                  ? SizedBox(
+                      height: orientation ? size.height * .015 : 4,
+                    )
+                  : SizedBox(
+                      height: orientation ? size.height * .014 : 3,
+                    ),
+              tableList[index].tableStatus != 'free'
+                  ? Container(
+                      padding: EdgeInsets.symmetric(vertical: 3, horizontal: 6),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        borderRadius: BorderRadius.circular(5),
                       ),
-                tableList[index].tableStatus != 'free'
-                    ? Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 3, horizontal: 6),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Center(
-                          child: Text(
-                            tableList[index].checkinDuration,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: "San-francisco",
-                              fontWeight: FontWeight.bold,
-                              fontSize: orientation ? 15 : 11,
-                            ),
+                      child: Center(
+                        child: Text(
+                          tableList[index].checkinDuration,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: "San-francisco",
+                            fontWeight: FontWeight.bold,
+                            fontSize: orientation ? 15 : 11,
                           ),
                         ),
-                      )
-                    : Container()
-              ],
-            ),
+                      ),
+                    )
+                  : Container()
+            ],
           ),
         ],
       ),

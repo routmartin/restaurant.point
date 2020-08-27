@@ -5,29 +5,29 @@ class Note {
     this.noteId,
     this.noteName,
     this.notePrice,
-    this.pendingPrint,
+    this.image,
   });
 
   int noteId;
   String noteName;
   String notePrice;
-  String pendingPrint;
+  String image;
 
   factory Note.fromRawJson(String str) => Note.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
   factory Note.fromJson(Map<String, dynamic> json) => Note(
-        noteId: json["note_id"],
-        noteName: json["note_name"],
-        notePrice: json["note_price"],
-        pendingPrint: json["pending_print"],
+        noteId: json["id"],
+        noteName: json["name"],
+        notePrice: json["price"],
+        image: json["image"],
       );
 
   Map<String, dynamic> toJson() => {
-        "note_id": noteId,
-        "note_name": noteName,
-        "note_price": notePrice,
-        "pending_print": pendingPrint,
+        "id": noteId,
+        "name": noteName,
+        "price": notePrice,
+        "image": image,
       };
 }

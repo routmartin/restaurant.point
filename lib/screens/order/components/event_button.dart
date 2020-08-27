@@ -4,18 +4,23 @@ import 'package:pointrestaurant/utilities/style.main.dart';
 class Button extends StatelessWidget {
   final String buttonName;
   final Function press;
+  final bool border;
 
-  Button({this.buttonName, this.press});
+  Button({
+    this.buttonName,
+    this.press,
+    this.border = false,
+  });
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     var screeOrientation = MediaQuery.of(context).orientation;
     var lanscape = Orientation.landscape;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20.0),
+      borderRadius: BorderRadius.circular(7.0),
       child: Material(
-        borderRadius: BorderRadius.circular(20.0),
-        color: kPrimaryColor,
+        borderRadius: BorderRadius.circular(7.0),
+        color: border ? Colors.grey[100] : kPrimaryColor,
         child: InkWell(
           splashColor: Colors.black26,
           onTap: press,
@@ -33,7 +38,7 @@ class Button extends StatelessWidget {
                 buttonName,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white,
+                  color: border ? kPrimaryColor : Colors.white,
                   fontFamily: 'San-francisco',
                   fontWeight: FontWeight.w800,
                 ),

@@ -1,5 +1,5 @@
 const String serverIP = 'http://192.168.0.189:5000';
-const String userToken = 'zYa7sLhZ+viAYIjJ4PEX7Q==';
+const String userToken = '0pWQasNsX4qRNp1i5UlYCw==';
 
 const String appbarLogo = 'assets/images/main.png';
 const String appbar = 'assets/images/appbar.svg';

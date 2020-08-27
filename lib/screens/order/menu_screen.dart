@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+
 import 'package:pointrestaurant/models/menu.dart';
+import 'package:pointrestaurant/models/note.dart';
 import 'package:pointrestaurant/models/ordersummery.dart';
+import 'package:pointrestaurant/services/list_note.dart';
+import 'package:pointrestaurant/services/table_model/delete.dart';
 import 'package:pointrestaurant/services/table_model/menu_service.dart';
 import 'package:pointrestaurant/services/table_model/order_items.dart';
 import 'package:pointrestaurant/services/table_model/order_summery_sevice.dart';
+
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 
 import 'components/event_button.dart';
-import 'components/header_icon_type.dart';
 import 'components/bottom_label_checkout.dart';
 
 import 'components/order_cal_icon.dart';
@@ -33,6 +37,8 @@ class MenuScreen extends StatefulWidget {
 class _MenuScreenState extends State<MenuScreen> {
   Future<List<Menu>> menuData;
   Future<List<Ordersummery>> orderSummery;
+  Future<List<Note>> noteList;
+  List<bool> checked = [true, true, false, false, true];
 
   @override
   void initState() {
@@ -43,13 +49,14 @@ class _MenuScreenState extends State<MenuScreen> {
 //________________Open Switch Container Layout________________________
 
   int _pageState = 0;
-  double _loginWidth = 0;
-  double _loginHeight = 0;
+  double orderSummeryWidth = 0;
+  double orderSummeryHeight = 0;
 
-  double _loginYOffset = 0;
-  double _loginXOffset = 0;
-  double _registerYOffset = 0;
-  double _registerHeight = 0;
+  double orderSummeryYOffset = 0;
+  double orderSummeryXOffset = 0;
+
+  double showNoteYOffset = 0;
+  double showNoteHeight = 0;
 
   double windowWidth = 0;
   double windowHeight = 0;
@@ -68,23 +75,25 @@ class _MenuScreenState extends State<MenuScreen> {
 
     switch (_pageState) {
       case 0:
-        _loginWidth = windowWidth;
-        _loginYOffset = windowHeight;
-        _loginXOffset = 0;
-        _registerYOffset = windowHeight;
+        orderSummeryWidth = windowWidth;
+        orderSummeryYOffset = windowHeight;
+        orderSummeryXOffset = 0;
+        showNoteYOffset = windowHeight;
         break;
       case 1:
-        _loginWidth = windowWidth;
-        _loginYOffset = orientation ? size.height * .08 : size.height * .15;
-        _loginXOffset = 0;
-        _registerYOffset = windowHeight;
+        orderSummeryWidth = windowWidth;
+        orderSummeryYOffset =
+            orientation ? size.height * .08 : size.height * .12;
+        orderSummeryXOffset = 0;
+        showNoteYOffset = windowHeight;
         break;
       case 2:
-        _loginWidth = windowWidth - 40;
-        _loginYOffset = 180;
-        _loginXOffset = 0;
-        _registerYOffset = 250;
-        _registerHeight = windowHeight - 100;
+        orderSummeryWidth = windowWidth - 40;
+        orderSummeryYOffset = 120;
+        orderSummeryXOffset = 0;
+
+        showNoteYOffset = 180;
+        showNoteHeight = windowHeight;
         break;
     }
 
@@ -167,7 +176,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                   Icons.arrow_back_ios,
                                   size: 20,
                                 ),
-                                onPressed: () => Navigator.pop(context),
+                                onPressed: () => Navigator.pop(context, true),
                               ),
                               Expanded(
                                   child: Center(
@@ -226,7 +235,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                               scrollDirection: Axis.vertical,
                                               childAspectRatio: orientation
                                                   ? size.height / 750
-                                                  : size.height / 850,
+                                                  : size.height / 900,
                                               crossAxisCount:
                                                   size.width <= 800.0
                                                       ? 2
@@ -264,11 +273,18 @@ class _MenuScreenState extends State<MenuScreen> {
                                                                 Colors.black12,
                                                             onTap: () {
                                                               addOrderItems(
-                                                                tableId: widget
-                                                                    .tableId,
-                                                                qty: 1,
+                                                                itemDetailId:
+                                                                    tableList[
+                                                                            index]
+                                                                        .itemDetailId,
                                                                 saleMasterId: widget
                                                                     .saleMasterId,
+                                                                tableId: widget
+                                                                    .tableId,
+                                                                saleDetailId:
+                                                                    tableList[
+                                                                            index]
+                                                                        .saleDetailId,
                                                               );
                                                             },
                                                             child: Column(
@@ -350,6 +366,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                   table_id: widget.tableId,
                                   sale_master_id: widget.saleMasterId,
                                 );
+                                noteList = fetchListNote();
                                 setState(() {
                                   if (_pageState != 0) {
                                     _pageState = 0;
@@ -423,8 +440,8 @@ class _MenuScreenState extends State<MenuScreen> {
             height: orientation ? size.height * .8 : null,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
-            transform:
-                Matrix4.translationValues(_loginXOffset, _loginYOffset, 1),
+            transform: Matrix4.translationValues(
+                orderSummeryXOffset, orderSummeryYOffset, 1),
             decoration: BoxDecoration(
               boxShadow: <BoxShadow>[
                 BoxShadow(
@@ -446,7 +463,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   width: orientation ? size.width * 0.4 : double.infinity,
                   child: Column(
                     children: <Widget>[
-                      _buildHeaderTitle(size),
+                      _buildHeaderTitle(size, "Your Order Summary(Dine In)"),
                       Container(
                         height: orientation
                             ? size.height * 0.52
@@ -464,94 +481,124 @@ class _MenuScreenState extends State<MenuScreen> {
                               itemCount: snapshot.data.length,
                               itemBuilder: (context, index) {
                                 var data = snapshot.data[index];
-
-                                return Container(
-                                  alignment: Alignment.centerLeft,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        width: 0.2,
-                                        color: Colors.grey,
+                                return Slidable(
+                                  actionExtentRatio: 0.25,
+                                  actionPane: SlidableStrechActionPane(),
+                                  secondaryActions: [
+                                    IconSlideAction(
+                                      caption: 'Delete',
+                                      color: kPrimaryColor,
+                                      icon: Icons.delete,
+                                      onTap: () {
+                                        deleteItems(
+                                                saleMasterId:
+                                                    widget.saleMasterId,
+                                                saleDetailId: data.saleDetailId)
+                                            .then((value) => print(value));
+                                      },
+                                    ),
+                                    IconSlideAction(
+                                      caption: 'More',
+                                      color: Colors.grey[350],
+                                      icon: Icons.more_horiz,
+                                      onTap: () {},
+                                    ),
+                                  ],
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          width: 0.2,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: <Widget>[
-                                            Expanded(
-                                              flex: 3,
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  Text(
-                                                    data.name,
+                                    padding:
+                                        EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Expanded(
+                                                flex: 3,
+                                                child: SingleChildScrollView(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Text(
+                                                        data.name,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        width: 10,
+                                                      ),
+                                                      Text(
+                                                        "\$ ${data.unitPrice}",
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: Colors.black,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 1,
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    "\$ ${data.amount}",
                                                     style: TextStyle(
-                                                      fontFamily:
-                                                          'San-francisco',
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color: Colors.black,
                                                     ),
                                                   ),
-                                                  SizedBox(
-                                                    width: 10,
-                                                  ),
-                                                  Text(
-                                                    "\$ ${data.unitPrice}",
-                                                    style: TextStyle(
-                                                      fontFamily:
-                                                          'San-francisco',
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.black,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 1,
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  "\$ ${data.amount}",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 7,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          CaculateIcon(
-                                            qty: data.qty,
+                                            ],
                                           ),
-                                          _buildSpecilRequest(context)
-                                        ],
-                                      )
-                                    ],
+                                        ),
+                                        SizedBox(
+                                          height: 7,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            CaculateIcon(
+                                              qty: data.qty,
+                                            ),
+                                            _buildSpecilRequest(context)
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -626,13 +673,14 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ),
           AnimatedContainer(
-            width: orientation ? size.width * .45 : size.width,
-            height: _registerHeight,
+            margin: EdgeInsets.only(left: orientation ? size.width * .013 : 0),
+            width: orientation ? size.width * .37 : size.width,
+            height: showNoteHeight,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
-            transform: Matrix4.translationValues(0, _registerYOffset, 1),
+            transform: Matrix4.translationValues(0, showNoteYOffset, 1),
             decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.transparent,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(15),
                   topRight: Radius.circular(15),
@@ -644,155 +692,119 @@ class _MenuScreenState extends State<MenuScreen> {
                     blurRadius: 20,
                   ),
                 ]),
-            child: Container(
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(15),
-                    child: Column(
-                      children: <Widget>[
-                        Container(
-                          height: size.height * .35,
-                          child: Column(
-                            children: <Widget>[
-                              Expanded(
-                                  flex: 1,
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  height: orientation ? size.height * 0.8 : double.infinity,
+                  width: orientation ? size.width * 0.4 : double.infinity,
+                  color: orientation ? null : Colors.white,
+                  child: Column(
+                    children: <Widget>[
+                      _buildHeaderTitle(size, "Special Request"),
+                      Container(
+                        height: orientation
+                            ? size.height * 0.52
+                            : size.height * 0.5,
+                        color: Colors.white,
+                        child: FutureBuilder(
+                          future: noteList,
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (!snapshot.hasData) {
+                              return CenterLoadingIndicator();
+                            }
+                            return ListView.builder(
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index) {
+                                var data = snapshot.data[index];
+                                return Container(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 30,
+                                  ),
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        width: 0.2,
+                                        color: Colors.grey[350],
+                                      ),
+                                    ),
+                                  ),
                                   child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: <Widget>[
-                                      Expanded(
-                                        flex: 2,
-                                        child: Column(
-                                          children: <Widget>[
-                                            Expanded(
-                                              flex: 1,
-                                              child: Container(
-                                                alignment: Alignment.topLeft,
-                                                child: Text(
-                                                  "Special Request",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 1,
-                                              child: Container(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  "Spicy classic",
-                                                  style: TextStyle(
-                                                    fontSize: 12.0,
-                                                    decoration: TextDecoration
-                                                        .underline,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          ],
+                                      Text(
+                                        data.noteName.toString(),
+                                        style: TextStyle(
+                                          fontFamily: 'San-francisco',
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
                                         ),
                                       ),
                                       Expanded(
-                                        flex: 1,
-                                        child: Column(
-                                          children: <Widget>[
-                                            Expanded(
-                                                flex: 2, child: Container()),
-                                            Expanded(
-                                                flex: 1,
-                                                child: Container(
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5.0),
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                  child: Text(
-                                                    "choose 1 item",
-                                                    style:
-                                                        TextStyle(fontSize: 10),
-                                                  ),
-                                                ))
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  )),
-                              Expanded(
-                                flex: 6,
-                                child: Container(
-                                  margin: EdgeInsets.only(top: 10.0),
-                                  child: ListView.builder(
-                                    itemCount: 4,
-                                    itemBuilder: (context, index) {
-                                      return Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          onTap: () {},
-                                          child: Container(
-                                            padding: EdgeInsets.all(10.0),
-                                            margin: EdgeInsets.only(
-                                                top: 5.0, left: 5, right: 5.0),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.grey
-                                                        .withOpacity(0.5),
-                                                    spreadRadius: 1,
-                                                    blurRadius: 7,
-                                                    offset: Offset(0, 1),
-                                                  )
-                                                ]),
-                                            child: Row(
-                                              children: <Widget>[
-                                                Icon(
-                                                  FontAwesomeIcons.check,
-                                                  size: 15,
-                                                ),
-                                                SizedBox(
-                                                  width: 10.0,
-                                                ),
-                                                Text("$index Egg")
-                                              ],
-                                            ),
+                                        child: Container(
+                                          alignment: Alignment.centerRight,
+                                          child: Checkbox(
+                                            activeColor: kPrimaryColor,
+                                            checkColor: Colors.white,
+                                            value:
+                                                data.noteId == 1 ? true : false,
+                                            onChanged: (val) {
+                                              setState(() {});
+                                            },
                                           ),
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ),
-                            ],
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      Container(
+                        height: orientation
+                            ? size.height * 0.1
+                            : size.height * 0.08,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(10),
+                            bottomRight: Radius.circular(10),
                           ),
                         ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.09),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Button(
-                                buttonName: "Reset All",
-                              ),
-                              SizedBox(
-                                width: orientation ? 100 : 20,
-                              ),
-                              Button(
-                                buttonName: "Ok +9.99",
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Button(
+                              buttonName: "Reset",
+                              border: true,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Button(
+                              buttonName: "Apply",
+                              press: () {},
+                            )
+                          ],
+                        ),
+                      )
+                    ],
                   ),
-                  _pageState == 2 ? _buildCancelButton(context) : Container()
-                ],
-              ),
+                ),
+                _pageState == 2 ? _buildCancelButton(context) : Container()
+              ],
             ),
           ),
         ],
@@ -804,11 +816,11 @@ class _MenuScreenState extends State<MenuScreen> {
 
   _buildSpecilRequest(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(6),
+      padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
         border: Border.all(
-          width: 1.2,
-          color: Colors.grey[400],
+          width: 1,
+          color: Colors.black54,
         ),
         borderRadius: BorderRadius.circular(15.0),
       ),
@@ -827,7 +839,7 @@ class _MenuScreenState extends State<MenuScreen> {
               style: TextStyle(
                 fontSize: 8,
                 fontFamily: 'San-francisco',
-                color: kPrimaryColor,
+                color: Colors.black,
               ),
             ),
           ),
@@ -878,7 +890,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  _buildHeaderTitle(size) {
+  _buildHeaderTitle(size, title) {
     return Container(
       height: size.height * 0.08,
       decoration: BoxDecoration(
@@ -890,7 +902,7 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
       alignment: Alignment.center,
       child: Text(
-        "Your Order Summary(Dine In)",
+        title,
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.bold,
@@ -1008,7 +1020,7 @@ class _MenuScreenState extends State<MenuScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           SizedBox(
-            height: orientation ? size.height * .01 : 9,
+            height: orientation ? size.height * .01 : 3,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1025,7 +1037,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
               ),
               SizedBox(
-                height: orientation ? size.height * .005 : 4,
+                height: orientation ? size.height * .005 : 1,
               ),
               Text(
                 '\$ ${tableList[index].price}',

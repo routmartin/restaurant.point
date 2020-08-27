@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/ordersummery.dart';
-
 import 'package:pointrestaurant/utilities/path.dart';
 
 List<Ordersummery> parseOrderSummery(String responseBody) {
@@ -18,7 +17,7 @@ Future<List<Ordersummery>> fetchOrderSummery(
   Response response = await dio.post(
     serverIP + '/api/OrderSummary',
     data: {
-      "userToken": 'zYa7sLhZ+viAYIjJ4PEX7Q==',
+      "userToken": userToken,
       "sale_master_id": sale_master_id,
       "table_id": table_id,
     },
