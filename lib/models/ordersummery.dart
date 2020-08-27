@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'note.dart';
-
 class Ordersummery {
   Ordersummery({
     this.itemDetailId,
@@ -25,7 +23,7 @@ class Ordersummery {
   String disPercent;
   String amount;
   String pendingPrint;
-  List<Note> notes;
+  List<AddNote> notes;
 
   factory Ordersummery.fromRawJson(String str) =>
       Ordersummery.fromJson(json.decode(str));
@@ -42,7 +40,8 @@ class Ordersummery {
         disPercent: json["dis_percent"],
         amount: json["amount"],
         pendingPrint: json["pending_print"],
-        notes: List<Note>.from(json["notes"].map((x) => Note.fromJson(x))),
+        notes:
+            List<AddNote>.from(json["notes"].map((x) => AddNote.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -55,6 +54,42 @@ class Ordersummery {
         "dis_percent": disPercent,
         "amount": amount,
         "pending_print": pendingPrint,
-        "notes": List<dynamic>.from(notes.map((x) => x.toJson())),
+        "notes": List<dynamic>.from(
+          notes.map(
+            (x) => x.toJson(),
+          ),
+        ),
+      };
+}
+
+class AddNote {
+  AddNote({
+    this.noteId,
+    this.noteName,
+    this.notePrice,
+    this.pendingPrint,
+  });
+
+  int noteId;
+  String noteName;
+  String notePrice;
+  String pendingPrint;
+
+  factory AddNote.fromRawJson(String str) => AddNote.fromJson(json.decode(str));
+
+  String toRawJson() => json.encode(toJson());
+
+  factory AddNote.fromJson(Map<String, dynamic> json) => AddNote(
+        noteId: json["note_id"],
+        noteName: json["note_name"],
+        notePrice: json["note_price"],
+        pendingPrint: json["pending_print"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "note_id": noteId,
+        "note_name": noteName,
+        "note_price": notePrice,
+        "pending_print": pendingPrint,
       };
 }

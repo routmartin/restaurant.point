@@ -594,7 +594,42 @@ class _MenuScreenState extends State<MenuScreen> {
                                             CaculateIcon(
                                               qty: data.qty,
                                             ),
-                                            _buildSpecilRequest(context)
+                                            Container(
+                                              padding: EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.black54,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(15.0),
+                                              ),
+                                              child: Material(
+                                                color: Colors.transparent,
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _pageState = 2;
+                                                    });
+                                                    print(data);
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            1.0),
+                                                    child: Text(
+                                                      "SPECIAL REQUEST",
+                                                      style: TextStyle(
+                                                        fontSize: 8,
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ],
                                         )
                                       ],
