@@ -1,10 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../utilities/path.dart';
 import 'components/button.dart';
 import 'components/chooseLanguage.dart';
 
 class ChoiceScreen extends StatelessWidget {
+  bool lang = true;
+  _language(language) async {
+    SharedPreferences lang = await SharedPreferences.getInstance();
+    lang.setBool('lang', language);
+  }
+
+  void initState() {}
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
