@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListScrollHome(
               size: size,
               title: 'PROMOTION',
-              imgPath: 'assets/images/img4.jpg',
+              imgPath: 'assets/images/img1.jpg',
             ),
             SizedBox(
               height: 10,
@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListScrollHome(
               size: size,
               title: 'TOP SALE',
-              imgPath: 'assets/images/img2.jpg',
+              imgPath: 'assets/images/img1.jpg',
             ),
             SizedBox(
               height: 10,
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ListScrollHome(
               size: size,
               title: 'TOP SALE',
-              imgPath: 'assets/images/img5.jpg',
+              imgPath: 'assets/images/img1.jpg',
             ),
             SizedBox(
               height: 10,
