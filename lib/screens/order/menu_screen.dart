@@ -1,5 +1,9 @@
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_svg/svg.dart';
 
 import 'package:pointrestaurant/models/menu.dart';
 import 'package:pointrestaurant/models/note.dart';
@@ -38,12 +42,13 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<List<Menu>> menuData;
   Future<List<Ordersummery>> orderSummery;
   Future<List<Note>> noteList;
-  List<bool> checked = [true, true, false, false, true];
+  List growableList = [];
+  int sale_detail_id;
 
   @override
   void initState() {
     super.initState();
-    menuData = fetchMenuSevice(saleMasterId: widget.saleMasterId);
+    requestMenuFunction();
   }
 
 //________________Open Switch Container Layout________________________
@@ -64,9 +69,14 @@ class _MenuScreenState extends State<MenuScreen> {
   int totalItems = 0;
   double totalAmount = 0;
 //________________Close Switch Container Layout________________________
+  void requestMenuFunction() {
+    menuData = fetchMenuSevice(saleMasterId: widget.saleMasterId);
+    print(menuData);
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('buil fun calling...');
     var size = MediaQuery.of(context).size;
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
@@ -97,6 +107,194 @@ class _MenuScreenState extends State<MenuScreen> {
         break;
     }
 
+    // ___________________________Open operation function ____________________________
+    void requestOrderSummeryFunction() async {
+      orderSummery = fetchOrderSummery(
+        table_id: widget.tableId,
+        sale_master_id: widget.saleMasterId,
+      );
+      setState(() {});
+      print('setstate call from calling requestOrderSummeryFunction()');
+    }
+
+    void requestAddItemsFunction({tableList}) {
+      addOrderItems(
+        itemDetailId: tableList.itemDetailId,
+        saleMasterId: widget.saleMasterId,
+        tableId: widget.tableId,
+        saleDetailId: tableList.saleDetailId,
+      );
+      requestMenuFunction();
+      setState(() {});
+    }
+
+    // ___________________________Close operation function ____________________________
+
+    _showAuthenticator() {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(10.0),
+              ),
+            ),
+            content: Container(
+              padding: EdgeInsets.all(10),
+              width: orientation ? size.width * .4 : size.width * .95,
+              height: orientation ? size.height * .5 : size.height * .45,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    SvgPicture.asset(
+                      authentication,
+                      width: 80,
+                      height: 80,
+                    ),
+                    SizedBox(
+                      height: size.height * .06,
+                    ),
+                    Text(
+                      'No Permission'.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'San-francisco',
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    SizedBox(
+                      height: size.height * .05,
+                    ),
+                    Container(
+                      width: size.width * .9,
+                      height: 50.0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Username',
+                            contentPadding: EdgeInsets.all(15.0),
+                            border: InputBorder.none,
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: size.height * .035,
+                    ),
+                    Container(
+                      width: size.width * .8,
+                      height: 50.0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            hintText: 'Password',
+                            contentPadding: EdgeInsets.all(15.0),
+                            border: InputBorder.none,
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              Container(
+                margin: EdgeInsets.only(bottom: 10, right: 25),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(7),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          splashColor: Colors.black12,
+                          child: Container(
+                            width: orientation
+                                ? size.width * .14
+                                : size.width * .27,
+                            height: 45.0,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(color: Colors.black12),
+                            padding: EdgeInsets.symmetric(
+                              vertical: 9,
+                              horizontal: 20,
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: 13,
+                                decoration: TextDecoration.none,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(7),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          splashColor: Colors.black12,
+                          child: Container(
+                            height: 45.0,
+                            width: orientation
+                                ? size.width * .14
+                                : size.width * .27,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              vertical: 9,
+                              horizontal: 20,
+                            ),
+                            child: Text(
+                              'Overide',
+                              style: TextStyle(
+                                fontSize: 13,
+                                decoration: TextDecoration.none,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          );
+        },
+      );
+    }
+
     _requestNoItmesModel() {
       return showGeneralDialog(
         barrierColor: Colors.black.withOpacity(0.9),
@@ -124,14 +322,16 @@ class _MenuScreenState extends State<MenuScreen> {
                   ),
                   child: Center(
                     child: Container(
-                      child: Text('No Items Orders',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontFamily: 'San-francisco',
-                            color: Colors.black,
-                            fontWeight: FontWeight.w700,
-                            decoration: TextDecoration.none,
-                          )),
+                      child: Text(
+                        'No Items Orders',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontFamily: 'San-francisco',
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -272,19 +472,10 @@ class _MenuScreenState extends State<MenuScreen> {
                                                             splashColor:
                                                                 Colors.black12,
                                                             onTap: () {
-                                                              addOrderItems(
-                                                                itemDetailId:
+                                                              requestAddItemsFunction(
+                                                                tableList:
                                                                     tableList[
-                                                                            index]
-                                                                        .itemDetailId,
-                                                                saleMasterId: widget
-                                                                    .saleMasterId,
-                                                                tableId: widget
-                                                                    .tableId,
-                                                                saleDetailId:
-                                                                    tableList[
-                                                                            index]
-                                                                        .saleDetailId,
+                                                                        index],
                                                               );
                                                             },
                                                             child: Column(
@@ -362,20 +553,16 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: InkWell(
                         onTap: widget.saleMasterId != 0
                             ? () {
-                                orderSummery = fetchOrderSummery(
-                                  table_id: widget.tableId,
-                                  sale_master_id: widget.saleMasterId,
-                                );
+                                requestOrderSummeryFunction();
                                 noteList = fetchListNote();
-                                setState(() {
-                                  if (_pageState != 0) {
-                                    _pageState = 0;
-                                  } else {
-                                    _pageState = 1;
-                                  }
-                                });
+                                if (_pageState != 0) {
+                                  _pageState = 0;
+                                } else {
+                                  _pageState = 1;
+                                }
                               }
-                            : _requestNoItmesModel,
+                            // : _requestNoItmesModel,
+                            : _showAuthenticator,
                         splashColor: Colors.black,
                         child: Container(
                           alignment: Alignment.center,
@@ -441,7 +628,10 @@ class _MenuScreenState extends State<MenuScreen> {
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform: Matrix4.translationValues(
-                orderSummeryXOffset, orderSummeryYOffset, 1),
+              orderSummeryXOffset,
+              orderSummeryYOffset,
+              1,
+            ),
             decoration: BoxDecoration(
               boxShadow: <BoxShadow>[
                 BoxShadow(
@@ -473,171 +663,204 @@ class _MenuScreenState extends State<MenuScreen> {
                           future: orderSummery,
                           builder:
                               (BuildContext context, AsyncSnapshot snapshot) {
-                            if (!snapshot.hasData) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
                               return CenterLoadingIndicator();
                             }
-                            totalItems = snapshot.data.length;
-                            return ListView.builder(
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                var data = snapshot.data[index];
-                                return Slidable(
-                                  actionExtentRatio: 0.25,
-                                  actionPane: SlidableStrechActionPane(),
-                                  secondaryActions: [
-                                    IconSlideAction(
-                                      caption: 'Delete',
-                                      color: kPrimaryColor,
-                                      icon: Icons.delete,
-                                      onTap: () {
-                                        deleteItems(
+                            return snapshot.data != null
+                                ? ListView.builder(
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder: (context, index) {
+                                      var data = snapshot.data[index];
+                                      return Slidable(
+                                        actionExtentRatio: 0.25,
+                                        actionPane: SlidableStrechActionPane(),
+                                        secondaryActions: [
+                                          IconSlideAction(
+                                            caption: 'Delete',
+                                            color: kPrimaryColor,
+                                            icon: Icons.delete,
+                                            onTap: () {
+                                              deleteItems(
                                                 saleMasterId:
                                                     widget.saleMasterId,
-                                                saleDetailId: data.saleDetailId)
-                                            .then((value) => print(value));
-                                      },
-                                    ),
-                                    IconSlideAction(
-                                      caption: 'More',
-                                      color: Colors.grey[350],
-                                      icon: Icons.more_horiz,
-                                      onTap: () {},
-                                    ),
-                                  ],
-                                  child: Container(
-                                    alignment: Alignment.centerLeft,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      border: Border(
-                                        bottom: BorderSide(
-                                          width: 0.2,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ),
-                                    padding:
-                                        EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Expanded(
-                                          child: Row(
+                                                saleDetailId: data.saleDetailId,
+                                              ).then((response) {
+                                                if (response == 'success') {
+                                                  requestOrderSummeryFunction();
+                                                }
+                                              });
+                                            },
+                                          ),
+                                          IconSlideAction(
+                                            caption: 'More',
+                                            color: Colors.grey[350],
+                                            icon: Icons.more_horiz,
+                                            onTap: () {},
+                                          ),
+                                        ],
+                                        child: Container(
+                                          alignment: Alignment.centerLeft,
+                                          height: 80,
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                width: 0.2,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.fromLTRB(
+                                              15, 10, 15, 10),
+                                          child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                CrossAxisAlignment.start,
                                             children: <Widget>[
                                               Expanded(
-                                                flex: 3,
-                                                child: SingleChildScrollView(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        data.name,
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'San-francisco',
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    Expanded(
+                                                      flex: 3,
+                                                      child:
+                                                          SingleChildScrollView(
+                                                        scrollDirection:
+                                                            Axis.horizontal,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          children: <Widget>[
+                                                            Text(
+                                                              data.name,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .black,
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width: 10,
+                                                            ),
+                                                            Text(
+                                                              "\$ ${data.unitPrice}",
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontSize: 13,
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
-                                                      SizedBox(
-                                                        width: 10,
-                                                      ),
-                                                      Text(
-                                                        "\$ ${data.unitPrice}",
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'San-francisco',
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: Colors.black,
-                                                          fontSize: 13,
+                                                    ),
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .centerRight,
+                                                        child: Text(
+                                                          "\$ ${data.amount}",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              Expanded(
-                                                flex: 1,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerRight,
-                                                  child: Text(
-                                                    "\$ ${data.amount}",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black,
+                                              SizedBox(
+                                                height: 7,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  CaculateIcon(
+                                                    qty: data.qty,
+                                                  ),
+                                                  Container(
+                                                    padding: EdgeInsets.all(8),
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                        width: 1,
+                                                        color: Colors.black54,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15.0),
+                                                    ),
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      child: InkWell(
+                                                        splashColor:
+                                                            Colors.black38,
+                                                        onTap: () {
+                                                          print(
+                                                              'setstate change from calling add note');
+                                                          setState(() {
+                                                            _pageState = 2;
+                                                          });
+                                                          growableList.clear();
+                                                          for (int i = 0;
+                                                              i <
+                                                                  data.notes
+                                                                      .length;
+                                                              i++) {
+                                                            growableList.add(
+                                                              data.notes[i]
+                                                                  .noteId,
+                                                            );
+                                                          }
+                                                          sale_detail_id =
+                                                              data.saleDetailId;
+                                                        },
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(
+                                                            1.0,
+                                                          ),
+                                                          child: Text(
+                                                            "SPECIAL REQUEST",
+                                                            style: TextStyle(
+                                                              fontSize: 8,
+                                                              fontFamily:
+                                                                  'San-francisco',
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ),
+                                                ],
+                                              )
                                             ],
                                           ),
                                         ),
-                                        SizedBox(
-                                          height: 7,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            CaculateIcon(
-                                              qty: data.qty,
-                                            ),
-                                            Container(
-                                              padding: EdgeInsets.all(8),
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.black54,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(15.0),
-                                              ),
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    setState(() {
-                                                      _pageState = 2;
-                                                    });
-                                                    print(data);
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            1.0),
-                                                    child: Text(
-                                                      "SPECIAL REQUEST",
-                                                      style: TextStyle(
-                                                        fontSize: 8,
-                                                        fontFamily:
-                                                            'San-francisco',
-                                                        color: Colors.black,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
+                                      );
+                                    },
+                                  )
+                                : Container();
                           },
                         ),
                       ),
@@ -752,49 +975,83 @@ class _MenuScreenState extends State<MenuScreen> {
                               itemCount: snapshot.data.length,
                               itemBuilder: (context, index) {
                                 var data = snapshot.data[index];
-                                return Container(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 30,
-                                  ),
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        width: 0.2,
-                                        color: Colors.grey[350],
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      if (growableList.contains(data.noteId)) {
+                                        growableList.remove(data.noteId);
+                                      } else {
+                                        growableList.add(data.noteId);
+                                        growableList =
+                                            growableList.toSet().toList();
+                                      }
+                                      setState(() {});
+                                      print(
+                                          'setstate call from switch checkbox');
+                                    },
+                                    splashColor: Colors.black12,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 10,
+                                        horizontal: 30,
                                       ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        data.noteName.toString(),
-                                        style: TextStyle(
-                                          fontFamily: 'San-francisco',
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          alignment: Alignment.centerRight,
-                                          child: Checkbox(
-                                            activeColor: kPrimaryColor,
-                                            checkColor: Colors.white,
-                                            value:
-                                                data.noteId == 1 ? true : false,
-                                            onChanged: (val) {
-                                              setState(() {});
-                                            },
+                                      height: 55,
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            width: 0.4,
+                                            color: Colors.grey[400],
                                           ),
                                         ),
                                       ),
-                                    ],
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          Container(
+                                            alignment: Alignment.centerRight,
+                                            child: Checkbox(
+                                              activeColor: kPrimaryColor,
+                                              checkColor: Colors.white,
+                                              value: growableList.any(
+                                                (element) =>
+                                                    element == data.noteId,
+                                              ),
+                                              onChanged: (val) {},
+                                            ),
+                                          ),
+                                          Expanded(
+                                              child: Row(
+                                            children: <Widget>[
+                                              Text(
+                                                data.noteName.toString(),
+                                                style: TextStyle(
+                                                  fontFamily: 'San-francisco',
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  data.notePrice.toString(),
+                                                  textAlign: TextAlign.right,
+                                                  style: TextStyle(
+                                                    fontFamily: 'San-francisco',
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 );
                               },
@@ -821,6 +1078,11 @@ class _MenuScreenState extends State<MenuScreen> {
                             Button(
                               buttonName: "Reset",
                               border: true,
+                              press: () {
+                                growableList.clear();
+                                setState(() {});
+                                print('setstate call from switch reset note');
+                              },
                             ),
                             SizedBox(
                               width: 10,
@@ -830,7 +1092,19 @@ class _MenuScreenState extends State<MenuScreen> {
                             ),
                             Button(
                               buttonName: "Apply",
-                              press: () {},
+                              press: () {
+                                applySpecialRequest(
+                                  noteList: growableList,
+                                  saleMasterId: widget.saleMasterId,
+                                  saleDetailId: sale_detail_id,
+                                ).then((value) {
+                                  if (value == 'success') {
+                                    _pageState = 1;
+
+                                    requestOrderSummeryFunction();
+                                  }
+                                });
+                              },
                             )
                           ],
                         ),
@@ -847,44 +1121,6 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // special Request___________________________________
-
-  _buildSpecilRequest(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 1,
-          color: Colors.black54,
-        ),
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _pageState = 2;
-            });
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: Text(
-              "SPECIAL REQUEST",
-              style: TextStyle(
-                fontSize: 8,
-                fontFamily: 'San-francisco',
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // orderSummery inner_width________________________
-
   _buildCancelButton(BuildContext context) {
     return Positioned(
       top: 7,
@@ -896,6 +1132,7 @@ class _MenuScreenState extends State<MenuScreen> {
           borderRadius: BorderRadius.circular(15),
           child: InkWell(
             onTap: () {
+              print('setstate call from switch cancel button');
               setState(() {
                 if (_pageState == 2) {
                   _pageState = 1;

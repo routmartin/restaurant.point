@@ -1,4 +1,3 @@
-import 'package:bottom_animation/source/bottomnav_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
@@ -19,15 +18,7 @@ class MainScreenPage extends StatefulWidget {
 class _MainScreenPageState extends State<MainScreenPage> {
   int _pageIndex;
   List<Widget> _pageList;
-  var items = <BottomNavItem>[
-    BottomNavItem(
-      title: 'HOME',
-      iconData: Icons.home,
-    ),
-    BottomNavItem(title: 'ORDER', iconData: Icons.view_list),
-    BottomNavItem(title: 'PENDING', iconData: Icons.timelapse),
-    BottomNavItem(title: 'MY ACCOUNT', iconData: Icons.account_circle),
-  ];
+
   @override
   void initState() {
     _pageIndex = 0;

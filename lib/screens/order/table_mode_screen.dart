@@ -206,6 +206,9 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                               children: List<Widget>.generate(
                                                 tableList.length,
                                                 (index) {
+                                                  int hasItems = int.parse(
+                                                      tableList[index]
+                                                          .hasItemsOrder);
                                                   return Stack(
                                                     children: <Widget>[
                                                       Container(
@@ -233,9 +236,11 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                                             splashColor:
                                                                 Colors.black12,
                                                             onTap: tableList[
-                                                                            index]
-                                                                        .saleMasterId !=
-                                                                    0
+                                                                                index]
+                                                                            .saleMasterId !=
+                                                                        0 &&
+                                                                    hasItems >=
+                                                                        1
                                                                 ? () =>
                                                                     showSumeryModal(
                                                                       tableList:

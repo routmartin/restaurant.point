@@ -20,7 +20,7 @@ class Button extends StatelessWidget {
       borderRadius: BorderRadius.circular(7.0),
       child: Material(
         borderRadius: BorderRadius.circular(7.0),
-        color: border ? Colors.grey[100] : kPrimaryColor,
+        color: border ? Colors.grey[200] : kPrimaryColor,
         child: InkWell(
           splashColor: Colors.black26,
           onTap: press,

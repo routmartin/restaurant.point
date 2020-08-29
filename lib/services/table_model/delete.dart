@@ -7,9 +7,6 @@ Future deleteItems({
   int saleMasterId,
   int saleDetailId,
 }) async {
-  print("saleMasterId: " + saleMasterId.toString());
-  print("saleDetailId: " + saleDetailId.toString());
-
   Response response = await dio.post(
     serverIP + '/Api/DeleteItemOrder',
     data: {
@@ -21,9 +18,9 @@ Future deleteItems({
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
-  print("data response" + response.data);
   if (response.statusCode == 200 && response.data != "[]") {
-    print("data response" + response.data);
+    print("data response: " + response.data);
+    return response.data;
   }
   return null;
 }

@@ -19,7 +19,10 @@ class Button extends StatelessWidget {
         width: buttonWidth,
         height: 50.0,
         decoration: BoxDecoration(
-          border: Border.all(width: 1.0, color: Colors.white),
+          border: Border.all(
+            width: 1.0,
+            color: Colors.white,
+          ),
           borderRadius: BorderRadius.circular(40.0),
           color: Colors.transparent,
         ),
@@ -39,8 +42,10 @@ class Button extends StatelessWidget {
             child: Center(
               child: Text(
                 "$name",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

@@ -15,7 +15,6 @@ Future<List<Ordersummery>> fetchOrderSummery({
   int sale_master_id,
   int table_id,
 }) async {
-  print(sale_master_id);
   var dio = Dio();
   Response response = await dio.post(
     serverIP + '/api/OrderSummary',
