@@ -16,9 +16,11 @@ class MyApp extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 450) {
-          SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-          ]);
+          SystemChrome.setPreferredOrientations(
+            [
+              DeviceOrientation.portraitUp,
+            ],
+          );
         } else {
           SystemChrome.setPreferredOrientations([
             DeviceOrientation.landscapeLeft,
