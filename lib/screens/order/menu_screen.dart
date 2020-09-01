@@ -1,9 +1,12 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:platform_action_sheet/platform_action_sheet.dart';
 
 import 'package:pointrestaurant/models/menu.dart';
 import 'package:pointrestaurant/models/note.dart';
@@ -43,11 +46,18 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<List<Ordersummery>> orderSummery;
   Future<List<Note>> noteList;
   List growableList = [];
+  int totalItems = 0;
+  double totalAmount = 0;
   int sale_detail_id;
+  int restoreSaleMasterId;
+  //_______________ Overide Authenticator_________________
+  String username;
+  String password;
 
   @override
   void initState() {
     super.initState();
+    restoreSaleMasterId = widget.saleMasterId;
     requestMenuFunction();
   }
 
@@ -66,17 +76,15 @@ class _MenuScreenState extends State<MenuScreen> {
   double windowWidth = 0;
   double windowHeight = 0;
 
-  int totalItems = 0;
-  double totalAmount = 0;
 //________________Close Switch Container Layout________________________
-  void requestMenuFunction() {
-    menuData = fetchMenuSevice(saleMasterId: widget.saleMasterId);
-    print(menuData);
+
+  requestMenuFunction() {
+    print('Master ID: ' + restoreSaleMasterId.toString());
+    menuData = fetchMenuSevice(saleMasterId: restoreSaleMasterId);
   }
 
   @override
   Widget build(BuildContext context) {
-    print('buil fun calling...');
     var size = MediaQuery.of(context).size;
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
@@ -93,7 +101,7 @@ class _MenuScreenState extends State<MenuScreen> {
       case 1:
         orderSummeryWidth = windowWidth;
         orderSummeryYOffset =
-            orientation ? size.height * .08 : size.height * .12;
+            orientation ? size.height * .08 : size.height * .125;
         orderSummeryXOffset = 0;
         showNoteYOffset = windowHeight;
         break;
@@ -108,29 +116,64 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     // ___________________________Open operation function ____________________________
-    void requestOrderSummeryFunction() async {
+    requestOrderSummeryFunction() async {
       orderSummery = fetchOrderSummery(
         table_id: widget.tableId,
         sale_master_id: widget.saleMasterId,
       );
       setState(() {});
-      print('setstate call from calling requestOrderSummeryFunction()');
     }
 
-    void requestAddItemsFunction({tableList}) {
+    requestAddItemsFunction({tableList}) {
       addOrderItems(
         itemDetailId: tableList.itemDetailId,
         saleMasterId: widget.saleMasterId,
         tableId: widget.tableId,
         saleDetailId: tableList.saleDetailId,
-      );
-      requestMenuFunction();
-      setState(() {});
+      ).then((saleMasterId) {
+        restoreSaleMasterId = int.parse(saleMasterId);
+        print("response data: " + restoreSaleMasterId.toString());
+        requestMenuFunction();
+        setState(() {});
+      });
     }
 
+    showActionBottomSheet() {
+      return PlatformActionSheet().displaySheet(context: context, actions: [
+        ActionSheetAction(
+          text: "Order Now",
+          onPressed: () => Navigator.pop(context),
+        ),
+        ActionSheetAction(
+          text: "Discount (%)",
+          onPressed: () => Navigator.pop(context),
+        ),
+        ActionSheetAction(
+          text: "Discount (\$)",
+          onPressed: () => Navigator.pop(context),
+        ),
+        ActionSheetAction(
+          text: "Move",
+          onPressed: () => Navigator.pop(context),
+        ),
+        ActionSheetAction(
+          text: "Split",
+          onPressed: () => Navigator.pop(context),
+        ),
+        ActionSheetAction(
+          text: "Cancel",
+          onPressed: () => Navigator.pop(context),
+          isCancel: true,
+          defaultAction: true,
+        )
+      ]);
+    }
     // ___________________________Close operation function ____________________________
 
-    _showAuthenticator() {
+    _showAuthenticator({
+      int saleMasterId,
+      int saleDetailId,
+    }) {
       return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -176,6 +219,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(5),
                         child: TextFormField(
+                          onChanged: (val) => username = val,
                           decoration: InputDecoration(
                             hintText: 'Username',
                             contentPadding: EdgeInsets.all(15.0),
@@ -195,6 +239,9 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(5),
                         child: TextFormField(
+                          onChanged: (val) {
+                            password = val;
+                          },
                           decoration: InputDecoration(
                             hintText: 'Password',
                             contentPadding: EdgeInsets.all(15.0),
@@ -257,7 +304,21 @@ class _MenuScreenState extends State<MenuScreen> {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
-                            Navigator.pop(context);
+                            if (username != null && password != null) {
+                              overideDeleteItems(
+                                saleDetailId: saleDetailId,
+                                saleMasterId: saleMasterId,
+                                username: username,
+                                password: password,
+                              ).then((response) {
+                                if (response == 'success') {
+                                  requestOrderSummeryFunction();
+                                  Navigator.pop(context);
+                                }
+                              });
+                            } else {
+                              print('no data');
+                            }
                           },
                           splashColor: Colors.black12,
                           child: Container(
@@ -562,7 +623,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                 }
                               }
                             // : _requestNoItmesModel,
-                            : _showAuthenticator,
+                            : _requestNoItmesModel,
                         splashColor: Colors.black,
                         child: Container(
                           alignment: Alignment.center,
@@ -590,9 +651,9 @@ class _MenuScreenState extends State<MenuScreen> {
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                                     child: Text(
-                                      'USA',
+                                      'USD',
                                       style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         color: kPrimaryColor,
                                       ),
@@ -667,200 +728,198 @@ class _MenuScreenState extends State<MenuScreen> {
                                 ConnectionState.waiting) {
                               return CenterLoadingIndicator();
                             }
-                            return snapshot.data != null
-                                ? ListView.builder(
-                                    itemCount: snapshot.data.length,
-                                    itemBuilder: (context, index) {
-                                      var data = snapshot.data[index];
-                                      return Slidable(
-                                        actionExtentRatio: 0.25,
-                                        actionPane: SlidableStrechActionPane(),
-                                        secondaryActions: [
-                                          IconSlideAction(
-                                            caption: 'Delete',
-                                            color: kPrimaryColor,
-                                            icon: Icons.delete,
-                                            onTap: () {
-                                              deleteItems(
+                            if (snapshot.data != null) {
+                              totalItems = snapshot.data.length;
+                              totalAmount = 0;
+                              return ListView.builder(
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (context, index) {
+                                  var data = snapshot.data[index];
+                                  totalAmount +=
+                                      double.parse(snapshot.data[index].amount);
+                                  return Slidable(
+                                    actionExtentRatio: 0.25,
+                                    actionPane: SlidableStrechActionPane(),
+                                    secondaryActions: [
+                                      IconSlideAction(
+                                        caption: 'More',
+                                        color: Colors.grey[350],
+                                        icon: Icons.more_horiz,
+                                        onTap: showActionBottomSheet,
+                                      ),
+                                      IconSlideAction(
+                                        caption: 'Delete',
+                                        color: kPrimaryColor,
+                                        icon: Icons.delete,
+                                        onTap: () {
+                                          deleteItems(
+                                            saleMasterId: widget.saleMasterId,
+                                            saleDetailId: data.saleDetailId,
+                                          ).then((response) {
+                                            if (response == 'success') {
+                                              requestOrderSummeryFunction();
+                                            } else if (response ==
+                                                'afterOrder') {
+                                              _showAuthenticator(
                                                 saleMasterId:
                                                     widget.saleMasterId,
                                                 saleDetailId: data.saleDetailId,
-                                              ).then((response) {
-                                                if (response == 'success') {
-                                                  requestOrderSummeryFunction();
-                                                }
-                                              });
-                                            },
+                                              );
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                    child: Container(
+                                      alignment: Alignment.centerLeft,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            width: 0.2,
+                                            color: Colors.grey,
                                           ),
-                                          IconSlideAction(
-                                            caption: 'More',
-                                            color: Colors.grey[350],
-                                            icon: Icons.more_horiz,
-                                            onTap: () {},
-                                          ),
-                                        ],
-                                        child: Container(
-                                          alignment: Alignment.centerLeft,
-                                          height: 80,
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                width: 0.2,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.fromLTRB(
-                                              15, 10, 15, 10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Expanded(
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: <Widget>[
-                                                    Expanded(
-                                                      flex: 3,
-                                                      child:
-                                                          SingleChildScrollView(
-                                                        scrollDirection:
-                                                            Axis.horizontal,
-                                                        child: Row(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              data.name,
-                                                              style: TextStyle(
-                                                                fontFamily:
-                                                                    'San-francisco',
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .black,
-                                                              ),
-                                                            ),
-                                                            SizedBox(
-                                                              width: 10,
-                                                            ),
-                                                            Text(
-                                                              "\$ ${data.unitPrice}",
-                                                              style: TextStyle(
-                                                                fontFamily:
-                                                                    'San-francisco',
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color: Colors
-                                                                    .black,
-                                                                fontSize: 13,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      flex: 1,
-                                                      child: Align(
-                                                        alignment: Alignment
-                                                            .centerRight,
-                                                        child: Text(
-                                                          "\$ ${data.amount}",
+                                        ),
+                                      ),
+                                      padding:
+                                          EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Expanded(
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: SingleChildScrollView(
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    child: Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: <Widget>[
+                                                        Text(
+                                                          data.name,
                                                           style: TextStyle(
+                                                            fontFamily:
+                                                                'San-francisco',
                                                             fontWeight:
                                                                 FontWeight.bold,
                                                             color: Colors.black,
                                                           ),
                                                         ),
-                                                      ),
+                                                        SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          "\$ ${data.unitPrice}",
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'San-francisco',
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.black,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 7,
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  CaculateIcon(
-                                                    qty: data.qty,
                                                   ),
-                                                  Container(
-                                                    padding: EdgeInsets.all(8),
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                        width: 1,
-                                                        color: Colors.black54,
+                                                ),
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      "\$ ${data.amount}",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
                                                       ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              15.0),
                                                     ),
-                                                    child: Material(
-                                                      color: Colors.transparent,
-                                                      child: InkWell(
-                                                        splashColor:
-                                                            Colors.black38,
-                                                        onTap: () {
-                                                          print(
-                                                              'setstate change from calling add note');
-                                                          setState(() {
-                                                            _pageState = 2;
-                                                          });
-                                                          growableList.clear();
-                                                          for (int i = 0;
-                                                              i <
-                                                                  data.notes
-                                                                      .length;
-                                                              i++) {
-                                                            growableList.add(
-                                                              data.notes[i]
-                                                                  .noteId,
-                                                            );
-                                                          }
-                                                          sale_detail_id =
-                                                              data.saleDetailId;
-                                                        },
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(
-                                                            1.0,
-                                                          ),
-                                                          child: Text(
-                                                            "SPECIAL REQUEST",
-                                                            style: TextStyle(
-                                                              fontSize: 8,
-                                                              fontFamily:
-                                                                  'San-francisco',
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                          ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 7,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              CaculateIcon(
+                                                qty: data.qty,
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    width: 1,
+                                                    color: Colors.black54,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          15.0),
+                                                ),
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: InkWell(
+                                                    splashColor: Colors.black38,
+                                                    onTap: () {
+                                                      setState(() {
+                                                        _pageState = 2;
+                                                      });
+                                                      growableList.clear();
+                                                      for (int i = 0;
+                                                          i < data.notes.length;
+                                                          i++) {
+                                                        growableList.add(
+                                                          data.notes[i].noteId,
+                                                        );
+                                                      }
+                                                      sale_detail_id =
+                                                          data.saleDetailId;
+                                                    },
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                        1.0,
+                                                      ),
+                                                      child: Text(
+                                                        "SPECIAL REQUEST",
+                                                        style: TextStyle(
+                                                          fontSize: 8,
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          color: Colors.black,
                                                         ),
                                                       ),
                                                     ),
                                                   ),
-                                                ],
-                                              )
+                                                ),
+                                              ),
                                             ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Container();
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            } else {
+                              return Container();
+                            }
                           },
                         ),
                       ),
@@ -911,7 +970,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                 ),
                                 SizedBox(height: 5),
                                 Text(
-                                  '\$ ${totalAmount}',
+                                  '\$ $totalAmount',
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
@@ -1132,7 +1191,6 @@ class _MenuScreenState extends State<MenuScreen> {
           borderRadius: BorderRadius.circular(15),
           child: InkWell(
             onTap: () {
-              print('setstate call from switch cancel button');
               setState(() {
                 if (_pageState == 2) {
                   _pageState = 1;
@@ -1222,13 +1280,19 @@ class _MenuScreenState extends State<MenuScreen> {
 // ___________________________ Internal Widget____________________________________________________
 
   _buildImageContainer(bool orientation, Size size, tableList, int index) {
-    return Container(
-      child: FadeInImage.assetNetwork(
-        placeholder: preLoading,
-        image: serverIP + tableList[index].image,
-        height: orientation ? size.height * .15 : size.height * .1,
-        width: double.infinity,
-        fit: BoxFit.cover,
+    return CachedNetworkImage(
+      width: double.infinity,
+      height: orientation ? size.height * .15 : size.height * .1,
+      fit: BoxFit.cover,
+      imageUrl: serverIP + tableList[index].image,
+      placeholder: (context, url) => CircularProgressIndicator(),
+      errorWidget: (context, url, error) => Container(
+        height: orientation ? size.height * .14 : size.height * .06,
+        child: Icon(
+          Icons.no_sim,
+          color: Colors.grey[500],
+          size: orientation ? 50 : 30,
+        ),
       ),
     );
   }

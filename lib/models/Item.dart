@@ -1,20 +1,21 @@
 import 'dart:convert';
 
 class Item {
-  Item(
-      {this.itemDetailId,
-      this.itemName,
-      this.price,
-      this.image,
-      this.qty,
-      this.saleDetailId});
+  Item({
+    this.itemDetailId,
+    this.itemName,
+    this.price,
+    this.image,
+    this.qty,
+    this.saleDetailId,
+  });
 
   int itemDetailId;
+  int saleDetailId;
   String itemName;
   String price;
   String image;
   String qty;
-  int saleDetailId;
 
   factory Item.fromRawJson(String str) => Item.fromJson(json.decode(str));
 

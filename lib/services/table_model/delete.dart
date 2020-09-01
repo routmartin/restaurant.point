@@ -24,3 +24,28 @@ Future deleteItems({
   }
   return null;
 }
+
+Future overideDeleteItems({
+  int saleMasterId,
+  int saleDetailId,
+  String username,
+  String password,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/promptUserDeleteItem',
+    data: {
+      "userName": username,
+      "pwd": password,
+      "sale_detail_id": saleDetailId.toString(),
+      "sale_master_id": saleMasterId.toString(),
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    print("data response: " + response.data);
+    return response.data;
+  }
+  return null;
+}

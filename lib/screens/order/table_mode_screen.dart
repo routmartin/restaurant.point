@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/models/floor.dart';
@@ -796,17 +797,34 @@ class _TableModeScreenState extends State<TableModeScreen> {
     );
   }
 
+  // _buildImageContainer(bool orientation, Size size, tableList, int index) {
+  //   return Container(
+  //     // margin: EdgeInsets.only(
+  //     //   top: orientation ? size.height * .02 : size.height * .01,
+  //     // ),
+  //     child: FadeInImage.assetNetwork(
+  //       placeholder: preLoading,
+  //       image: serverIP + tableList[index].tableImage,
+  //       height: orientation ? size.height * .13 : size.height * .06,
+  //       width: double.infinity,
+  //       fit: BoxFit.fitHeight,
+  //     ),
+  //   );
+  // }
+
   _buildImageContainer(bool orientation, Size size, tableList, int index) {
-    return Container(
-      margin: EdgeInsets.only(
-        top: orientation ? size.height * .02 : size.height * .01,
-      ),
-      child: FadeInImage.assetNetwork(
-        placeholder: preLoading,
-        image: serverIP + tableList[index].tableImage,
-        height: orientation ? size.height * .12 : size.height * .05,
-        width: double.infinity,
-        fit: BoxFit.fitWidth,
+    return CachedNetworkImage(
+      width: double.infinity,
+      height: orientation ? size.height * .14 : size.height * .06,
+      imageUrl: serverIP + tableList[index].tableImage,
+      placeholder: (context, url) => CircularProgressIndicator(),
+      errorWidget: (context, url, error) => Container(
+        height: orientation ? size.height * .14 : size.height * .06,
+        child: Icon(
+          Icons.no_sim,
+          color: Colors.grey[500],
+          size: orientation ? 50 : 30,
+        ),
       ),
     );
   }

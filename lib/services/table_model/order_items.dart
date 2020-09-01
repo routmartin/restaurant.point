@@ -10,6 +10,11 @@ Future addOrderItems({
   int tableId,
   int qty = 1,
 }) async {
+  print('show saleMasterId: ' + saleMasterId.toString());
+  // print('show itemDetailId: ' + itemDetailId.toString());
+  // print('show saleDetailId: ' + saleDetailId.toString());
+  // print('show tableId: ' + tableId.toString());
+
   Response response = await dio.post(
     serverIP + '/Api/OrderItem',
     data: {
@@ -26,7 +31,7 @@ Future addOrderItems({
   );
 
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.statusCode);
+    return response.data;
   }
   return null;
 }
