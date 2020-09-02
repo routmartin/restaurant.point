@@ -7,6 +7,7 @@ const String userToken = 'xh7NglVZ0dvvJcKbPAnONg==';
 const String appbarLogo = 'assets/images/main.png';
 const String appbar = 'assets/images/appbar.svg';
 const String authentication = 'assets/images/authentication.svg';
+const String noitemscart = 'assets/icons/NoItemsCart.svg';
 const String backgroundImg = 'assets/images/background.png';
 const String preLoading = 'assets/icons/indicator.gif';
 const String floor = 'assets/images/floor.jpg';

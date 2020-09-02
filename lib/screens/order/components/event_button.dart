@@ -17,31 +17,26 @@ class Button extends StatelessWidget {
     var screeOrientation = MediaQuery.of(context).orientation;
     var lanscape = Orientation.landscape;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(7.0),
+      borderRadius: BorderRadius.circular(10.0),
       child: Material(
-        borderRadius: BorderRadius.circular(7.0),
+        borderRadius: BorderRadius.circular(10.0),
         color: border ? Colors.grey[200] : kPrimaryColor,
         child: InkWell(
           splashColor: Colors.black26,
           onTap: press,
           child: Container(
-            padding: EdgeInsets.symmetric(
-              vertical: 10,
-              horizontal: 14,
-            ),
-            width: screeOrientation == lanscape ? 120 : size.width * 0.25,
+            alignment: Alignment.center,
+            width: screeOrientation == lanscape ? 120 : size.width * 0.28,
             height: screeOrientation == Orientation.landscape
                 ? size.height * 0.054
                 : size.height * 0.045,
-            child: Center(
-              child: Text(
-                buttonName,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: border ? kPrimaryColor : Colors.white,
-                  fontFamily: 'San-francisco',
-                  fontWeight: FontWeight.w800,
-                ),
+            child: Text(
+              buttonName,
+              style: TextStyle(
+                fontSize: 14,
+                color: border ? kPrimaryColor : Colors.white,
+                fontFamily: 'San-francisco',
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),

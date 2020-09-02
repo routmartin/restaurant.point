@@ -10,7 +10,7 @@ Future addOrderItems({
   int tableId,
   int qty = 1,
 }) async {
-  print('show saleMasterId: ' + saleMasterId.toString());
+  // print('show saleMasterId: ' + saleMasterId.toString());
   // print('show itemDetailId: ' + itemDetailId.toString());
   // print('show saleDetailId: ' + saleDetailId.toString());
   // print('show tableId: ' + tableId.toString());

@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -23,9 +22,9 @@ import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 
 import 'components/event_button.dart';
-import 'components/bottom_label_checkout.dart';
 
 import 'components/order_cal_icon.dart';
+import 'components/order_item.dart';
 
 class MenuScreen extends StatefulWidget {
   final saleMasterId;
@@ -46,6 +45,7 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<List<Ordersummery>> orderSummery;
   Future<List<Note>> noteList;
   List growableList = [];
+  //_______________ OrderSummery _________________
   int totalItems = 0;
   double totalAmount = 0;
   int sale_detail_id;
@@ -59,6 +59,7 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
     restoreSaleMasterId = widget.saleMasterId;
     requestMenuFunction();
+    requestOrderSummeryFunction();
   }
 
 //________________Open Switch Container Layout________________________
@@ -79,8 +80,15 @@ class _MenuScreenState extends State<MenuScreen> {
 //________________Close Switch Container Layout________________________
 
   requestMenuFunction() {
-    print('Master ID: ' + restoreSaleMasterId.toString());
     menuData = fetchMenuSevice(saleMasterId: restoreSaleMasterId);
+  }
+
+  requestOrderSummeryFunction() async {
+    orderSummery = fetchOrderSummery(
+      table_id: widget.tableId,
+      sale_master_id: restoreSaleMasterId,
+    );
+    setState(() {});
   }
 
   @override
@@ -101,7 +109,7 @@ class _MenuScreenState extends State<MenuScreen> {
       case 1:
         orderSummeryWidth = windowWidth;
         orderSummeryYOffset =
-            orientation ? size.height * .08 : size.height * .125;
+            orientation ? size.height * .06 : size.height * .07;
         orderSummeryXOffset = 0;
         showNoteYOffset = windowHeight;
         break;
@@ -109,30 +117,21 @@ class _MenuScreenState extends State<MenuScreen> {
         orderSummeryWidth = windowWidth - 40;
         orderSummeryYOffset = 120;
         orderSummeryXOffset = 0;
-
         showNoteYOffset = 180;
         showNoteHeight = windowHeight;
         break;
     }
 
     // ___________________________Open operation function ____________________________
-    requestOrderSummeryFunction() async {
-      orderSummery = fetchOrderSummery(
-        table_id: widget.tableId,
-        sale_master_id: widget.saleMasterId,
-      );
-      setState(() {});
-    }
 
     requestAddItemsFunction({tableList}) {
       addOrderItems(
         itemDetailId: tableList.itemDetailId,
-        saleMasterId: widget.saleMasterId,
+        saleMasterId: restoreSaleMasterId,
         tableId: widget.tableId,
         saleDetailId: tableList.saleDetailId,
       ).then((saleMasterId) {
         restoreSaleMasterId = int.parse(saleMasterId);
-        print("response data: " + restoreSaleMasterId.toString());
         requestMenuFunction();
         setState(() {});
       });
@@ -307,7 +306,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             if (username != null && password != null) {
                               overideDeleteItems(
                                 saleDetailId: saleDetailId,
-                                saleMasterId: saleMasterId,
+                                saleMasterId: restoreSaleMasterId,
                                 username: username,
                                 password: password,
                               ).then((response) {
@@ -440,16 +439,17 @@ class _MenuScreenState extends State<MenuScreen> {
                                 onPressed: () => Navigator.pop(context, true),
                               ),
                               Expanded(
-                                  child: Center(
-                                child: Text(
-                                  widget.tableName,
-                                  style: TextStyle(
-                                    fontFamily: 'San-francisco',
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                child: Center(
+                                  child: Text(
+                                    widget.tableName,
+                                    style: TextStyle(
+                                      fontFamily: 'San-francisco',
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                 ),
-                              ))
+                              )
                             ],
                           )),
                       Expanded(
@@ -595,7 +595,83 @@ class _MenuScreenState extends State<MenuScreen> {
                     ],
                   ),
                 ),
-                BottomLabelCheckOut(),
+                Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  left: 1,
+                  bottom: 0,
+                  child: Container(
+                    height: 70,
+                    color: Color(0xffebebeb),
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                          width: MediaQuery.of(context).size.width * .2,
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              FittedBox(
+                                child: Text(
+                                  'Selected',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: "Roboto",
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xff787878),
+                                  ),
+                                ),
+                              ),
+                              FittedBox(
+                                child: Text(
+                                  'Items',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontFamily: "Roboto",
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xff787878),
+                                  ),
+                                ),
+                              ),
+                              FittedBox(
+                                child: Text(
+                                  totalItems.toString(),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: "Roboto",
+                                    fontWeight: FontWeight.bold,
+                                    color: kPrimaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .5,
+                          margin:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            shrinkWrap: false,
+                            physics: ScrollPhysics(),
+                            itemCount: 10,
+                            itemBuilder: (ctx, index) {
+                              return OrderItems();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 Positioned(
                   right: 0,
                   bottom: 0,
@@ -612,17 +688,12 @@ class _MenuScreenState extends State<MenuScreen> {
                       color: kPrimaryColor,
                       borderRadius: BorderRadius.circular(4),
                       child: InkWell(
-                        onTap: widget.saleMasterId != 0
+                        onTap: restoreSaleMasterId != 0
                             ? () {
                                 requestOrderSummeryFunction();
                                 noteList = fetchListNote();
-                                if (_pageState != 0) {
-                                  _pageState = 0;
-                                } else {
-                                  _pageState = 1;
-                                }
+                                _pageState = 1;
                               }
-                            // : _requestNoItmesModel,
                             : _requestNoItmesModel,
                         splashColor: Colors.black,
                         child: Container(
@@ -631,7 +702,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                '\$ 00.00',
+                                '\$ $totalAmount',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -685,7 +756,7 @@ class _MenuScreenState extends State<MenuScreen> {
           AnimatedContainer(
             alignment: Alignment.center,
             width: orientation ? size.width * .4 : null,
-            height: orientation ? size.height * .8 : null,
+            height: orientation ? size.height * .86 : null,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform: Matrix4.translationValues(
@@ -702,16 +773,15 @@ class _MenuScreenState extends State<MenuScreen> {
                   spreadRadius: 10,
                 ),
               ],
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
-              ),
             ),
             child: Stack(
               children: <Widget>[
                 Container(
-                  height: orientation ? size.height * 0.8 : double.infinity,
-                  width: orientation ? size.width * 0.4 : double.infinity,
+                  height: orientation ? null : size.height * .87,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Column(
                     children: <Widget>[
                       _buildHeaderTitle(size, "Your Order Summary(Dine In)"),
@@ -753,10 +823,11 @@ class _MenuScreenState extends State<MenuScreen> {
                                         icon: Icons.delete,
                                         onTap: () {
                                           deleteItems(
-                                            saleMasterId: widget.saleMasterId,
+                                            saleMasterId: restoreSaleMasterId,
                                             saleDetailId: data.saleDetailId,
                                           ).then((response) {
                                             if (response == 'success') {
+                                              requestMenuFunction();
                                               requestOrderSummeryFunction();
                                             } else if (response ==
                                                 'afterOrder') {
@@ -864,10 +935,15 @@ class _MenuScreenState extends State<MenuScreen> {
                                               Container(
                                                 padding: EdgeInsets.all(8),
                                                 decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                    width: 1,
-                                                    color: Colors.black54,
-                                                  ),
+                                                  border: data.notes.length < 1
+                                                      ? Border.all(
+                                                          width: 1,
+                                                          color: Colors.black54,
+                                                        )
+                                                      : null,
+                                                  color: data.notes.length >= 1
+                                                      ? kPrimaryColor
+                                                      : null,
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           15.0),
@@ -902,7 +978,11 @@ class _MenuScreenState extends State<MenuScreen> {
                                                           fontSize: 8,
                                                           fontFamily:
                                                               'San-francisco',
-                                                          color: Colors.black,
+                                                          color: data.notes
+                                                                      .length >=
+                                                                  1
+                                                              ? Colors.white
+                                                              : Colors.black,
                                                         ),
                                                       ),
                                                     ),
@@ -918,7 +998,28 @@ class _MenuScreenState extends State<MenuScreen> {
                                 },
                               );
                             } else {
-                              return Container();
+                              return Container(
+                                  width: double.infinity,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      SvgPicture.asset(
+                                        noitemscart,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        'No Items'.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                          fontFamily: 'San-francisco',
+                                        ),
+                                      ),
+                                    ],
+                                  ));
                             }
                           },
                         ),
@@ -981,7 +1082,51 @@ class _MenuScreenState extends State<MenuScreen> {
                           ],
                         ),
                       ),
-                      _buildButtonContainer(size, context)
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Button(
+                                  buttonName: "VOID",
+                                ),
+                                Button(
+                                  buttonName: "DISCOUNT (%)",
+                                  press: () {},
+                                ),
+                                Button(
+                                  buttonName: "DISCOUNT (\$)",
+                                  press: () {},
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Button(
+                                  buttonName: "ORDER",
+                                ),
+                                Button(
+                                  buttonName: "PRINT BILL",
+                                  press: () {},
+                                ),
+                                Button(
+                                  buttonName: "PAYMENT",
+                                  press: () {},
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1046,8 +1191,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                             growableList.toSet().toList();
                                       }
                                       setState(() {});
-                                      print(
-                                          'setstate call from switch checkbox');
                                     },
                                     splashColor: Colors.black12,
                                     child: Container(
@@ -1140,7 +1283,6 @@ class _MenuScreenState extends State<MenuScreen> {
                               press: () {
                                 growableList.clear();
                                 setState(() {});
-                                print('setstate call from switch reset note');
                               },
                             ),
                             SizedBox(
@@ -1154,12 +1296,11 @@ class _MenuScreenState extends State<MenuScreen> {
                               press: () {
                                 applySpecialRequest(
                                   noteList: growableList,
-                                  saleMasterId: widget.saleMasterId,
+                                  saleMasterId: restoreSaleMasterId,
                                   saleDetailId: sale_detail_id,
                                 ).then((value) {
                                   if (value == 'success') {
                                     _pageState = 1;
-
                                     requestOrderSummeryFunction();
                                   }
                                 });
@@ -1182,8 +1323,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
   _buildCancelButton(BuildContext context) {
     return Positioned(
-      top: 7,
-      right: 5,
+      top: 12,
+      right: 8,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: Material(
@@ -1237,42 +1378,6 @@ class _MenuScreenState extends State<MenuScreen> {
           fontSize: 15,
           fontWeight: FontWeight.bold,
         ),
-      ),
-    );
-  }
-
-  _buildButtonContainer(size, BuildContext context) {
-    var orientation = MediaQuery.of(context).orientation;
-    return Container(
-      height: orientation == Orientation.landscape
-          ? size.height * 0.1
-          : size.height * 0.08,
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(10),
-          bottomRight: Radius.circular(10),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Button(
-            buttonName: "Print Bill",
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          Button(
-            buttonName: "Payment",
-            press: () {},
-          )
-        ],
       ),
     );
   }

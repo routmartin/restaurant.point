@@ -7,6 +7,9 @@ Future deleteItems({
   int saleMasterId,
   int saleDetailId,
 }) async {
+  print("saleDetailId_: " + saleDetailId.toString());
+  print("saleMasterId_: " + saleMasterId.toString());
+
   Response response = await dio.post(
     serverIP + '/Api/DeleteItemOrder',
     data: {
