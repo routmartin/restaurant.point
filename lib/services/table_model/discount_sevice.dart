@@ -3,16 +3,16 @@ import 'package:pointrestaurant/utilities/path.dart';
 
 Dio dio = Dio();
 
-Future deleteItems({
-  int saleMasterId,
+Future applyPercentDisItem({
+  String dis_percent_item,
   int saleDetailId,
 }) async {
   Response response = await dio.post(
-    serverIP + '/Api/DeleteItemOrder',
+    serverIP + '/Api/DisItemPercent',
     data: {
       "userToken": userToken,
-      "sale_detail_id": saleDetailId.toString(),
-      "sale_master_id": saleMasterId.toString(),
+      "sale_detail_id": saleDetailId,
+      "dis_percent_item": dis_percent_item,
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
@@ -24,41 +24,18 @@ Future deleteItems({
   return null;
 }
 
-Future overideDeleteItems({
-  int saleMasterId,
+Future applyPercentDollItem({
+  String dis_cash_item,
   int saleDetailId,
-  String username,
-  String password,
 }) async {
-  print('calling fucn');
+  print("dis_percent_item: " + dis_cash_item);
+  print("saleDetailId: " + saleDetailId.toString());
   Response response = await dio.post(
-    serverIP + '/Api/promptUserDeleteItem',
-    data: {
-      "userName": username,
-      "pwd": password,
-      "sale_detail_id": saleDetailId.toString(),
-      "sale_master_id": saleMasterId.toString(),
-    },
-    options: Options(
-      contentType: Headers.formUrlEncodedContentType,
-    ),
-  );
-  if (response.statusCode == 200 && response.data != "[]") {
-    return response.data;
-  }
-  return null;
-}
-
-Future requestToVoidInvoice({
-  int saleMasterId,
-  String reason,
-}) async {
-  Response response = await dio.post(
-    serverIP + '/Api/GetPermmisionVoidInvoice',
+    serverIP + '/Api/DisItemDollar',
     data: {
       "userToken": userToken,
-      "sale_master_id": saleMasterId,
-      "reason": reason,
+      "sale_detail_id": saleDetailId,
+      "dis_cash_item": dis_cash_item,
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
@@ -70,26 +47,43 @@ Future requestToVoidInvoice({
   return null;
 }
 
-Future overideVoidInvice({
-  int saleMasterId,
-  String username,
-  String password,
-  String reason = 'no reason',
+Future applyDiscountCashonInvoice({
+  String dis_cash_inv,
+  int sale_master_id,
 }) async {
   Response response = await dio.post(
-    serverIP + '/Api/OveridePermissionVoiceInvoice',
+    serverIP + '/Api/DisInvDollar',
     data: {
-      "userName": username,
-      "pwd": password,
-      "sale_master_id": saleMasterId,
-      "reason": reason,
+      "userToken": userToken,
+      "sale_master_id": sale_master_id,
+      "dis_cash_inv": dis_cash_inv,
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.data);
+    return response.data;
+  }
+  return null;
+}
+
+Future applyDiscountPercentonInvoice({
+  String dis_percent_inv,
+  int sale_master_id,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/DisInvPercent',
+    data: {
+      "userToken": userToken,
+      "sale_master_id": sale_master_id,
+      "dis_percent_inv": dis_percent_inv,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
   }
   return null;

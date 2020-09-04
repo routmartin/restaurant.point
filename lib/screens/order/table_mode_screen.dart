@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/models/floor.dart';
@@ -206,6 +207,9 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                               children: List<Widget>.generate(
                                                 tableList.length,
                                                 (index) {
+                                                  int hasItems = int.parse(
+                                                      tableList[index]
+                                                          .hasItemsOrder);
                                                   return Stack(
                                                     children: <Widget>[
                                                       Container(
@@ -233,9 +237,11 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                                             splashColor:
                                                                 Colors.black12,
                                                             onTap: tableList[
-                                                                            index]
-                                                                        .saleMasterId !=
-                                                                    0
+                                                                                index]
+                                                                            .saleMasterId !=
+                                                                        0 &&
+                                                                    hasItems >=
+                                                                        1
                                                                 ? () =>
                                                                     showSumeryModal(
                                                                       tableList:
@@ -321,229 +327,235 @@ class _TableModeScreenState extends State<TableModeScreen> {
                 Container(
                   height: orientation ? size.height * 0.8 : double.infinity,
                   width: orientation ? size.width * 0.4 : double.infinity,
-                  child: Column(
-                    children: <Widget>[
-                      _buildHeaderTitle(size),
-                      Container(
-                        height: orientation
-                            ? size.height * 0.52
-                            : size.height * 0.55,
-                        color: Color(0xfff0f0f0),
-                        child: FutureBuilder(
-                          future: orderSummery,
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            if (!snapshot.hasData) {
-                              return CenterLoadingIndicator();
-                            }
-                            totalItems = snapshot.data.length;
-                            return ListView.builder(
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                var data = snapshot.data[index];
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: <Widget>[
+                        _buildHeaderTitle(size),
+                        Container(
+                          height: orientation
+                              ? size.height * 0.52
+                              : size.height * 0.55,
+                          color: Color(0xfff0f0f0),
+                          child: FutureBuilder(
+                            future: orderSummery,
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              if (!snapshot.hasData) {
+                                return CenterLoadingIndicator();
+                              }
+                              totalItems = snapshot.data.length;
+                              return ListView.builder(
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (context, index) {
+                                  var data = snapshot.data[index];
 
-                                return Container(
-                                  alignment: Alignment.centerLeft,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        width: 0.2,
-                                        color: Colors.grey,
+                                  return Container(
+                                    alignment: Alignment.centerLeft,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          width: 0.2,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: <Widget>[
-                                            Expanded(
-                                              flex: 3,
-                                              child: SingleChildScrollView(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      data.name,
-                                                      style: TextStyle(
-                                                        fontFamily:
-                                                            'San-francisco',
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.black,
+                                    padding:
+                                        EdgeInsets.fromLTRB(15, 10, 15, 10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Expanded(
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Expanded(
+                                                flex: 3,
+                                                child: SingleChildScrollView(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Text(
+                                                        data.name,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 10,
-                                                    ),
-                                                    Text(
-                                                      "\$ ${data.unitPrice}",
-                                                      style: TextStyle(
-                                                        fontFamily:
-                                                            'San-francisco',
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: Colors.black,
-                                                        fontSize: 13,
+                                                      SizedBox(
+                                                        width: 10,
                                                       ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 1,
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Text(
-                                                  "\$ ${data.amount}",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
+                                                      Text(
+                                                        "\$ ${data.unitPrice}",
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: Colors.black,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 7,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          CaculateIcon(
-                                            qty: data.qty,
+                                              Expanded(
+                                                flex: 1,
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Text(
+                                                    "\$ ${data.amount}",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          _buildSpecilRequest(context)
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                      Container(
-                        height: size.height * 0.08,
-                        color: Colors.grey[300],
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Order Items',
-                                  style: TextStyle(
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                Text(
-                                  'Total',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: <Widget>[
-                                Text(
-                                  totalItems.toString(),
-                                  style: TextStyle(
-                                    fontSize: 17.0,
-                                    color: kPrimaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                Text(
-                                  '\$ ${totalAmount}',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: orientation
-                            ? size.height * 0.1
-                            : size.height * 0.09,
-                        width: double.infinity,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(10),
-                            bottomRight: Radius.circular(10),
+                                        ),
+                                        SizedBox(
+                                          height: 7,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            CaculateIcon(
+                                              qty: data.qty,
+                                            ),
+                                            _buildSpecilRequest(context)
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
                         ),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
+                        Container(
+                          height: size.height * 0.08,
+                          color: Colors.grey[300],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'Order Items',
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: <Widget>[
+                                  Text(
+                                    totalItems.toString(),
+                                    style: TextStyle(
+                                      fontSize: 17.0,
+                                      color: kPrimaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    '\$ ${totalAmount}',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        Container(
+                          height: orientation
+                              ? size.height * 0.1
+                              : size.height * 0.09,
+                          width: double.infinity,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(10),
+                              bottomRight: Radius.circular(10),
+                            ),
+                          ),
                           child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Button(
-                                  buttonName: "Continue",
-                                  press: () {
-                                    pushToMenuScree();
-                                  },
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Button(
-                                  buttonName: "Print Bill",
-                                  press: () {},
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Button(
-                                  buttonName: "Payment",
-                                  press: () {},
-                                )
-                              ],
+                            scrollDirection: Axis.horizontal,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Button(
+                                    buttonName: "Continue",
+                                    press: () {
+                                      pushToMenuScree();
+                                    },
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Button(
+                                    buttonName: "Print Bill",
+                                    press: () {},
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Button(
+                                    buttonName: "Payment",
+                                    press: () {},
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 _pageState == 1 ? _buildCancelButton(context) : Container()
@@ -792,16 +804,18 @@ class _TableModeScreenState extends State<TableModeScreen> {
   }
 
   _buildImageContainer(bool orientation, Size size, tableList, int index) {
-    return Container(
-      margin: EdgeInsets.only(
-        top: orientation ? size.height * .02 : size.height * .01,
-      ),
-      child: FadeInImage.assetNetwork(
-        placeholder: preLoading,
-        image: serverIP + tableList[index].tableImage,
-        height: orientation ? size.height * .12 : size.height * .05,
-        width: double.infinity,
-        fit: BoxFit.fitWidth,
+    return CachedNetworkImage(
+      width: double.infinity,
+      height: orientation ? size.height * .14 : size.height * .06,
+      imageUrl: serverIP + tableList[index].tableImage,
+      placeholder: (context, url) => CircularProgressIndicator(),
+      errorWidget: (context, url, error) => Container(
+        height: orientation ? size.height * .14 : size.height * .06,
+        child: Icon(
+          Icons.no_sim,
+          color: Colors.grey[500],
+          size: orientation ? 50 : 30,
+        ),
       ),
     );
   }

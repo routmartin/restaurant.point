@@ -10,6 +10,7 @@ class Table {
     this.saleStatus,
     this.checkinDuration,
     this.saleMasterId,
+    this.hasItemsOrder,
   });
 
   int tableId;
@@ -20,6 +21,7 @@ class Table {
   String saleStatus;
   String checkinDuration;
   int saleMasterId;
+  String hasItemsOrder;
 
   factory Table.fromRawJson(String str) => Table.fromJson(json.decode(str));
 
@@ -34,6 +36,7 @@ class Table {
         saleStatus: json["sale_status"],
         checkinDuration: json["checkin_duration"],
         saleMasterId: json["sale_master_id"],
+        hasItemsOrder: json["has_item_order"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -45,5 +48,6 @@ class Table {
         "sale_status": saleStatus,
         "checkin_duration": checkinDuration,
         "sale_master_id": saleMasterId,
+        "has_item_order": hasItemsOrder,
       };
 }
