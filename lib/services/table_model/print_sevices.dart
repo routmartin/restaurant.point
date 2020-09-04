@@ -3,28 +3,25 @@ import 'package:pointrestaurant/utilities/path.dart';
 
 Dio dio = Dio();
 
-Future addOrderItems({
-  int itemDetailId,
-  int saleMasterId,
-  int saleDetailId,
-  int tableId,
-  int qty = 1,
+Future printtoKitchen({
+  int sale_detail_ids = 0,
+  int sale_master_id,
+  String table_name,
 }) async {
+  print('call print func...');
+  print('sale_detail_idsL ' + sale_detail_ids.toString());
   Response response = await dio.post(
-    serverIP + '/Api/OrderItem',
+    serverIP + '/Api/PrintOrder',
     data: {
       "userToken": userToken,
-      "item_detail_id": itemDetailId.toString(),
-      "sale_master_id": saleMasterId.toString(),
-      "table_id": tableId.toString(),
-      "qty": qty,
-      "sale_detail_id": saleDetailId,
+      "master_id": sale_master_id,
+      "sale_detail_ids": sale_detail_ids,
+      "table_name": table_name,
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
-
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
   }

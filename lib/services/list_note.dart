@@ -30,7 +30,6 @@ Future applySpecialRequest({
   int saleMasterId,
   int saleDetailId,
 }) async {
-  print(saleDetailId);
   Response response = await dio.post(
     serverIP + '/Api/AddNote',
     data: {
