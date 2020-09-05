@@ -6,6 +6,7 @@ import 'widget/loading.slash.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(new MyApp());
 }
 

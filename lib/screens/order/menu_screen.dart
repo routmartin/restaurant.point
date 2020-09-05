@@ -20,7 +20,6 @@ import 'package:pointrestaurant/services/table_model/print_sevices.dart';
 
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
-import 'package:pointrestaurant/utilities/toggle.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 
@@ -71,17 +70,17 @@ class _MenuScreenState extends State<MenuScreen> {
 //________________Open Switch Container Layout________________________
 
   int _pageState = 0;
-  // double orderSummeryWidth = 0;
-  // double orderSummeryHeight = 0;
+  double orderSummeryWidth = 0;
+  double orderSummeryHeight = 0;
 
-  // double orderSummeryYOffset = 0;
-  // double orderSummeryXOffset = 0;
+  double orderSummeryYOffset = 0;
+  double orderSummeryXOffset = 0;
 
-  // double showNoteYOffset = 0;
-  // double showNoteHeight = 0;
+  double showNoteYOffset = 0;
+  double showNoteHeight = 0;
 
-  // double windowWidth = 0;
-  // double windowHeight = 0;
+  double windowWidth = 0;
+  double windowHeight = 0;
 
 //________________Close Switch Container Layout________________________
 
@@ -104,33 +103,33 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     var size = MediaQuery.of(context).size;
-    bool orientation =
+    var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    ToggleWidget.windowWidth = size.height;
-    ToggleWidget.windowWidth = size.width;
-    ToggleWidget().toggleMe(_pageState, orientation, size);
-    // switch (_pageState) {
-    //   case 0:
-    //     orderSummeryWidth = windowWidth;
-    //     orderSummeryYOffset = windowHeight;
-    //     orderSummeryXOffset = 0;
-    //     showNoteYOffset = windowHeight;
-    //     break;
-    //   case 1:
-    //     orderSummeryWidth = windowWidth;
-    //     orderSummeryYOffset =
-    //         orientation ? size.height * .06 : size.height * .07;
-    //     orderSummeryXOffset = 0;
-    //     showNoteYOffset = windowHeight;
-    //     break;
-    //   case 2:
-    //     orderSummeryWidth = windowWidth - 40;
-    //     orderSummeryYOffset = 120;
-    //     orderSummeryXOffset = 0;
-    //     showNoteYOffset = 180;
-    //     showNoteHeight = windowHeight;
-    //     break;
-    // }
+    windowHeight = size.height;
+    windowWidth = size.width;
+
+    switch (_pageState) {
+      case 0:
+        orderSummeryWidth = windowWidth;
+        orderSummeryYOffset = windowHeight;
+        orderSummeryXOffset = 0;
+        showNoteYOffset = windowHeight;
+        break;
+      case 1:
+        orderSummeryWidth = windowWidth;
+        orderSummeryYOffset =
+            orientation ? size.height * .06 : size.height * .07;
+        orderSummeryXOffset = 0;
+        showNoteYOffset = windowHeight;
+        break;
+      case 2:
+        orderSummeryWidth = windowWidth - 40;
+        orderSummeryYOffset = 120;
+        orderSummeryXOffset = 0;
+        showNoteYOffset = 180;
+        showNoteHeight = windowHeight;
+        break;
+    }
 
     showMessageDialog({message = 'NO ORDER ITEMS'}) {
       return showGeneralDialog(
@@ -1130,8 +1129,8 @@ class _MenuScreenState extends State<MenuScreen> {
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
             transform: Matrix4.translationValues(
-              ToggleWidget.orderSummeryXOffset,
-              ToggleWidget.orderSummeryYOffset,
+              orderSummeryXOffset,
+              orderSummeryYOffset,
               1,
             ),
             decoration: BoxDecoration(
@@ -1549,10 +1548,10 @@ class _MenuScreenState extends State<MenuScreen> {
           AnimatedContainer(
             margin: EdgeInsets.only(left: orientation ? size.width * .013 : 0),
             width: orientation ? size.width * .37 : size.width,
-            height: ToggleWidget.showNoteHeight,
+            height: showNoteHeight,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
-            transform: Matrix4.translationValues(0, ToggleWidget.showNoteYOffset, 1),
+            transform: Matrix4.translationValues(0, showNoteYOffset, 1),
             decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.only(
