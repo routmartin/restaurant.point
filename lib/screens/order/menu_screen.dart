@@ -8,12 +8,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:platform_action_sheet/platform_action_sheet.dart';
 
 import 'package:pointrestaurant/models/menu.dart';
+import 'package:pointrestaurant/models/move_list.dart';
 import 'package:pointrestaurant/models/note.dart';
 import 'package:pointrestaurant/models/ordersummery.dart';
 import 'package:pointrestaurant/services/list_note.dart';
 import 'package:pointrestaurant/services/table_model/delete.dart';
 import 'package:pointrestaurant/services/table_model/menu_service.dart';
 import 'package:pointrestaurant/services/table_model/discount_sevice.dart';
+import 'package:pointrestaurant/services/table_model/move_list_sevice.dart';
 import 'package:pointrestaurant/services/table_model/order_items.dart';
 import 'package:pointrestaurant/services/table_model/order_summery_sevice.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
@@ -45,6 +47,7 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   Future<List<Menu>> menuData;
+  Future<List<MoveList>> movelistData;
   Future<List<Ordersummery>> orderSummery;
   Future<List<Note>> noteList;
   List growableList = [];
@@ -129,6 +132,222 @@ class _MenuScreenState extends State<MenuScreen> {
         showNoteYOffset = 180;
         showNoteHeight = windowHeight;
         break;
+    }
+
+    showMovableDialog() {
+      return showGeneralDialog(
+        barrierColor: Colors.black.withOpacity(0.2),
+        transitionDuration: Duration(milliseconds: 100),
+        barrierDismissible: true,
+        barrierLabel: '',
+        context: context,
+        pageBuilder: (context, animation1, animation2) {
+          return null;
+        },
+        transitionBuilder: (context, a1, a2, widget) {
+          var size = MediaQuery.of(context).size;
+          return Transform.scale(
+            scale: a1.value,
+            child: Opacity(
+              opacity: a1.value,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+                  width: size.width * 1.1,
+                  height: orientation ? size.height * .4 : size.height * .6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: FutureBuilder(
+                    future: movelistData,
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (!snapshot.hasData) {
+                        return CenterLoadingIndicator();
+                      }
+                      return Container(
+                        width: double.infinity,
+                        height: size.height,
+                        child: VerticalTabs(
+                          indicatorColor: Color(0xffb01105),
+                          tabsWidth:
+                              orientation ? size.width * .12 : size.width * .23,
+                          selectedTabBackgroundColor: null,
+                          contentScrollAxis: Axis.vertical,
+                          tabs: List.generate(
+                            snapshot.data.length,
+                            (index) {
+                              return Tab(
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  height: 40,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                  ),
+                                  child: Text(
+                                    snapshot.data[index].floorName,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Color(0xff121010),
+                                      fontFamily: "San-francisco",
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          contents: List.generate(
+                            snapshot.data.length,
+                            (index) {
+                              List<TableMove> tableList =
+                                  snapshot.data[index].tables;
+                              return Container(
+                                color: Color(0xfff5f5f5),
+                                child: GridView.count(
+                                  mainAxisSpacing: 1,
+                                  shrinkWrap: true,
+                                  physics: ScrollPhysics(),
+                                  scrollDirection: Axis.vertical,
+                                  childAspectRatio: orientation
+                                      ? size.height / 750
+                                      : size.height / 900,
+                                  crossAxisCount: size.width <= 800.0
+                                      ? 2
+                                      : size.width >= 1000.0 ? 5 : 4,
+                                  children: List<Widget>.generate(
+                                    tableList.length,
+                                    (index) {
+                                      return Stack(
+                                        children: <Widget>[
+                                          Container(
+                                            margin: EdgeInsets.only(
+                                              bottom: 15,
+                                              right: 10,
+                                              left: 10,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              border: Border.all(
+                                                width: 1.3,
+                                                color: Color(
+                                                  0xff0f0808,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                splashColor: Colors.black12,
+                                                onTap: () {},
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    CachedNetworkImage(
+                                                      width: double.infinity,
+                                                      height: orientation
+                                                          ? size.height * .15
+                                                          : size.height * .1,
+                                                      fit: BoxFit.cover,
+                                                      imageUrl: serverIP +
+                                                          tableList[index]
+                                                              .tableImage,
+                                                      placeholder: (context,
+                                                              url) =>
+                                                          CircularProgressIndicator(),
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          Container(
+                                                        height: orientation
+                                                            ? size.height * .14
+                                                            : size.height * .06,
+                                                        child: Icon(
+                                                          Icons.no_sim,
+                                                          color:
+                                                              Colors.grey[500],
+                                                          size: orientation
+                                                              ? 50
+                                                              : 30,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 10,
+                                                      ),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: <Widget>[
+                                                          SizedBox(
+                                                            height: orientation
+                                                                ? size.height *
+                                                                    .01
+                                                                : 3,
+                                                          ),
+                                                          Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: <Widget>[
+                                                              Text(
+                                                                tableList[index]
+                                                                    .tableName,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: Color(
+                                                                      0xff121010),
+                                                                  fontFamily:
+                                                                      "San-francisco",
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize:
+                                                                      orientation
+                                                                          ? 15
+                                                                          : 14,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
     }
 
     showMessageDialog({message = 'NO ORDER ITEMS'}) {
@@ -1387,28 +1606,28 @@ class _MenuScreenState extends State<MenuScreen> {
                                 );
                               } else {
                                 return Container(
-                                    width: double.infinity,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        SvgPicture.asset(
-                                          noitemscart,
-                                          fit: BoxFit.contain,
+                                  width: double.infinity,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      SvgPicture.asset(
+                                        noitemscart,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        'No Items'.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                          fontFamily: 'San-francisco',
                                         ),
-                                        SizedBox(
-                                          height: 5,
-                                        ),
-                                        Text(
-                                          'No Items'.toUpperCase(),
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                            fontFamily: 'San-francisco',
-                                          ),
-                                        ),
-                                      ],
-                                    ));
+                                      ),
+                                    ],
+                                  ),
+                                );
                               }
                             },
                           ),
@@ -1516,6 +1735,13 @@ class _MenuScreenState extends State<MenuScreen> {
                                     MainAxisAlignment.spaceAround,
                                 children: <Widget>[
                                   Button(
+                                    buttonName: "MOVE",
+                                    press: () {
+                                      movelistData = fetchMoveList();
+                                      showMovableDialog();
+                                    },
+                                  ),
+                                  Button(
                                     buttonName: "ORDER",
                                     press: () {
                                       printtoKitchen(
@@ -1526,11 +1752,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                   ),
                                   Button(
                                     buttonName: "PRINT BILL",
-                                    press: () {},
-                                  ),
-                                  Button(
-                                    buttonName: "PAYMENT",
-                                    press: () {},
+                                    press: () => printBill(
+                                        sale_master_id: restoreSaleMasterId),
                                   ),
                                 ],
                               ),

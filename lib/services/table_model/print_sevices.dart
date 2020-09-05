@@ -27,3 +27,22 @@ Future printtoKitchen({
   }
   return null;
 }
+
+Future printBill({
+  int sale_master_id,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/PrintBill',
+    data: {
+      "userToken": userToken,
+      "master_id": sale_master_id,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return response.data;
+  }
+  return null;
+}
