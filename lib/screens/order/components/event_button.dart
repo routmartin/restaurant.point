@@ -22,7 +22,7 @@ class Button extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
         color: border ? Colors.grey[200] : kPrimaryColor,
         child: InkWell(
-          splashColor: Colors.black26,
+          splashColor: Colors.black54,
           onTap: press,
           child: Container(
             alignment: Alignment.center,
