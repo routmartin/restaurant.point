@@ -47,50 +47,46 @@ class _ContentCardState extends State<ContentCard> {
     var size = MediaQuery.of(context).size;
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
-        child: DefaultTabController(
-          child: new LayoutBuilder(
-            builder:
-                (BuildContext context, BoxConstraints viewportConstraints) {
-              return Column(
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.only(bottom: 20, right: 15, left: 15),
-                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                    height: orientation ? size.height * .23 : size.height * .23,
-                    width: orientation ? size.width * .5 : size.width * .95,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 15),
+      child: DefaultTabController(
+        child: new LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints viewportConstraints) {
+            return Column(
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.only(bottom: 20, right: 15, left: 15),
+                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+                  height: orientation ? size.height * .23 : size.height * .23,
+                  width: orientation ? size.width * .5 : size.width * .95,
+                  decoration: cardShadow,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _buildTitleRow('Grand Total', 110),
+                      _buildTitleRow('Total Pay', 150),
+                      _buildTitleRow('Return ', 40),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    width: orientation ? size.width * .8 : size.width * .95,
                     decoration: cardShadow,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        _buildTitleRow('Grand Total', 110),
-                        _buildTitleRow('Total Pay', 150),
-                        _buildTitleRow('Return ', 40),
+                        _buildTabBar(),
+                        _buildContentContainer(viewportConstraints),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Container(
-                      width: orientation ? size.width * .8 : size.width * .95,
-                      decoration: cardShadow,
-                      child: Column(
-                        children: <Widget>[
-                          _buildTabBar(),
-                          _buildContentContainer(viewportConstraints),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          length: 3,
+                ),
+              ],
+            );
+          },
         ),
+        length: 3,
       ),
     );
   }

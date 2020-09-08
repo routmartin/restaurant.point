@@ -83,20 +83,20 @@ class RestaurantCard extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: ctx.orientation == Orientation.landscape
-                ? ctx.size.width * .09
-                : ctx.size.width * .175,
-            child: BottomMiddleButton(
-              sign: Text(
-                '+',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          )
+          // Positioned(
+          //   bottom: 0,
+          //   left: ctx.orientation == Orientation.landscape
+          //       ? ctx.size.width * .09
+          //       : ctx.size.width * .175,
+          //   child: BottomMiddleButton(
+          //     sign: Text(
+          //       '+',
+          //       style: TextStyle(
+          //         color: Colors.white,
+          //       ),
+          //     ),
+          //   ),
+          // )
         ],
       ),
     );

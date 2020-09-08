@@ -8,7 +8,7 @@ Future addOrderItems({
   int saleMasterId,
   int saleDetailId,
   int tableId,
-  int qty = 1,
+  int qty,
 }) async {
   Response response = await dio.post(
     serverIP + '/Api/OrderItem',

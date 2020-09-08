@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/widget/botton_middle_button.dart';
 
-
 class OrderItems extends StatelessWidget {
-  const OrderItems({
+  final data;
+  final index;
+  OrderItems({
     Key key,
+    this.data,
+    this.index,
   }) : super(key: key);
 
   @override

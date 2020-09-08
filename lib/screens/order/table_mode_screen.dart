@@ -9,6 +9,7 @@ import 'package:pointrestaurant/services/table_model/order_summery_sevice.dart';
 
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
+import 'package:pointrestaurant/utilities/switch.cofig.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 
 import 'package:vertical_tabs/vertical_tabs.dart';
@@ -30,16 +31,6 @@ class _TableModeScreenState extends State<TableModeScreen> {
 //________________Open Switch Container Layout________________________
 
   int _pageState = 0;
-  double _loginWidth = 0;
-  double _loginHeight = 0;
-
-  double _loginYOffset = 0;
-  double _loginXOffset = 0;
-  double _registerYOffset = 0;
-  double _registerHeight = 0;
-
-  double windowWidth = 0;
-  double windowHeight = 0;
 
   int totalItems = 0;
   double totalAmount = 0;
@@ -97,30 +88,10 @@ class _TableModeScreenState extends State<TableModeScreen> {
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    windowHeight = size.height;
-    windowWidth = size.width;
-
-    switch (_pageState) {
-      case 0:
-        _loginWidth = windowWidth;
-        _loginYOffset = windowHeight;
-        _loginXOffset = 0;
-        _registerYOffset = windowHeight;
-        break;
-      case 1:
-        _loginWidth = windowWidth;
-        _loginYOffset = orientation ? size.height * .08 : size.height * .03;
-        _loginXOffset = 0;
-        _registerYOffset = windowHeight;
-        break;
-      case 2:
-        _loginWidth = windowWidth - 40;
-        _loginYOffset = 180;
-        _loginXOffset = 0;
-        _registerYOffset = 250;
-        _registerHeight = windowHeight - 100;
-        break;
-    }
+    SwitchContainer.windowHeight = size.height;
+    SwitchContainer.windowWidth = size.width;
+    SwitchContainer().rederAnimateContainer(
+        orientation: orientation, size: size, pageState: _pageState);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -306,8 +277,10 @@ class _TableModeScreenState extends State<TableModeScreen> {
             height: orientation ? size.height * .8 : null,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
-            transform:
-                Matrix4.translationValues(_loginXOffset, _loginYOffset, 1),
+            transform: Matrix4.translationValues(
+                SwitchContainer.firstContainerXOffset,
+                SwitchContainer.firstContainerYOffset,
+                1),
             decoration: BoxDecoration(
               boxShadow: <BoxShadow>[
                 BoxShadow(
@@ -564,10 +537,11 @@ class _TableModeScreenState extends State<TableModeScreen> {
           ),
           AnimatedContainer(
             width: orientation ? size.width * .45 : size.width,
-            height: _registerHeight,
+            height: SwitchContainer.secondContainerHeight,
             curve: Curves.fastLinearToSlowEaseIn,
             duration: Duration(milliseconds: 1000),
-            transform: Matrix4.translationValues(0, _registerYOffset, 1),
+            transform: Matrix4.translationValues(
+                0, SwitchContainer.seconndContainerYOffset, 1),
             decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(

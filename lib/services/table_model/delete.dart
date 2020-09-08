@@ -30,7 +30,6 @@ Future overideDeleteItems({
   String username,
   String password,
 }) async {
-  print('calling fucn');
   Response response = await dio.post(
     serverIP + '/Api/promptUserDeleteItem',
     data: {
