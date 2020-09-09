@@ -1,8 +1,9 @@
 import 'package:direct_select/direct_select.dart';
 import 'package:flutter/material.dart';
-import 'package:pointrestaurant/models/load_total_pay.dart';
+import 'package:pointrestaurant/models/payment_load.dart';
 import 'package:pointrestaurant/services/payment/load_total_pay.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
+import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 
 import 'components/select_bank_card.dart';
 import 'components/text_input_container.dart';
@@ -19,10 +20,27 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  var grandTotal;
+  Future<List<PaymentLoad>> paymentData;
+  double kh_return = 0;
+  double us_return = 0.0;
+  double total_price = 0.0;
+  double riel_rate;
+
   @override
   void initState() {
     super.initState();
+    paymentData = fetchPaymentMethod(sale_master_id: widget.saleMasterId);
+  }
+
+  calculatePay({double userInputUS, int rate}) {
+    if (total_price >= userInputUS) {
+      us_return = total_price - userInputUS;
+      double parseToKH = us_return * rate;
+      kh_return = parseToKH;
+      setState(() {});
+    } else {
+      print('over');
+    }
   }
 
   final elements1 = [
@@ -62,188 +80,340 @@ class _PaymentScreenState extends State<PaymentScreen> {
     var orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Stack(
+      body: FutureBuilder(
+        future: paymentData,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (!snapshot.hasData) {
+            return CenterLoadingIndicator();
+          }
+          total_price = double.parse(snapshot.data[0].total.grandTotalUs);
+          return Stack(
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      kPrimaryColor,
-                      Color(0xFFeb4438),
+              _buildHeader(context),
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top + 20.0),
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: MediaQuery.of(context).padding.top,
+                      ),
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 15),
+                          child: DefaultTabController(
+                            child: new LayoutBuilder(
+                              builder: (BuildContext context,
+                                  BoxConstraints viewportConstraints) {
+                                return Column(
+                                  children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.only(
+                                          bottom: 20, right: 15, left: 15),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 20,
+                                        horizontal: 25,
+                                      ),
+                                      height: orientation
+                                          ? size.height * .23
+                                          : size.height * .23,
+                                      width: orientation
+                                          ? size.width * .5
+                                          : size.width * .95,
+                                      decoration: cardShadow,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Row(
+                                            children: <Widget>[
+                                              Text(
+                                                '',
+                                                style: TextStyle(
+                                                  fontFamily: 'San-francisco',
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      'USD ( \$ )',
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Text(
+                                                      'Riel ( ​៛ )',
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Divider(
+                                            color: Colors.black45,
+                                            height: 1.2,
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Total :',
+                                                  style: TextStyle(
+                                                    fontFamily: 'San-francisco',
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      snapshot.data[0].total
+                                                          .grandTotalUs,
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Text(
+                                                      snapshot.data[0].total
+                                                          .grandTotalKh,
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Return :',
+                                                  style: TextStyle(
+                                                    fontFamily: 'San-francisco',
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      width: 80,
+                                                      child: Text(
+                                                        us_return
+                                                            .round()
+                                                            .toString(),
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Container(
+                                                      width: 80,
+                                                      child: Text(
+                                                        kh_return
+                                                            .round()
+                                                            .toString(),
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        width: orientation
+                                            ? size.width * .8
+                                            : size.width * .95,
+                                        decoration: cardShadow,
+                                        child: Column(
+                                          children: <Widget>[
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: new TabBar(
+                                                  tabs: [
+                                                    Tab(text: "CASH"),
+                                                    Tab(
+                                                        text:
+                                                            "CREDIT / DEBIT CARD"),
+                                                    Tab(text: "MEMBEM"),
+                                                  ],
+                                                  labelColor: Colors.white,
+                                                  unselectedLabelColor:
+                                                      kPrimaryColor,
+                                                  indicatorPadding:
+                                                      EdgeInsets.only(
+                                                          left: 30, right: 30),
+                                                  indicator: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            7),
+                                                    color: kPrimaryColor,
+                                                  )),
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 10),
+                                                  child: TabBarView(children: [
+                                                    _buildPayOnCash(
+                                                        size: size,
+                                                        textfieldWidth:
+                                                            size.width,
+                                                        data: snapshot
+                                                            .data[0].currency),
+                                                    _buildBankCard(
+                                                        size, size.width),
+                                                    _buildMemberShip(
+                                                        size, orientation)
+                                                  ])),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                            length: 3,
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                ),
-                height: MediaQuery.of(context).size.height * .45,
-              ),
-              AppBar(
-                leading: IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.white,
-                  ),
-                ),
-                backgroundColor: Colors.transparent,
-                elevation: 0.0,
-                centerTitle: true,
-                title: Text(
-                  "Payment",
-                  style: TextStyle(
-                    fontFamily: 'NothingYouCouldDo',
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
               ),
             ],
-          ),
-          Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 20.0),
-              child: Column(
-                children: <Widget>[
-                  SizedBox(
-                    height: MediaQuery.of(context).padding.top,
-                  ),
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 15),
-                      child: DefaultTabController(
-                        child: new LayoutBuilder(
-                          builder: (BuildContext context,
-                              BoxConstraints viewportConstraints) {
-                            return Column(
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.only(
-                                      bottom: 20, right: 15, left: 15),
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 20, horizontal: 25),
-                                  height: orientation
-                                      ? size.height * .23
-                                      : size.height * .23,
-                                  width: orientation
-                                      ? size.width * .5
-                                      : size.width * .95,
-                                  decoration: cardShadow,
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      _buildTitleRow('Grand Total', 110),
-                                      _buildTitleRow('Total Pay', 150),
-                                      _buildTitleRow('Return ', 40),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    width: orientation
-                                        ? size.width * .8
-                                        : size.width * .95,
-                                    decoration: cardShadow,
-                                    child: Column(
-                                      children: <Widget>[
-                                        _buildTabBar(),
-                                        _buildContentContainer(
-                                            viewportConstraints),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        length: 3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  _buildTitleRow(String title, double val) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
+  _buildHeader(BuildContext context) {
+    return Stack(
       children: <Widget>[
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'San-francisco',
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            color: Colors.black54,
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                kPrimaryColor,
+                Color(0xFFeb4438),
+              ],
+            ),
           ),
+          height: MediaQuery.of(context).size.height * .45,
         ),
-        Expanded(
-          child: Text(
-            '\$ 100.00',
-            // '\$'+val.roundToDouble().toString()
-            textAlign: TextAlign.right,
+        AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0.0,
+          centerTitle: true,
+          title: Text(
+            "Payment",
             style: TextStyle(
-              fontFamily: 'San-francisco',
-              fontSize: 18,
+              fontFamily: 'NothingYouCouldDo',
               fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ),
       ],
-    );
-  }
-
-  _buildTabBar({bool showFirstOption}) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: new TabBar(
-          tabs: [
-            Tab(text: "CASH"),
-            Tab(text: "CREDIT / DEBIT CARD"),
-            Tab(text: "MEMBEM"),
-          ],
-          labelColor: Colors.white,
-          unselectedLabelColor: kPrimaryColor,
-          indicatorPadding: EdgeInsets.only(left: 30, right: 30),
-          indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(7),
-            color: kPrimaryColor,
-          )),
-    );
-  }
-
-  _buildContentContainer(BoxConstraints viewportConstraints) {
-    var size = MediaQuery.of(context).size;
-    var orientation = MediaQuery.of(context).orientation;
-    var textfieldWidth = size.width;
-    return Expanded(
-      flex: 1,
-      child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10),
-          child: TabBarView(children: [
-            _buildPayOnCash(size, textfieldWidth),
-            _buildBankCard(size, textfieldWidth),
-            _buildMemberShip(size, orientation)
-          ])),
     );
   }
 
@@ -392,24 +562,59 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  _buildPayOnCash(Size size, double textfieldWidth) {
+  _buildPayOnCash({Size size, double textfieldWidth, var data}) {
     return SingleChildScrollView(
       child: Container(
         padding:
             EdgeInsets.symmetric(vertical: 10, horizontal: size.width * .08),
-        child: Column(children: <Widget>[
-          TextInputContainer(
-            textfieldWidth: textfieldWidth,
-          ),
-          TextInputContainer(
-            textfieldWidth: textfieldWidth,
-            title: 'USD',
-          ),
-          TextInputContainer(
-            textfieldWidth: textfieldWidth,
-            title: 'THB',
-          ),
-        ]),
+        child: Column(
+            children: List.generate(data.length, (int index) {
+          return Container(
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(left: 4),
+                  child: Text(
+                    data[index].currency,
+                    style: TextStyle(
+                      fontFamily: "San-francisco",
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 8.0,
+                ),
+                Container(
+                  width: textfieldWidth,
+                  height: 50.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: TextFormField(
+                      onChanged: (txt) {
+                        calculatePay(
+                          userInputUS: double.parse(txt),
+                          rate: int.parse(data[index + 1].rate),
+                        );
+                      },
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: data[index].currency,
+                        contentPadding: EdgeInsets.all(15.0),
+                        border: InputBorder.none,
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        })),
       ),
     );
   }

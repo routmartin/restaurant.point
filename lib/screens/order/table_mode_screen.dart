@@ -321,7 +321,6 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                 itemCount: snapshot.data.length,
                                 itemBuilder: (context, index) {
                                   var data = snapshot.data[index];
-
                                   return Container(
                                     alignment: Alignment.centerLeft,
                                     height: 80,

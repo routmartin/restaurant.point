@@ -15,6 +15,7 @@ class CenterLoadingIndicator extends StatelessWidget {
       child: Container(
         width: width,
         height: height,
+        color: Colors.white,
         child: Image.asset(
           'assets/icons/indicator.gif',
           fit: BoxFit.contain,
