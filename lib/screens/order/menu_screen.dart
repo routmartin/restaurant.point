@@ -89,7 +89,6 @@ class _MenuScreenState extends State<MenuScreen> {
       table_id: widget.tableId,
       sale_master_id: restoreSaleMasterId,
     );
-
     setState(() {});
   }
 

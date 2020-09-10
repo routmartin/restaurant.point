@@ -23,6 +23,7 @@ dependencies:
   easy_localization: ^2.3.3
   platform_action_sheet: ^0.0.3
   cached_network_image: ^2.1.0
+  intl: ^0.16.1
 
 dev_dependencies:
   flutter_test:

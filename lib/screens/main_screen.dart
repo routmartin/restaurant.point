@@ -6,7 +6,7 @@ import 'package:pointrestaurant/screens/payment/payment_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../utilities/style.main.dart';
 
-import 'order/menu_screen.dart';
+import 'order/takeout/take_out_screen.dart';
 
 class MainScreenPage extends StatefulWidget {
   final userToken;
@@ -26,7 +26,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       HomeScreen(),
       TableModeScreen(),
-      MenuScreen(),
+      TakeOutScreen(),
       PaymentScreen(),
     ];
   }
