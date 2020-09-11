@@ -86,7 +86,6 @@ class _TakeOutScreenState extends State<TakeOutScreen> {
       table_id: widget.tableId,
       sale_master_id: restoreSaleMasterId,
     );
-
     setState(() {});
   }
 

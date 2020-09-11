@@ -6,11 +6,12 @@ import 'package:pointrestaurant/screens/payment/payment_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../utilities/style.main.dart';
 
+import 'invoice/invoice_screen.dart';
 import 'order/takeout/take_out_screen.dart';
 
 class MainScreenPage extends StatefulWidget {
-  final userToken;
-  MainScreenPage({this.userToken});
+  // final userToken;
+  // MainScreenPage({this.userToken});
   @override
   _MainScreenPageState createState() => _MainScreenPageState();
 }
@@ -26,8 +27,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       HomeScreen(),
       TableModeScreen(),
-      TakeOutScreen(),
-      PaymentScreen(),
+      InvocieScreeen(),
     ];
   }
 
@@ -56,7 +56,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
             elevation: 20.0,
             iconSize: 24,
             selectedFontSize: 13,
-            unselectedFontSize: 12,
+            unselectedFontSize: 13,
             selectedItemColor: kPrimaryColor,
             unselectedItemColor: Color(0xFF828282),
             selectedLabelStyle: TextStyle(
@@ -71,31 +71,41 @@ class _MainScreenPageState extends State<MainScreenPage> {
             },
             items: [
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.home,
-                  size: 30,
+                icon: SvgPicture.asset(
+                  'assets/icons/home.svg',
+                  width: 20,
+                  height: 20,
                 ),
                 title: Text(
                   'HOME',
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.view_list),
+                icon: SvgPicture.asset(
+                  'assets/icons/cart.svg',
+                  width: 20,
+                  height: 20,
+                ),
                 title: Text(
-                  'ORDERS',
+                  'ORDER',
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.timelapse,
-                  size: 30,
+                icon: SvgPicture.asset(
+                  'assets/icons/invoice.svg',
+                  width: 20,
+                  height: 20,
                 ),
                 title: Text(
-                  'Pending',
+                  'INVOICE',
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.account_circle),
+                icon: SvgPicture.asset(
+                  'assets/icons/account.svg',
+                  width: 20,
+                  height: 20,
+                ),
                 title: Text(
                   'MY ACCOUNT',
                 ),

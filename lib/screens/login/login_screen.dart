@@ -212,9 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => MainScreenPage(
-                                          userToken: value,
-                                        ),
+                                        builder: (_) => MainScreenPage(),
                                       ),
                                     );
                                   }
