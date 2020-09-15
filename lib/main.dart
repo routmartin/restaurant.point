@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'widget/loading.slash.dart';
+import 'screens/loading.slash.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(new MyApp());
 }
 

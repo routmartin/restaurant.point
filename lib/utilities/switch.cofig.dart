@@ -21,15 +21,15 @@ class SwitchContainer {
       case 1:
         firstContainerWidth = windowWidth;
         firstContainerYOffset =
-            orientation ? size.height * .06 : size.height * .07;
+            orientation ? size.height * .06 : size.height * .045;
         firstContainerXOffset = 0;
         seconndContainerYOffset = windowHeight;
         break;
       case 2:
         firstContainerWidth = windowWidth - 40;
-        firstContainerYOffset = 120;
+        firstContainerYOffset = 60;
         firstContainerXOffset = 0;
-        seconndContainerYOffset = 180;
+        seconndContainerYOffset = 120;
         secondContainerHeight = windowHeight;
         break;
     }

@@ -1,11 +1,18 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
+import 'package:network_image_to_byte/network_image_to_byte.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:platform_action_sheet/platform_action_sheet.dart';
 
 import 'package:pointrestaurant/models/menu.dart';
@@ -55,6 +62,7 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<List<Ordersummery>> orderSummery;
   Future<List<Note>> noteList;
   List growableList = [];
+  final f = new NumberFormat("#,##0.00");
   //_______________ OrderSummery _________________
   int totalItems = 0;
   double totalAmount = 0;
@@ -69,6 +77,14 @@ class _MenuScreenState extends State<MenuScreen> {
   // ignore: non_constant_identifier_names
   String txt_reason;
   bool move_with_auth = false;
+
+  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  List<BluetoothDevice> _devices = [];
+  BluetoothDevice _device;
+  List<String> imgArr = new List();
+  var pathImage = '';
+  int done = 1;
+  String tmpPath = '';
 
   @override
   void initState() {
@@ -92,6 +108,74 @@ class _MenuScreenState extends State<MenuScreen> {
     setState(() {});
   }
 
+  // ___________________________________ Section Work with M1 ______________________________________________
+
+  void _connect() {
+    if (_device == null) {
+      print('Device Not');
+    } else {
+      bluetooth.isConnected.then((isConnected) {
+        if (!isConnected) {
+          bluetooth.connect(_device).catchError((error) {});
+        }
+      });
+    }
+  }
+
+  void _disconnect() {
+    bluetooth.disconnect();
+  }
+
+  Future<void> initPlatformState() async {
+    List<BluetoothDevice> devices = [];
+    try {
+      devices = await bluetooth.getBondedDevices();
+    } on PlatformException {}
+
+    if (!mounted) return;
+    setState(() {
+      _devices = devices;
+      _device = _devices[0];
+      _connect();
+    });
+  }
+
+  Future<Uint8List> _networkImageToByte(int target) async {
+    String path = '$serverIP/temp/$target.png';
+    Uint8List byteImage = await networkImageToByte(path);
+    return byteImage;
+  }
+
+  Future initSaveToPath(int target) async {
+    imgArr.clear();
+    Uint8List bytes = await _networkImageToByte(target);
+    final tempDir = (await getApplicationDocumentsDirectory()).path;
+    imgArr.add('$tempDir/$target.png');
+    tmpPath = tempDir;
+    final file = await new File('$tempDir/$target.png').create();
+    file.writeAsBytesSync(bytes);
+  }
+
+  void printWithM1(int index) async {
+    for (int i = 0; i < index; i++) {
+      bluetooth.isConnected.then((isConnected) {
+        if (isConnected) {
+          bluetooth.printImage('$tmpPath/${i + 1}.png');
+          if (index == i + 1) {
+            bluetooth.printNewLine();
+            bluetooth.printNewLine();
+            bluetooth.printNewLine();
+            bluetooth.paperCut();
+            _disconnect();
+            Navigator.pop(context);
+          }
+        }
+      });
+    }
+  }
+
+  // ___________________________________ Section Work with M1 ______________________________________________
+
   @override
   Widget build(BuildContext context) {
     backToPreviewPage() {
@@ -110,6 +194,32 @@ class _MenuScreenState extends State<MenuScreen> {
       size: size,
       pageState: _pageState,
     );
+
+    printingLoadingIndicator() {
+      return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            content: Container(
+              width: 200,
+              height: 300,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Image.asset('assets/icons/printing.gif'),
+                    CircularProgressIndicator(
+                      backgroundColor: kPrimaryColor,
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
 
     showMessageDialog({message = 'NO ORDER ITEMS'}) {
       Timer timer = Timer(Duration(milliseconds: 1000), () {
@@ -1145,12 +1255,12 @@ class _MenuScreenState extends State<MenuScreen> {
 
     requestAddItemsFunction({tableList, int qty = 1}) {
       addOrderItems(
-              itemDetailId: tableList.itemDetailId,
-              saleMasterId: restoreSaleMasterId,
-              tableId: widget.tableId,
-              saleDetailId: tableList.saleDetailId,
-              qty: qty)
-          .then((saleMasterId) {
+        itemDetailId: tableList.itemDetailId,
+        saleMasterId: restoreSaleMasterId,
+        tableId: widget.tableId,
+        saleDetailId: tableList.saleDetailId,
+        qty: qty,
+      ).then((saleMasterId) {
         restoreSaleMasterId = int.parse(saleMasterId);
         requestMenuFunction();
         requestOrderSummeryFunction();
@@ -1169,45 +1279,49 @@ class _MenuScreenState extends State<MenuScreen> {
                 Container(
                   height: size.height,
                   width: double.infinity,
+                  margin: EdgeInsets.only(bottom: 70),
                   child: Column(
                     children: <Widget>[
                       Container(
-                          width: double.infinity,
-                          height: 50,
-                          alignment: Alignment.centerLeft,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                offset: Offset(0, 4),
-                                blurRadius: 10,
-                                color: Colors.black12,
+                        width: double.infinity,
+                        alignment: Alignment.centerLeft,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              offset: Offset(0, 4),
+                              blurRadius: 10,
+                              color: Colors.black12,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            IconButton(
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                size: 20,
                               ),
-                            ],
-                          ),
-                          child: Row(
-                            children: <Widget>[
-                              IconButton(
-                                icon: Icon(
-                                  Icons.arrow_back_ios,
-                                  size: 20,
-                                ),
-                                onPressed: backToPreviewPage,
-                              ),
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    widget.tableName,
-                                    style: TextStyle(
-                                      fontFamily: 'San-francisco',
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
+                              onPressed: backToPreviewPage,
+                            ),
+                            Expanded(
+                              child: Container(
+                                alignment: Alignment.centerRight,
+                                margin: EdgeInsets.only(right: 20),
+                                child: Text(
+                                  widget.tableName,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontFamily: 'San-francisco',
+                                    fontWeight: FontWeight.bold,
+                                    color: kPrimaryColor,
                                   ),
                                 ),
-                              )
-                            ],
-                          )),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
                       Expanded(
                         child: FutureBuilder(
                           future: menuData,
@@ -1242,116 +1356,120 @@ class _MenuScreenState extends State<MenuScreen> {
                                   (index) {
                                     var tableList = snapshot.data[index].items;
                                     return Container(
-                                      color: Color(0xfff5f5f5),
                                       child: Column(
                                         children: <Widget>[
                                           _buildTitleHeader(snapshot, index),
                                           Expanded(
-                                            child: GridView.count(
-                                              shrinkWrap: true,
-                                              physics: ScrollPhysics(),
-                                              scrollDirection: Axis.vertical,
-                                              mainAxisSpacing: 5,
-                                              childAspectRatio: orientation
-                                                  ? size.height / 750
-                                                  : size.height / 900,
-                                              crossAxisCount:
-                                                  size.width <= 800.0
-                                                      ? 2
-                                                      : size.width >= 1000.0
-                                                          ? 5
-                                                          : 4,
-                                              children: List<Widget>.generate(
-                                                tableList.length,
-                                                (index) {
-                                                  return Stack(
-                                                    children: <Widget>[
-                                                      Container(
-                                                        margin: EdgeInsets.only(
-                                                          bottom: 15,
-                                                          right: 10,
-                                                          left: 10,
-                                                        ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5),
-                                                          border: Border.all(
-                                                            width: 1.3,
-                                                            color: Color(
-                                                              0xff0f0808,
+                                            child: Container(
+                                              margin: EdgeInsets.only(top: 10),
+                                              child: GridView.count(
+                                                shrinkWrap: true,
+                                                physics: ScrollPhysics(),
+                                                scrollDirection: Axis.vertical,
+                                                mainAxisSpacing: 5,
+                                                childAspectRatio: orientation
+                                                    ? size.height / 780
+                                                    : size.height / 700,
+                                                crossAxisCount:
+                                                    size.width <= 800.0
+                                                        ? 2
+                                                        : size.width >= 1000.0
+                                                            ? 5
+                                                            : 4,
+                                                children: List<Widget>.generate(
+                                                  tableList.length,
+                                                  (index) {
+                                                    return Stack(
+                                                      children: <Widget>[
+                                                        Container(
+                                                          margin:
+                                                              EdgeInsets.only(
+                                                            bottom: 15,
+                                                            right: 10,
+                                                            left: 10,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5),
+                                                            border: Border.all(
+                                                              width: 1.3,
+                                                              color: Color(
+                                                                0xff0f0808,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          child: Material(
+                                                            color: Colors
+                                                                .transparent,
+                                                            child: InkWell(
+                                                              splashColor:
+                                                                  Colors
+                                                                      .black12,
+                                                              onTap: () {
+                                                                requestAddItemsFunction(
+                                                                  tableList:
+                                                                      tableList[
+                                                                          index],
+                                                                );
+                                                              },
+                                                              child: Column(
+                                                                children: <
+                                                                    Widget>[
+                                                                  _buildImageContainer(
+                                                                    orientation,
+                                                                    size,
+                                                                    tableList,
+                                                                    index,
+                                                                  ),
+                                                                  _buildContainerData(
+                                                                    orientation,
+                                                                    size,
+                                                                    tableList,
+                                                                    index,
+                                                                  ),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
-                                                        child: Material(
-                                                          color: Colors
-                                                              .transparent,
-                                                          child: InkWell(
-                                                            splashColor:
-                                                                Colors.black12,
-                                                            onTap: () {
-                                                              requestAddItemsFunction(
-                                                                tableList:
-                                                                    tableList[
-                                                                        index],
-                                                              );
-                                                            },
-                                                            child: Column(
-                                                              children: <
-                                                                  Widget>[
-                                                                _buildImageContainer(
-                                                                  orientation,
-                                                                  size,
-                                                                  tableList,
-                                                                  index,
-                                                                ),
-                                                                _buildContainerData(
-                                                                  orientation,
-                                                                  size,
-                                                                  tableList,
-                                                                  index,
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      tableList[index].qty !=
-                                                              '0'
-                                                          ? Positioned(
-                                                              bottom: 5,
-                                                              left: orientation
-                                                                  ? size.width *
-                                                                      0.055
-                                                                  : size.width *
-                                                                      0.1,
-                                                              child:
-                                                                  CaculateIcon(
-                                                                      qty: tableList[
-                                                                              index]
-                                                                          .qty,
-                                                                      funcMinus:
-                                                                          () {
-                                                                        requestAddItemsFunction(
-                                                                          tableList:
-                                                                              tableList[index],
-                                                                          qty:
-                                                                              -1,
-                                                                        );
-                                                                      },
-                                                                      funcPlus:
-                                                                          () {
-                                                                        requestAddItemsFunction(
-                                                                          tableList:
-                                                                              tableList[index],
-                                                                        );
-                                                                      }),
-                                                            )
-                                                          : Container()
-                                                    ],
-                                                  );
-                                                },
+                                                        tableList[index].qty !=
+                                                                '0'
+                                                            ? Positioned(
+                                                                bottom: 5,
+                                                                left: orientation
+                                                                    ? size.width *
+                                                                        0.055
+                                                                    : size.width *
+                                                                        0.09,
+                                                                child:
+                                                                    CaculateIcon(
+                                                                        qty: tableList[index]
+                                                                            .qty,
+                                                                        funcMinus:
+                                                                            () {
+                                                                          requestAddItemsFunction(
+                                                                            tableList:
+                                                                                tableList[index],
+                                                                            qty:
+                                                                                -1,
+                                                                          );
+                                                                        },
+                                                                        funcPlus:
+                                                                            () {
+                                                                          requestAddItemsFunction(
+                                                                            tableList:
+                                                                                tableList[index],
+                                                                          );
+                                                                        }),
+                                                              )
+                                                            : Container()
+                                                      ],
+                                                    );
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -1441,6 +1559,7 @@ class _MenuScreenState extends State<MenuScreen> {
                               // }
                               if (snapshot.data != null) {
                                 totalItems = snapshot.data.length;
+                                totalAmount = 0;
                                 return ListView.builder(
                                   itemCount: snapshot.data.length,
                                   scrollDirection: Axis.horizontal,
@@ -1543,7 +1662,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                '\$ $totalAmount',
+                                '\$ ${f.format(totalAmount)}',
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -1608,17 +1727,16 @@ class _MenuScreenState extends State<MenuScreen> {
             decoration: BoxDecoration(
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  offset: Offset(1, 5),
-                  color: Colors.black38.withOpacity(.2),
+                  offset: Offset(1, 4),
+                  color: Colors.black12.withOpacity(.1),
                   blurRadius: 20,
-                  spreadRadius: 10,
+                  spreadRadius: 3,
                 ),
               ],
             ),
             child: Stack(
               children: <Widget>[
                 Container(
-                  // height: orientation ? null : size.height * .87,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -1630,16 +1748,12 @@ class _MenuScreenState extends State<MenuScreen> {
                         Container(
                           height: orientation
                               ? size.height * 0.42
-                              : size.height * 0.45,
+                              : size.height * 0.4,
                           color: Color(0xfff0f0f0),
                           child: FutureBuilder(
                             future: orderSummery,
                             builder:
                                 (BuildContext context, AsyncSnapshot snapshot) {
-                              // if (snapshot.connectionState ==
-                              //     ConnectionState.waiting) {
-                              //   return CenterLoadingIndicator();
-                              // }
                               if (snapshot.data != null) {
                                 return ListView.builder(
                                   itemCount: snapshot.data.length,
@@ -1921,7 +2035,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    '\$ $totalAmount',
+                                    '\$ ${f.format(totalAmount)}',
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
@@ -1992,18 +2106,48 @@ class _MenuScreenState extends State<MenuScreen> {
                                     },
                                   ),
                                   Button(
-                                    buttonName: "ORDER",
+                                    buttonName: "KITCHAN",
                                     press: () {
                                       printtoKitchen(
                                         table_name: widget.tableName,
                                         sale_master_id: restoreSaleMasterId,
-                                      ).then((value) => print(value));
+                                      ).then((value) {
+                                        if (value == 'no_item_print') {
+                                          showMessageDialog(
+                                              message:
+                                                  'Already Print to Kitchan');
+                                        }
+                                      });
                                     },
                                   ),
+                                  // Button(
+                                  //   buttonName: "PRINT BILL",
+                                  //   press: () => printBill(
+                                  //       sale_master_id: restoreSaleMasterId),
+                                  // ),
                                   Button(
                                     buttonName: "PRINT BILL",
-                                    press: () => printBill(
-                                        sale_master_id: restoreSaleMasterId),
+                                    press: () => printBillWithM1(
+                                      sale_master_id: restoreSaleMasterId,
+                                    ).then((index) {
+                                      printingLoadingIndicator();
+                                      initPlatformState();
+                                      done = 1;
+                                      for (int i = 1; i <= index; i++) {
+                                        initSaveToPath(i).then(
+                                          (_) {
+                                            done++;
+                                            if (done == index) {
+                                              Future.delayed(
+                                                  const Duration(
+                                                      milliseconds: 3000), () {
+                                                printWithM1(index);
+                                              });
+                                            }
+                                          },
+                                        );
+                                      }
+                                    }),
                                   ),
                                 ],
                               ),
@@ -2321,18 +2465,20 @@ class _MenuScreenState extends State<MenuScreen> {
 // ___________________________ Internal Widget____________________________________________________
 
   _buildImageContainer(bool orientation, Size size, tableList, int index) {
-    return CachedNetworkImage(
+    return Container(
       width: double.infinity,
-      height: orientation ? size.height * .15 : size.height * .1,
-      fit: BoxFit.cover,
-      imageUrl: serverIP + tableList[index].image,
-      placeholder: (context, url) => CircularProgressIndicator(),
-      errorWidget: (context, url, error) => Container(
-        height: orientation ? size.height * .14 : size.height * .06,
-        child: Icon(
-          Icons.no_sim,
-          color: Colors.grey[500],
-          size: orientation ? 50 : 30,
+      height: orientation ? size.height * .15 : size.height * .14,
+      child: CachedNetworkImage(
+        fit: BoxFit.cover,
+        imageUrl: serverIP + tableList[index].image,
+        placeholder: (context, url) => CenterLoadingIndicator(),
+        errorWidget: (context, url, error) => Container(
+          height: orientation ? size.height * .14 : size.height * .06,
+          child: Icon(
+            Icons.no_sim,
+            color: Colors.grey[500],
+            size: orientation ? 50 : 50,
+          ),
         ),
       ),
     );
@@ -2348,7 +2494,7 @@ class _MenuScreenState extends State<MenuScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           SizedBox(
-            height: orientation ? size.height * .01 : 3,
+            height: orientation ? size.height * .01 : 5,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -2365,7 +2511,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
               ),
               SizedBox(
-                height: orientation ? size.height * .005 : 1,
+                height: orientation ? size.height * .005 : 10,
               ),
               Text(
                 '\$ ${tableList[index].price}',
@@ -2387,6 +2533,13 @@ class _MenuScreenState extends State<MenuScreen> {
 
   _buildTitleHeader(AsyncSnapshot snapshot, int index) {
     return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(10),
+          bottomRight: Radius.circular(10),
+        ),
+      ),
       alignment: Alignment.center,
       padding: EdgeInsets.symmetric(
         vertical: 10,
@@ -2394,7 +2547,7 @@ class _MenuScreenState extends State<MenuScreen> {
       child: Text(
         snapshot.data[index].typeName,
         style: TextStyle(
-          fontSize: 22,
+          fontSize: 18,
           fontWeight: FontWeight.w700,
           fontFamily: 'San-francisco',
         ),

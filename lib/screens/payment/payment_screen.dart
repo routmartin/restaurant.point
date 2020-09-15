@@ -1,15 +1,21 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:network_image_to_byte/network_image_to_byte.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pointrestaurant/models/payment_load.dart';
-import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
 import 'package:pointrestaurant/services/payment/load_total_pay.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
+import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 
 import '../main_screen.dart';
-import 'components/select_bank_card.dart';
 
 class PaymentScreen extends StatefulWidget {
   final saleMasterId;
@@ -42,6 +48,109 @@ class _PaymentScreenState extends State<PaymentScreen> {
   int exChangeRateKh;
 // store rate and exchange date____________________________________
 
+  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  List<BluetoothDevice> _devices = [];
+  BluetoothDevice _device;
+  List<String> imgArr = new List();
+  var pathImage = '';
+  int done = 1;
+  String tmpPath = '';
+
+  void _connect() {
+    if (_device == null) {
+      print('Device Not');
+    } else {
+      bluetooth.isConnected.then((isConnected) {
+        if (!isConnected) {
+          bluetooth.connect(_device).catchError((error) {});
+        }
+      });
+    }
+  }
+
+  void _disconnect() {
+    bluetooth.disconnect();
+  }
+
+  Future<void> initPlatformState() async {
+    List<BluetoothDevice> devices = [];
+    try {
+      devices = await bluetooth.getBondedDevices();
+    } on PlatformException {}
+
+    if (!mounted) return;
+    setState(() {
+      _devices = devices;
+      _device = _devices[0];
+      _connect();
+    });
+  }
+
+  Future<Uint8List> _networkImageToByte(int target) async {
+    String path = '$serverIP/temp/$target.png';
+    Uint8List byteImage = await networkImageToByte(path);
+    return byteImage;
+  }
+
+  Future initSaveToPath(int target) async {
+    imgArr.clear();
+    Uint8List bytes = await _networkImageToByte(target);
+    final tempDir = (await getApplicationDocumentsDirectory()).path;
+    imgArr.add('$tempDir/$target.png');
+    tmpPath = tempDir;
+    final file = await new File('$tempDir/$target.png').create();
+    file.writeAsBytesSync(bytes);
+  }
+
+  void printWithM1(int index) async {
+    for (int i = 0; i < index; i++) {
+      bluetooth.isConnected.then((isConnected) {
+        if (isConnected) {
+          bluetooth.printImage('$tmpPath/${i + 1}.png');
+          if (index == i + 1) {
+            bluetooth.printNewLine();
+            bluetooth.printNewLine();
+            bluetooth.printNewLine();
+            bluetooth.paperCut();
+            _disconnect();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MainScreenPage(),
+              ),
+            );
+          }
+        }
+      });
+    }
+  }
+
+  printingLoadingIndicator() {
+    return showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          content: Container(
+            width: 200,
+            height: 300,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Image.asset('assets/icons/printing.gif'),
+                  CircularProgressIndicator(
+                    backgroundColor: kPrimaryColor,
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -73,15 +182,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   int selectedIndex1 = 0;
 
-  List<Widget> _buildItems1() {
-    return elements1
-        .map(
-          (val) => MySelectionItem(
-            title: val,
-          ),
-        )
-        .toList();
-  }
+  // List<Widget> _buildItems1() {
+  //   return elements1
+  //       .map(
+  //         (val) => MySelectionItem(
+  //           title: val,
+  //         ),
+  //       )
+  //       .toList();
+  // }
 
   BoxDecoration cardShadow = BoxDecoration(
     color: Colors.white,
@@ -360,7 +469,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                         child: Column(
                                           children: <Widget>[
                                             Container(
-                                              height: size.height * .35,
+                                              height: size.height * .42,
                                               child: Column(
                                                 children: <Widget>[
                                                   Padding(
@@ -429,31 +538,51 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                   child: InkWell(
                                                     onTap: () {
                                                       isReturn
-                                                          ? paymentInCash(
-                                                                  sale_master_id:
-                                                                      widget
-                                                                          .saleMasterId,
-                                                                  rate_us_id:
-                                                                      rateIdUS,
-                                                                  rate_kh_id:
-                                                                      rateIdKh,
-                                                                  exchange_rate_kh:
-                                                                      exChangeRateKh,
-                                                                  exchange_rate_us:
-                                                                      exChangeRateUS,
-                                                                  amount_us:
-                                                                      storeValInUS,
-                                                                  amount_kh:
-                                                                      storeValInKH)
-                                                              .then((_) {
-                                                              Navigator
-                                                                  .pushReplacement(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                  builder: (_) =>
-                                                                      MainScreenPage(),
-                                                                ),
-                                                              );
+                                                          ? payInternalPrint(
+                                                              sale_master_id: widget
+                                                                  .saleMasterId,
+                                                              rate_us_id:
+                                                                  rateIdUS,
+                                                              rate_kh_id:
+                                                                  rateIdKh,
+                                                              exchange_rate_kh:
+                                                                  exChangeRateKh,
+                                                              exchange_rate_us:
+                                                                  exChangeRateUS,
+                                                              amount_us:
+                                                                  storeValInUS,
+                                                              amount_kh:
+                                                                  storeValInKH,
+                                                              return_kh:
+                                                                  khReturn
+                                                                      .round(),
+                                                              return_us:
+                                                                  usReturn,
+                                                            ).then((index) {
+                                                              printingLoadingIndicator();
+                                                              initPlatformState();
+                                                              done = 1;
+                                                              for (int i = 1;
+                                                                  i <= index;
+                                                                  i++) {
+                                                                initSaveToPath(
+                                                                        i)
+                                                                    .then(
+                                                                  (_) {
+                                                                    done++;
+                                                                    if (done ==
+                                                                        index) {
+                                                                      Future.delayed(
+                                                                          const Duration(
+                                                                              milliseconds: 3000),
+                                                                          () {
+                                                                        printWithM1(
+                                                                            index);
+                                                                      });
+                                                                    }
+                                                                  },
+                                                                );
+                                                              }
                                                             })
                                                           : Container();
                                                     },

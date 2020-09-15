@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pointrestaurant/screens/login/choice.dart';
+import 'package:pointrestaurant/screens/login/login_screen.dart';
 import 'package:pointrestaurant/screens/main_screen.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +12,7 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
-  String userToke = '123';
+  String userToken = 'nolog';
   Future loadSharePreferenc() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('userLog');
@@ -21,18 +21,19 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     super.initState();
-    // loadSharePreferenc().then((value) {
-    //   setState(() {
-    //     userToke = value;
-    //   });
-    // });
+    loadSharePreferenc().then((data) {
+      setState(() {
+        userToken = data;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return SplashScreen(
       seconds: 3,
-      navigateAfterSeconds: userToke == '' ? ChoiceScreen() : MainScreenPage(),
+      navigateAfterSeconds:
+          userToken == 'nolog' ? LoginScreen() : MainScreenPage(),
       image: new Image.asset(
         appbarLogo,
         width: 120,

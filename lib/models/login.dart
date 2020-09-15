@@ -1,17 +1,15 @@
 import 'package:dio/dio.dart';
+import 'package:pointrestaurant/utilities/path.dart';
 
-import 'constant.dart';
-
-Future logInSubmit(String userName, String passWord) async {
-  var dio = Dio();
+Future logInSubmit(String company, String userName, String passWord) async {
+  Dio dio = Dio();
   Response response = await dio.post(
-    server + '/Api/Login',
-    data: {"userName": userName, "pwd": passWord},
+    serverIP + '/Api/Login',
+    data: {"company": company, "userName": userName, "pwd": passWord},
     options: Options(contentType: Headers.formUrlEncodedContentType),
   );
 
   if (response.statusCode == 200 && response.data != "[]") {
-    print("Data From API: " + response.data);
     return response.data;
   }
   return null;

@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
-import 'package:pointrestaurant/screens/payment/payment_screen.dart';
+import 'package:pointrestaurant/screens/profile/info.dart';
 
-import '../screens/home/home_screen.dart';
 import '../utilities/style.main.dart';
 
 import 'invoice/invoice_screen.dart';
-import 'order/takeout/take_out_screen.dart';
 
 class MainScreenPage extends StatefulWidget {
-  // final userToken;
-  // MainScreenPage({this.userToken});
   @override
   _MainScreenPageState createState() => _MainScreenPageState();
 }
@@ -25,9 +21,9 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageIndex = 0;
     super.initState();
     _pageList = [
-      HomeScreen(),
       TableModeScreen(),
       InvocieScreeen(),
+      Profile(),
     ];
   }
 
@@ -60,9 +56,13 @@ class _MainScreenPageState extends State<MainScreenPage> {
             selectedItemColor: kPrimaryColor,
             unselectedItemColor: Color(0xFF828282),
             selectedLabelStyle: TextStyle(
-                fontFamily: 'San-francisco', fontWeight: FontWeight.w800),
+              fontFamily: 'San-francisco',
+              fontWeight: FontWeight.w800,
+            ),
             unselectedLabelStyle: TextStyle(
-                fontFamily: 'San-francisco', fontWeight: FontWeight.bold),
+              fontFamily: 'San-francisco',
+              fontWeight: FontWeight.bold,
+            ),
             currentIndex: _pageIndex,
             onTap: (index) {
               setState(() {
@@ -70,16 +70,16 @@ class _MainScreenPageState extends State<MainScreenPage> {
               });
             },
             items: [
-              BottomNavigationBarItem(
-                icon: SvgPicture.asset(
-                  'assets/icons/home.svg',
-                  width: 20,
-                  height: 20,
-                ),
-                title: Text(
-                  'HOME',
-                ),
-              ),
+              // BottomNavigationBarItem(
+              //   icon: SvgPicture.asset(
+              //     'assets/icons/home.svg',
+              //     width: 20,
+              //     height: 20,
+              //   ),
+              //   title: Text(
+              //     'HOME',
+              //   ),
+              // ),
               BottomNavigationBarItem(
                 icon: SvgPicture.asset(
                   'assets/icons/cart.svg',

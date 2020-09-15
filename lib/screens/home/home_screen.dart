@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pointrestaurant/utilities/style.main.dart';
+import 'package:pointrestaurant/widget/company_header.dart';
+
 import '../../utilities/path.dart';
 
 import 'components/list_view_scroll.dart';
@@ -17,45 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            Container(
-              width: double.infinity,
-              height: 50,
-              alignment: Alignment.centerLeft,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    offset: Offset(0, 4),
-                    blurRadius: 10,
-                    color: Colors.black12,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.only(left: 15),
-                    child: Image.asset(
-                      appbarLogo,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      alignment: Alignment.centerRight,
-                      margin: EdgeInsets.only(right: 10),
-                      child: Text('SOFTPOINT AUTO ID',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'San-francisco',
-                          )),
-                    ),
-                  )
-                ],
-              ),
-            ),
+            CampanyHeaderContianer(),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.only(

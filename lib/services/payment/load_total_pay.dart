@@ -24,8 +24,6 @@ Future<List<PaymentLoad>> fetchPaymentMethod({int sale_master_id}) async {
   );
 
   if (response.statusCode == 200 && response.data != "[]") {
-    // var data = json.decode(response.data);
-    // return data[0];
     return parsePaymentLoadData(response.data);
   }
   return null;

@@ -1,26 +1,26 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:pointrestaurant/models/List_sale_ummary.dart';
+import 'package:pointrestaurant/models/list_sale_data.dart';
 
 import 'package:pointrestaurant/utilities/path.dart';
 
 Dio dio = Dio();
 
-List<ListSaleSummary> parseListSaleSummery(String responseBody) {
+List<ListSaleData> parseListSaleData(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
   return parsed
-      .map<ListSaleSummary>((json) => ListSaleSummary.fromJson(json))
+      .map<ListSaleData>((json) => ListSaleData.fromJson(json))
       .toList();
 }
 
-Future<List<ListSaleSummary>> fetchlistSaleSummary({
-  sale_from_date = '',
-  sale_to_date = '',
-  sale_customer_chip = '',
+Future<List<ListSaleData>> fetchlistSaleSummary({
+  sale_from_date,
+  sale_to_date,
+  sale_customer_chip,
 }) async {
   Response response = await dio.post(
-    serverIP + '/api/ListSaleSummary',
+    serverIP + '/api/ListSaleData',
     data: {
       "userToken": userToken,
       "sale_from_date": sale_from_date,
@@ -33,7 +33,7 @@ Future<List<ListSaleSummary>> fetchlistSaleSummary({
   );
 
   if (response.statusCode == 200 && response.data != "[]") {
-    return parseListSaleSummery(response.data);
+    return parseListSaleData(response.data);
   }
   return null;
 }

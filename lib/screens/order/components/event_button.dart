@@ -29,7 +29,7 @@ class Button extends StatelessWidget {
             width: screeOrientation == lanscape ? 120 : size.width * 0.28,
             height: screeOrientation == Orientation.landscape
                 ? size.height * 0.054
-                : size.height * 0.045,
+                : 35,
             child: Text(
               buttonName,
               style: TextStyle(
