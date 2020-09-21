@@ -11,12 +11,6 @@ Future addOrderItems({
   int tableId,
   int qty,
 }) async {
-  // print(itemDetailId);
-  // print(saleMasterId);
-  // print(saleDetailId);
-  // print(tableId);
-  // print(qty);
-
   Response response = await dio.post(
     serverIP + '/Api/OrderItem',
     data: {

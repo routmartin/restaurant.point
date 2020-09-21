@@ -105,7 +105,7 @@ class _MenuScreenState extends State<MenuScreen> {
       table_id: widget.tableId,
       sale_master_id: restoreSaleMasterId,
     );
-    setState(() {});
+    // setState(() {});
   }
 
   // ___________________________________ Section Work with M1 ______________________________________________
@@ -1553,19 +1553,23 @@ class _MenuScreenState extends State<MenuScreen> {
                             future: orderSummery,
                             builder:
                                 (BuildContext context, AsyncSnapshot snapshot) {
-                              // if (snapshot.connectionState ==
-                              //     ConnectionState.waiting) {
-                              //   return CenterLoadingIndicator();
-                              // }
                               if (snapshot.data != null) {
                                 totalItems = snapshot.data.length;
                                 totalAmount = 0;
+                                for (int i = 0;
+                                    i < int.parse(totalItems.toString());
+                                    i++) {
+                                  totalAmount += double.parse(
+                                      snapshot.data[i].amount.toString());
+                                  if (totalItems == i) {
+                                    setState(() {});
+                                  }
+                                }
                                 return ListView.builder(
                                   itemCount: snapshot.data.length,
                                   scrollDirection: Axis.horizontal,
                                   itemBuilder: (context, index) {
                                     var data = snapshot.data[index];
-                                    totalAmount += double.parse(data.amount);
                                     return Container(
                                       margin: EdgeInsets.symmetric(
                                         vertical: 5,
