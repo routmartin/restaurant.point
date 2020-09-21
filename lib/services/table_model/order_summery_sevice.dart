@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/ordersummery.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
 List<Ordersummery> parseOrderSummery(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();

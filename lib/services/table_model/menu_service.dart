@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/menu.dart';
-
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
 Dio dio = Dio();
 List<Menu> parseDataMenu(String responseBody) {

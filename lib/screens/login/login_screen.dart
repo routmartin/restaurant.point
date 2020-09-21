@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pointrestaurant/services/login.dart';
 
-import 'package:pointrestaurant/models/login.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../utilities/globals.dart' as globals;
 import '../main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,36 +17,6 @@ class UserLogin {
   String _passWord;
   String _campany;
   static String showPassword;
-  if (checkPass != null &&
-                              checkUser != null &&
-                              checkCampany != null &&
-                              checkUser.trim() != '' &&
-                              checkCampany.trim() != '' &&
-                              checkPass.trim() != '') {
-                            logInSubmit(checkCampany, checkUser, checkPass)
-                                .then(
-                              (value) {
-                                if (value == 'Username' ||
-                                    value == 'Password' ||
-                                    value == 'Company') {
-                                  validationDialog(value);
-                                } else {
-                                  setSharePreferencLogIn(value);
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => MainScreenPage(),
-                                    ),
-                                  );
-                                }
-                              },
-                            );
-                          } else if (checkUser.trim() == '' ||
-                              checkPass.trim() == '') {
-                            validateTextfield();
-                          } else {
-                            print('no data');
-                          }
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -167,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         decoration: InputDecoration(
                           contentPadding: EdgeInsets.only(top: 10),
-                          hintText: 'Enter Usernam',
+                          hintText: 'Enter Username',
                           hintStyle:
                               TextStyle(color: Colors.grey, fontSize: 16.0),
                           border: InputBorder.none,
@@ -240,36 +210,37 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: InkWell(
                         splashColor: Colors.black26,
                         onTap: () {
-                          // if (checkPass != null &&
-                          //     checkUser != null &&
-                          //     checkCampany != null &&
-                          //     checkUser.trim() != '' &&
-                          //     checkCampany.trim() != '' &&
-                          //     checkPass.trim() != '') {
-                          //   logInSubmit(checkCampany, checkUser, checkPass)
-                          //       .then(
-                          //     (value) {
-                          //       if (value == 'Username' ||
-                          //           value == 'Password' ||
-                          //           value == 'Company') {
-                          //         validationDialog(value);
-                          //       } else {
-                          //         setSharePreferencLogIn(value);
-                          //         Navigator.pushReplacement(
-                          //           context,
-                          //           MaterialPageRoute(
-                          //             builder: (_) => MainScreenPage(),
-                          //           ),
-                          //         );
-                          //       }
-                          //     },
-                          //   );
-                          // } else if (checkUser.trim() == '' ||
-                          //     checkPass.trim() == '') {
-                          //   validateTextfield();
-                          // } else {
-                          //   print('no data');
-                          // }
+                          if (checkPass != null &&
+                              checkUser != null &&
+                              checkCampany != null &&
+                              checkUser.trim() != '' &&
+                              checkCampany.trim() != '' &&
+                              checkPass.trim() != '') {
+                            logInSubmit(checkCampany, checkUser, checkPass)
+                                .then(
+                              (value) {
+                                if (value == 'Username' ||
+                                    value == 'Password' ||
+                                    value == 'Company') {
+                                  validationDialog(value);
+                                } else {
+                                  setSharePreferencLogIn(value);
+                                  globals.userToken = value;
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MainScreenPage(),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          } else if (checkUser.trim() == '' ||
+                              checkPass.trim() == '') {
+                            validateTextfield();
+                          } else {
+                            print('no data');
+                          }
                         },
                         child: Container(
                           width: textfieldWidth,

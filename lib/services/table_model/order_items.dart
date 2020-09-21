@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
 Dio dio = Dio();
 

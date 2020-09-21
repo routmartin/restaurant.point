@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/move_list.dart';
-
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
 Dio dio = Dio();
 
@@ -34,7 +34,7 @@ Future requestPermissionToMove() async {
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
-  print(response);
+
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
   }

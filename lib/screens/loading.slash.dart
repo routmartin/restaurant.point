@@ -4,6 +4,7 @@ import 'package:pointrestaurant/screens/main_screen.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
+import '../utilities/globals.dart' as globals;
 
 class LoadingPage extends StatefulWidget {
   LoadingPage({Key key}) : super(key: key);
@@ -22,9 +23,12 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     super.initState();
     loadSharePreferenc().then((data) {
-      setState(() {
-        userToken = data;
-      });
+      if (data != null) {
+        setState(() {
+          userToken = data;
+        });
+        globals.userToken = userToken;
+      }
     });
   }
 

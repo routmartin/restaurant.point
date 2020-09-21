@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/list_sale_data.dart';
 
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
 Dio dio = Dio();
 

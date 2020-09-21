@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/note.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import '../utilities/globals.dart' as globals;
 
 Dio dio = Dio();
 
@@ -33,7 +34,7 @@ Future applySpecialRequest({
   Response response = await dio.post(
     serverIP + '/Api/AddNote',
     data: {
-      "userToken": userToken,
+      "userToken": globals.userToken,
       "note_id": noteList.join(','),
       "sale_detail_id": saleDetailId.toString(),
       "sale_master_id": saleMasterId.toString(),

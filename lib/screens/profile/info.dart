@@ -5,6 +5,7 @@ import 'package:pointrestaurant/utilities/path.dart';
 
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/slash.screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
 
 class Profile extends StatefulWidget {
@@ -29,6 +30,11 @@ class _ProfileState extends State<Profile> {
         backgroundImg,
       ),
     );
+  }
+
+  removeLogInSharePreference() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.remove('userLog');
   }
 
   @override
@@ -98,12 +104,15 @@ class _ProfileState extends State<Profile> {
                       color: Color(red),
                       child: InkWell(
                         splashColor: Colors.black26,
-                        onTap: () => Navigator.of(context).pushReplacement(
-                          new MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                SlashScreenShow(),
-                          ),
-                        ),
+                        onTap: () {
+                          removeLogInSharePreference();
+                          Navigator.of(context).pushReplacement(
+                            new MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  SlashScreenShow(),
+                            ),
+                          );
+                        },
                         child: Container(
                           width: textfieldWidth,
                           height: 50.0,

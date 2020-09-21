@@ -2,7 +2,7 @@ const String serverIP = 'http://192.168.0.189:5000';
 // const String serverIP = 'http://124.248.164.229:5006';
 
 // User Admin
-const String userToken = '0pWQasNsX4qRNp1i5UlYCw==';
+// const String userToken = '0pWQasNsX4qRNp1i5UlYCw==';
 // User System
 // const String userToken = 'xh7NglVZ0dvvJcKbPAnONg==';
 // ________________ AssetPath ______________________________
