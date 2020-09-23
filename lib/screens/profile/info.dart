@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/screens/login/login_screen.dart';
 import 'package:pointrestaurant/utilities/path.dart';
-
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/slash.screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,10 +68,10 @@ class _ProfileState extends State<Profile> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                    offset: Offset(0, 3), // changes position of shadow
+                    color: Colors.black26,
+                    spreadRadius: 1,
+                    blurRadius: 20,
+                    offset: Offset(0, 5), // changes position of shadow
                   ),
                 ],
               ),

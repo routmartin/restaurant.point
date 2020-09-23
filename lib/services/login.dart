@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 
 Future logInSubmit(String company, String userName, String passWord) async {
+  print(serverIP);
   Dio dio = Dio();
   Response response = await dio.post(
     serverIP + '/Api/Login',

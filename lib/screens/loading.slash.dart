@@ -16,6 +16,8 @@ class _LoadingPageState extends State<LoadingPage> {
   String userToken = 'nolog';
   Future loadSharePreferenc() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    globals.port = prefs.getString('Port');
+    globals.ipAddress = prefs.getString('IP');
     return prefs.getString('userLog');
   }
 

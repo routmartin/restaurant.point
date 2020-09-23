@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_collapse/flutter_collapse.dart';
 import 'package:pointrestaurant/models/list_sale_data.dart';
-import 'package:pointrestaurant/screens/order/components/event_button.dart';
+
 import 'package:pointrestaurant/services/invoice/ListSaleSummary.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';

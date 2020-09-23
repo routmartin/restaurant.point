@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:pointrestaurant/screens/profile/setting.dart';
 import 'package:pointrestaurant/services/login.dart';
 
 import 'package:pointrestaurant/utilities/style.main.dart';
@@ -12,22 +14,28 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class UserLogin {
-  String _userName;
-  String _passWord;
-  String _campany;
-  static String showPassword;
-}
-
 class _LoginScreenState extends State<LoginScreen> {
   bool showPassword = true;
   String checkUser = '';
   String checkPass = '';
   String checkCampany = '';
 
+  getSharePreferencNetworkConfig() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    globals.port = prefs.getString('Port');
+    globals.ipAddress = prefs.getString('IP');
+    print(globals.port);
+    print(globals.ipAddress);
+  }
+
   setSharePreferencLogIn(String userLog) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('userLog', userLog);
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -262,6 +270,29 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+          Positioned(
+            top: size.height * .1,
+            right: 30,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SettingScreen(),
+                  ),
+                ).then(
+                    (data) => data ? getSharePreferencNetworkConfig() : null);
+              },
+              child: Container(
+                child: SvgPicture.asset(
+                  'assets/icons/settings.svg',
+                  width: 30.0,
+                  height: 30.0,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          )
         ],
       ),
     );

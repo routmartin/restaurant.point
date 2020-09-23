@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/models/floor.dart';
 
-import 'package:pointrestaurant/services/table_model/floor_service.dart';
+import 'package:pointrestaurant/services/table_model/table_service.dart';
 
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';

@@ -12,6 +12,7 @@ List<Floor> parseDataFloor(String responseBody) {
 }
 
 Future<List<Floor>> fetchDataFloors() async {
+  print("print server: " + serverIP);
   Response response = await dio.post(
     serverIP + '/api/TableLayout',
     data: {
