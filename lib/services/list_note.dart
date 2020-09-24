@@ -15,6 +15,9 @@ List<Note> parseListNote(String responseBody) {
 Future<List<Note>> fetchListNote({int saleMasterId}) async {
   Response response = await dio.post(
     serverIP + '/api/ListItemNote',
+    data: {
+      "userToken": globals.userToken,
+    },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
     ),

@@ -50,6 +50,8 @@ Future printBill({
 Future printBillWithM1({
   int sale_master_id,
 }) async {
+  print('userToken ' + userToken);
+  print('userToken ' + sale_master_id.toString());
   Response response = await dio.post(
     serverIP + '/Api/PrintBillInternal',
     data: {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../utilities/globals.dart' as globals;
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -117,7 +118,9 @@ class _SettingScreenState extends State<SettingScreen> {
                                     },
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
-                                      hintText: 'No Configuration IP Address',
+                                      hintText: globals.ipAddress != ''
+                                          ? globals.ipAddress
+                                          : 'No Configuration IP Address',
                                       contentPadding: EdgeInsets.all(15.0),
                                       border: InputBorder.none,
                                       filled: true,
@@ -153,7 +156,9 @@ class _SettingScreenState extends State<SettingScreen> {
                                     },
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
-                                      hintText: 'No Configuration Port',
+                                      hintText: globals.port != ''
+                                          ? globals.port
+                                          : 'No Configuration Port',
                                       contentPadding: EdgeInsets.all(15.0),
                                       border: InputBorder.none,
                                       filled: true,
@@ -240,6 +245,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 style: TextStyle(
                   fontFamily: "San-francisco",
                   fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
               onPressed: () {

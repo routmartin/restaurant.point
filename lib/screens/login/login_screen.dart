@@ -20,12 +20,13 @@ class _LoginScreenState extends State<LoginScreen> {
   String checkPass = '';
   String checkCampany = '';
 
-  getSharePreferencNetworkConfig() async {
+  Future getSharePreferencNetworkConfig() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('Port') == false) {
+      return 'noConfig';
+    }
     globals.port = prefs.getString('Port');
     globals.ipAddress = prefs.getString('IP');
-    print(globals.port);
-    print(globals.ipAddress);
   }
 
   setSharePreferencLogIn(String userLog) async {
@@ -70,203 +71,211 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 5,
-                    blurRadius: 7,
+                    color: Colors.black26,
+                    blurRadius: 10,
                     offset: Offset(0, 3), // changes position of shadow
                   ),
                 ],
               ),
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.only(top: 40.0),
-                    child: Text(
-                      'SOFTPOINT AUTO ID',
-                      style: TextStyle(
-                        fontSize: 25,
-                        color: kPrimaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'San-francisco',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(top: 30.0),
-                    width: textfieldWidth,
-                    height: 50.0,
-                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                    decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8.0)),
-                    child: Center(
-                      child: TextField(
-                        style: TextStyle(color: Colors.black),
-                        onChanged: (val) {
-                          setState(
-                            () {
-                              checkCampany = val;
-                            },
-                          );
-                        },
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(top: 15),
-                          hintText: 'Enter Company Profile',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 16.0),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.business,
-                            color: Colors.grey,
-                          ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(top: 40.0),
+                      child: Text(
+                        'SOFTPOINT AUTO ID',
+                        style: TextStyle(
+                          fontSize: 25,
+                          color: kPrimaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'San-francisco',
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 30.0,
-                  ),
-                  Container(
-                    width: textfieldWidth,
-                    height: 50.0,
-                    padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                    decoration: BoxDecoration(
+                    Container(
+                      margin: EdgeInsets.only(top: 30.0),
+                      width: textfieldWidth,
+                      height: 50.0,
+                      padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                      decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8.0)),
-                    child: Center(
-                      child: TextField(
-                        style: TextStyle(color: Colors.black),
-                        onChanged: (val) {
-                          setState(
-                            () {
-                              checkUser = val;
-                            },
-                          );
-                        },
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(top: 10),
-                          hintText: 'Enter Username',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 16.0),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.person,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30.0,
-                  ),
-                  Container(
-                    width: textfieldWidth,
-                    height: 50.0,
-                    padding: EdgeInsets.symmetric(vertical: 7, horizontal: 8),
-                    decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
-                        color: Colors.grey[200]),
-                    child: Center(
-                      child: TextField(
-                        style: TextStyle(color: Colors.black),
-                        onChanged: (val) {
-                          setState(() {
-                            checkPass = val;
-                          });
-                        },
-                        obscureText: showPassword,
-                        decoration: InputDecoration(
-                          hintText: "Enter Password",
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16.0,
-                          ),
-                          border: InputBorder.none,
-                          fillColor: Colors.black,
-                          prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                          suffixIcon: IconButton(
-                            icon: showPassword
-                                ? Icon(
-                                    Icons.visibility_off,
-                                    color: Colors.grey,
-                                  )
-                                : Icon(
-                                    Icons.visibility,
-                                    color: Colors.grey,
-                                  ),
-                            onPressed: () {
-                              setState(
-                                () {
-                                  showPassword = !showPassword;
-                                },
-                              );
-                            },
-                          ),
-                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 40,
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Material(
-                      borderRadius: BorderRadius.circular(8.0),
-                      color: Color(red),
-                      child: InkWell(
-                        splashColor: Colors.black26,
-                        onTap: () {
-                          if (checkPass != null &&
-                              checkUser != null &&
-                              checkCampany != null &&
-                              checkUser.trim() != '' &&
-                              checkCampany.trim() != '' &&
-                              checkPass.trim() != '') {
-                            logInSubmit(checkCampany, checkUser, checkPass)
-                                .then(
-                              (value) {
-                                if (value == 'Username' ||
-                                    value == 'Password' ||
-                                    value == 'Company') {
-                                  validationDialog(value);
-                                } else {
-                                  setSharePreferencLogIn(value);
-                                  globals.userToken = value;
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => MainScreenPage(),
-                                    ),
-                                  );
-                                }
+                      child: Center(
+                        child: TextField(
+                          style: TextStyle(color: Colors.black),
+                          onChanged: (val) {
+                            setState(
+                              () {
+                                checkCampany = val;
                               },
                             );
-                          } else if (checkUser.trim() == '' ||
-                              checkPass.trim() == '') {
-                            validateTextfield();
-                          } else {
-                            print('no data');
-                          }
-                        },
-                        child: Container(
-                          width: textfieldWidth,
-                          height: 50.0,
-                          child: Center(
-                            child: Text(
-                              "LOGIN",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(top: 15),
+                            hintText: 'Enter Company Profile',
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 16.0),
+                            border: InputBorder.none,
+                            prefixIcon: Icon(
+                              Icons.business,
+                              color: Colors.grey,
                             ),
                           ),
                         ),
                       ),
                     ),
-                  )
-                ],
+                    SizedBox(
+                      height: 30.0,
+                    ),
+                    Container(
+                      width: textfieldWidth,
+                      height: 50.0,
+                      padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                      decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8.0)),
+                      child: Center(
+                        child: TextField(
+                          style: TextStyle(color: Colors.black),
+                          onChanged: (val) {
+                            setState(
+                              () {
+                                checkUser = val;
+                              },
+                            );
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(top: 10),
+                            hintText: 'Enter Username',
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 16.0),
+                            border: InputBorder.none,
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 30.0,
+                    ),
+                    Container(
+                      width: textfieldWidth,
+                      height: 50.0,
+                      padding: EdgeInsets.symmetric(vertical: 7, horizontal: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.grey[200],
+                      ),
+                      child: Center(
+                        child: TextField(
+                          style: TextStyle(color: Colors.black),
+                          onChanged: (val) {
+                            setState(() {
+                              checkPass = val;
+                            });
+                          },
+                          obscureText: showPassword,
+                          decoration: InputDecoration(
+                            hintText: "Enter Password",
+                            hintStyle: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 16.0,
+                            ),
+                            border: InputBorder.none,
+                            fillColor: Colors.black,
+                            prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                            suffixIcon: IconButton(
+                              icon: showPassword
+                                  ? Icon(
+                                      Icons.visibility_off,
+                                      color: Colors.grey,
+                                    )
+                                  : Icon(
+                                      Icons.visibility,
+                                      color: Colors.grey,
+                                    ),
+                              onPressed: () {
+                                setState(
+                                  () {
+                                    showPassword = !showPassword;
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 40,
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Material(
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Color(red),
+                        child: InkWell(
+                          splashColor: Colors.black26,
+                          onTap: () {
+                            getSharePreferencNetworkConfig().then((data) {
+                              if (data == 'noConfig') {
+                                validationDialog('No Network Configuration');
+                              } else {
+                                if (checkPass != null &&
+                                    checkUser != null &&
+                                    checkCampany != null &&
+                                    checkUser.trim() != '' &&
+                                    checkCampany.trim() != '' &&
+                                    checkPass.trim() != '') {
+                                  logInSubmit(
+                                          checkCampany, checkUser, checkPass)
+                                      .then(
+                                    (value) {
+                                      if (value == 'Username' ||
+                                          value == 'Password' ||
+                                          value == 'Company') {
+                                        validationDialog(value);
+                                      } else {
+                                        setSharePreferencLogIn(value);
+                                        globals.userToken = value;
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => MainScreenPage(),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  );
+                                } else if (checkUser.trim() == '' ||
+                                    checkPass.trim() == '') {
+                                  validateTextfield();
+                                }
+                              }
+                            });
+                          },
+                          child: Container(
+                            width: textfieldWidth,
+                            height: 50.0,
+                            child: Center(
+                              child: Text(
+                                "LOGIN",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
@@ -300,14 +309,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void validationDialog(String message) {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           content: new Text(
-            "Please Enter the Correct " + message,
-            textAlign: TextAlign.left,
+            message,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: "San-francisco",
+              fontWeight: FontWeight.bold,
             ),
           ),
           actions: <Widget>[
@@ -317,6 +328,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontFamily: "San-francisco",
                   fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
               onPressed: () {
@@ -331,19 +343,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void validateTextfield() {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           content: new Text(
-            "Error Username or Password ",
-            style: TextStyle(fontFamily: "San-francisco"),
+            "Company && Username && Password can't empty!",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: "San-francisco",
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           actions: <Widget>[
             new FlatButton(
               child: new Text(
                 "Cancel",
                 style: TextStyle(
-                    fontFamily: "San-francisco", fontWeight: FontWeight.bold),
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               onPressed: () {
                 Navigator.of(context).pop();

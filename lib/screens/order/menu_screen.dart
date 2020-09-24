@@ -1235,10 +1235,10 @@ class _MenuScreenState extends State<MenuScreen> {
           onPressed: () =>
               showDiscountDialog(title: '\$', id: saleDetailId, runFunction: 1),
         ),
-        ActionSheetAction(
-          text: "Split",
-          onPressed: () => Navigator.pop(context),
-        ),
+        // ActionSheetAction(
+        //   text: "Split",
+        //   onPressed: () => Navigator.pop(context),
+        // ),
         ActionSheetAction(
           text: "Cancel",
           onPressed: () => Navigator.pop(context),
@@ -1283,7 +1283,6 @@ class _MenuScreenState extends State<MenuScreen> {
         requestOrderSummeryFunction();
       });
     }
-
     // ____________________________Operation fucntion_____________________________
 
     return Scaffold(
@@ -1659,9 +1658,13 @@ class _MenuScreenState extends State<MenuScreen> {
                             ? () {
                                 requestOrderSummeryFunction();
                                 noteList = fetchListNote().then((value) {
-                                  value.length > 0
-                                      ? hasNote = true
-                                      : hasNote = false;
+                                  if (value.length > 0) {
+                                    hasNote = true;
+                                    return value;
+                                  } else {
+                                    hasNote = false;
+                                    return null;
+                                  }
                                 });
                                 _pageState = 1;
                               }
@@ -2161,8 +2164,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                       ).then((value) {
                                         if (value == 'no_item_print') {
                                           showMessageDialog(
-                                              message:
-                                                  'Already Print to Kitchan');
+                                            message: 'Already Print to Kitchan',
+                                          );
                                         }
                                       });
                                     },
@@ -2260,190 +2263,205 @@ class _MenuScreenState extends State<MenuScreen> {
               ],
             ),
           ),
-          AnimatedContainer(
-            margin: EdgeInsets.only(left: orientation ? size.width * .013 : 0),
-            width: orientation ? size.width * .37 : size.width,
-            height: SwitchContainer.secondContainerHeight,
-            curve: Curves.fastLinearToSlowEaseIn,
-            duration: Duration(milliseconds: 1000),
-            transform: Matrix4.translationValues(
-                0, SwitchContainer.seconndContainerYOffset, 1),
-            decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    offset: Offset(0, 3),
-                    color: Colors.black12.withOpacity(0.3),
-                    blurRadius: 20,
-                  ),
-                ]),
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  height: orientation ? size.height * 0.8 : double.infinity,
-                  width: orientation ? size.width * 0.4 : double.infinity,
-                  color: orientation ? null : Colors.white,
-                  child: Column(
+          hasNote
+              ? AnimatedContainer(
+                  margin: EdgeInsets.only(
+                      left: orientation ? size.width * .013 : 0),
+                  width: orientation ? size.width * .37 : size.width,
+                  height: SwitchContainer.secondContainerHeight,
+                  curve: Curves.fastLinearToSlowEaseIn,
+                  duration: Duration(milliseconds: 1000),
+                  transform: Matrix4.translationValues(
+                      0, SwitchContainer.seconndContainerYOffset, 1),
+                  decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        topRight: Radius.circular(15),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: Offset(0, 3),
+                          color: Colors.black12.withOpacity(0.3),
+                          blurRadius: 20,
+                        ),
+                      ]),
+                  child: Stack(
                     children: <Widget>[
-                      _buildHeaderTitle(size, "Special Request"),
                       Container(
-                        height: orientation
-                            ? size.height * 0.52
-                            : size.height * 0.5,
-                        color: Colors.white,
-                        child: FutureBuilder(
-                          future: noteList,
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return CenterLoadingIndicator();
-                            }
-                            return ListView.builder(
-                              itemCount: snapshot.data.length,
-                              itemBuilder: (context, index) {
-                                var data = snapshot.data[index];
-                                return Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      if (growableList.contains(data.noteId)) {
-                                        growableList.remove(data.noteId);
-                                      } else {
-                                        growableList.add(data.noteId);
-                                        growableList =
-                                            growableList.toSet().toList();
-                                      }
-                                      setState(() {});
-                                    },
-                                    splashColor: Colors.black12,
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 10,
-                                        horizontal: 30,
-                                      ),
-                                      height: 55,
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            width: 0.4,
-                                            color: Colors.grey[400],
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: <Widget>[
-                                          Container(
-                                            alignment: Alignment.centerRight,
-                                            child: Checkbox(
-                                              activeColor: kPrimaryColor,
-                                              checkColor: Colors.white,
-                                              value: growableList.any(
-                                                (element) =>
-                                                    element == data.noteId,
-                                              ),
-                                              onChanged: (val) {},
+                        height:
+                            orientation ? size.height * 0.8 : double.infinity,
+                        width: orientation ? size.width * 0.4 : double.infinity,
+                        color: orientation ? null : Colors.white,
+                        child: Column(
+                          children: <Widget>[
+                            _buildHeaderTitle(size, "Special Request"),
+                            Container(
+                              height: orientation
+                                  ? size.height * 0.52
+                                  : size.height * 0.5,
+                              color: Colors.white,
+                              child: FutureBuilder(
+                                future: noteList,
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return CenterLoadingIndicator();
+                                  }
+                                  return ListView.builder(
+                                    itemCount: snapshot.data.length,
+                                    itemBuilder: (context, index) {
+                                      var data = snapshot.data[index];
+                                      return Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            if (growableList
+                                                .contains(data.noteId)) {
+                                              growableList.remove(data.noteId);
+                                            } else {
+                                              growableList.add(data.noteId);
+                                              growableList =
+                                                  growableList.toSet().toList();
+                                            }
+                                            setState(() {});
+                                          },
+                                          splashColor: Colors.black12,
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 10,
+                                              horizontal: 30,
                                             ),
-                                          ),
-                                          Expanded(
-                                              child: Row(
-                                            children: <Widget>[
-                                              Text(
-                                                data.noteName.toString(),
-                                                style: TextStyle(
-                                                  fontFamily: 'San-francisco',
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 16,
+                                            height: 55,
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  width: 0.4,
+                                                  color: Colors.grey[400],
                                                 ),
                                               ),
-                                              Expanded(
-                                                child: Text(
-                                                  data.notePrice.toString(),
-                                                  textAlign: TextAlign.right,
-                                                  style: TextStyle(
-                                                    fontFamily: 'San-francisco',
-                                                    color: Colors.black,
-                                                    fontWeight: FontWeight.w800,
-                                                    fontSize: 13,
+                                            ),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: <Widget>[
+                                                Container(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Checkbox(
+                                                    activeColor: kPrimaryColor,
+                                                    checkColor: Colors.white,
+                                                    value: growableList.any(
+                                                      (element) =>
+                                                          element ==
+                                                          data.noteId,
+                                                    ),
+                                                    onChanged: (val) {},
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          )),
-                                        ],
-                                      ),
-                                    ),
+                                                Expanded(
+                                                    child: Row(
+                                                  children: <Widget>[
+                                                    Text(
+                                                      data.noteName.toString(),
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'San-francisco',
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        data.notePrice
+                                                            .toString(),
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                          color: Colors.black,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                            Container(
+                              height: orientation
+                                  ? size.height * 0.1
+                                  : size.height * 0.08,
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(10),
+                                  bottomRight: Radius.circular(10),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Button(
+                                    buttonName: "Reset",
+                                    border: true,
+                                    press: () {
+                                      growableList.clear();
+                                      setState(() {});
+                                    },
                                   ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                      Container(
-                        height: orientation
-                            ? size.height * 0.1
-                            : size.height * 0.08,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(10),
-                            bottomRight: Radius.circular(10),
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Button(
-                              buttonName: "Reset",
-                              border: true,
-                              press: () {
-                                growableList.clear();
-                                setState(() {});
-                              },
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Button(
-                              buttonName: "Apply",
-                              press: () {
-                                applySpecialRequest(
-                                  noteList: growableList,
-                                  saleMasterId: restoreSaleMasterId,
-                                  saleDetailId: sale_detail_id,
-                                ).then((value) {
-                                  if (value == 'success') {
-                                    _pageState = 1;
-                                    requestOrderSummeryFunction();
-                                  }
-                                });
-                              },
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Button(
+                                    buttonName: "Apply",
+                                    press: () {
+                                      applySpecialRequest(
+                                        noteList: growableList,
+                                        saleMasterId: restoreSaleMasterId,
+                                        saleDetailId: sale_detail_id,
+                                      ).then((value) {
+                                        if (value == 'success') {
+                                          _pageState = 1;
+                                          requestOrderSummeryFunction();
+                                        }
+                                      });
+                                    },
+                                  )
+                                ],
+                              ),
                             )
                           ],
                         ),
-                      )
+                      ),
+                      _pageState == 2
+                          ? _buildCancelButton(context)
+                          : Container()
                     ],
                   ),
-                ),
-                _pageState == 2 ? _buildCancelButton(context) : Container()
-              ],
-            ),
-          ),
+                )
+              : Container(),
         ],
       )),
     );

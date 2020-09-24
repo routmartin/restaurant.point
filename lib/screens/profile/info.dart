@@ -78,20 +78,22 @@ class _ProfileState extends State<Profile> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  Image.asset(
+                    'assets/images/main.png',
+                    width: 120,
+                    height: 120,
+                  ),
                   Container(
-                    margin: EdgeInsets.only(top: 40.0),
+                    margin: EdgeInsets.only(top: 20.0),
                     child: Text(
                       'SOFTPOINT AUTO ID',
                       style: TextStyle(
                         fontSize: 25,
-                        color: kPrimaryColor,
+                        color: Colors.black87,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'San-francisco',
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: 30.0,
                   ),
                   SizedBox(
                     height: 40,
