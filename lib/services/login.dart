@@ -1,15 +1,19 @@
 import 'package:dio/dio.dart';
-import 'package:pointrestaurant/utilities/path.dart';
+// import 'package:pointrestaurant/utilities/path.dart';
+import '../utilities/globals.dart' as globals;
 
+Dio dio = Dio();
 Future logInSubmit(String company, String userName, String passWord) async {
-  print(serverIP);
-  Dio dio = Dio();
+  String serverIP = 'http://${globals.ipAddress}:${globals.port}';
+  String query = serverIP + "/Api/Login";
   Response response = await dio.post(
-    serverIP + '/Api/Login',
+    query,
     data: {"company": company, "userName": userName, "pwd": passWord},
-    options: Options(contentType: Headers.formUrlEncodedContentType),
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
   );
-
+  print(response.data);
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
   }

@@ -50,8 +50,6 @@ Future printBill({
 Future printBillWithM1({
   int sale_master_id,
 }) async {
-  print('userToken ' + userToken);
-  print('userToken ' + sale_master_id.toString());
   Response response = await dio.post(
     serverIP + '/Api/PrintBillInternal',
     data: {
@@ -60,9 +58,11 @@ Future printBillWithM1({
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
+      responseType: ResponseType.bytes,
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
+    print(response.data);
     return response.data;
   }
   return null;

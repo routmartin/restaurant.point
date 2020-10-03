@@ -16,8 +16,13 @@ class _LoadingPageState extends State<LoadingPage> {
   String userToken = 'nolog';
   Future loadSharePreferenc() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    globals.port = prefs.getString('Port');
-    globals.ipAddress = prefs.getString('IP');
+    if (prefs.containsKey('Port')) {
+      globals.port = prefs.getString('Port');
+      globals.ipAddress = prefs.getString('IP');
+    } else {
+      globals.ipAddress = '124.248.164.229';
+      globals.port = '5006';
+    }
     return prefs.getString('userLog');
   }
 
@@ -27,9 +32,8 @@ class _LoadingPageState extends State<LoadingPage> {
     loadSharePreferenc().then((data) {
       if (data != null) {
         setState(() {
-          userToken = data;
+          globals.userToken = data;
         });
-        globals.userToken = userToken;
       }
     });
   }
@@ -37,7 +41,7 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   Widget build(BuildContext context) {
     return SplashScreen(
-      seconds: 3,
+      seconds: 5,
       navigateAfterSeconds:
           userToken == 'nolog' ? LoginScreen() : MainScreenPage(),
       image: new Image.asset(

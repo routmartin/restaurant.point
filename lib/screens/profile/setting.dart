@@ -118,7 +118,9 @@ class _SettingScreenState extends State<SettingScreen> {
                                     },
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
-                                      hintText: globals.ipAddress != ''
+                                      hintText: globals.ipAddress != null &&
+                                              globals.ipAddress !=
+                                                  '124.248.164.229'
                                           ? globals.ipAddress
                                           : 'No Configuration IP Address',
                                       contentPadding: EdgeInsets.all(15.0),
@@ -156,7 +158,8 @@ class _SettingScreenState extends State<SettingScreen> {
                                     },
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
-                                      hintText: globals.port != ''
+                                      hintText: globals.port != null &&
+                                              globals.port != '5006'
                                           ? globals.port
                                           : 'No Configuration Port',
                                       contentPadding: EdgeInsets.all(15.0),

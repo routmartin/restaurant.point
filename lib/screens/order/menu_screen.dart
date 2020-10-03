@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -12,9 +11,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:network_image_to_byte/network_image_to_byte.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:platform_action_sheet/platform_action_sheet.dart';
-
 import 'package:pointrestaurant/models/menu.dart';
 import 'package:pointrestaurant/models/move_list.dart';
 import 'package:pointrestaurant/models/note.dart';
@@ -28,18 +25,15 @@ import 'package:pointrestaurant/services/table_model/move_sevice.dart';
 import 'package:pointrestaurant/services/table_model/order_items.dart';
 import 'package:pointrestaurant/services/table_model/order_summery_sevice.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
-
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/utilities/switch.cofig.dart';
 import 'package:pointrestaurant/widget/botton_middle_button.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
-
+import '../../utilities/globals.dart' as globals;
 import 'components/event_button.dart';
-
 import 'components/order_cal_icon.dart';
-
 import 'components/vertical_tab_container.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -83,10 +77,12 @@ class _MenuScreenState extends State<MenuScreen> {
   List<BluetoothDevice> _devices = [];
   BluetoothDevice _device;
   List<String> imgArr = new List();
+  List<Uint8List> imgListBytes = new List();
   // var pathImage = '';
   int done = 1;
   String tmpPath = '';
   int _pageState = 0;
+  String serverIP = 'http://${globals.ipAddress}:${globals.port}';
   final ValueNotifier<int> _selectItems = ValueNotifier<int>(0);
   final ValueNotifier<double> _totalAmount = ValueNotifier<double>(0);
   //_______________________________________________________________
@@ -126,7 +122,9 @@ class _MenuScreenState extends State<MenuScreen> {
     } else {
       bluetooth.isConnected.then((isConnected) {
         if (!isConnected) {
-          bluetooth.connect(_device).catchError((error) {});
+          bluetooth.connect(_device).catchError((error) {
+            print('throw errror from connect to bluetooth:' + error);
+          });
         }
       });
     }
@@ -136,7 +134,7 @@ class _MenuScreenState extends State<MenuScreen> {
     bluetooth.disconnect();
   }
 
-  Future<void> initPlatformState() async {
+  Future initPlatformState() async {
     List<BluetoothDevice> devices = [];
     try {
       devices = await bluetooth.getBondedDevices();
@@ -153,37 +151,63 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<Uint8List> _networkImageToByte(int target) async {
     String path = '$serverIP/temp/$target.png';
     Uint8List byteImage = await networkImageToByte(path);
-    return byteImage;
+    imgListBytes.add(byteImage);
+    // return byteImage;
   }
+  // void _networkImageToByte(int target) async {
+  //   String path = '$serverIP/temp/$target.png';
+  //   Uint8List byteImage = await networkImageToByte(path);
+  //   imgListBytes.add(byteImage);
+  //   // return byteImage;
+  // }
 
-  Future initSaveToPath(int target) async {
-    imgArr.clear();
-    Uint8List bytes = await _networkImageToByte(target);
-    final tempDir = (await getApplicationDocumentsDirectory()).path;
-    imgArr.add('$tempDir/$target.png');
-    tmpPath = tempDir;
-    final file = await new File('$tempDir/$target.png').create();
-    file.writeAsBytesSync(bytes);
+  // Future initSaveToPath(int target) async {
+  //   imgArr.clear();
+  //   Uint8List bytes = await _networkImageToByte(target);
+  //   // final tempDir = (await getApplicationDocumentsDirectory()).path;
+  //   // imgArr.add('$tempDir/$target.png');
+  //   imgListBytes.add(bytes);
+  //   // tmpPath = tempDir;
+  //   // final file = await new File('$tempDir/$target.png').create();
+  //   // file.writeAsBytesSync(bytes);
+  // }
+
+  // void printWithM1(int index) async {
+  //   for (int i = 0; i < index; i++) {
+  //     bluetooth.isConnected.then((isConnected) {
+  //       if (isConnected) {
+  //         bluetooth.printImage('$tmpPath/${i + 1}.png');
+  //         bluetooth.printImageBytes(bytes);
+  //         if (index == i + 1) {
+  //           bluetooth.printNewLine();
+  //           bluetooth.printNewLine();
+  //           bluetooth.printNewLine();
+  //           bluetooth.paperCut();
+  //           _disconnect();
+  //           Navigator.pop(context);
+  //         }
+  //       }
+  //     });
+  //   }
+  // }
+
+  void printWithM1withBytes(Uint8List index) async {
+    bluetooth.isConnected.then((isConnected) {
+      if (isConnected) {
+        bluetooth.printImageBytes(index);
+        bluetooth.paperCut();
+        _disconnect();
+        // Navigator.pop(context, true);
+      }
+    });
+    // print(imgListBytes);
+    // bluetooth.printNewLine();
+    // bluetooth.printNewLine();
+    // bluetooth.printNewLine();
+    // bluetooth.paperCut();
+    // _disconnect();
+    // Navigator.pop(context);
   }
-
-  void printWithM1(int index) async {
-    for (int i = 0; i < index; i++) {
-      bluetooth.isConnected.then((isConnected) {
-        if (isConnected) {
-          bluetooth.printImage('$tmpPath/${i + 1}.png');
-          if (index == i + 1) {
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-            bluetooth.paperCut();
-            _disconnect();
-            Navigator.pop(context);
-          }
-        }
-      });
-    }
-  }
-
   // ___________________________________ Section Work with M1 ______________________________________________
 
   @override
@@ -193,7 +217,6 @@ class _MenuScreenState extends State<MenuScreen> {
         MediaQuery.of(context).orientation == Orientation.landscape;
     SwitchContainer.windowHeight = size.height;
     SwitchContainer.windowWidth = size.width;
-
     SwitchContainer().rederAnimateContainer(
       orientation: orientation,
       size: size,
@@ -1159,7 +1182,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                               saleMasterId: restoreSaleMasterId,
                                               reason: txt_reason)
                                           .then((data) {
-                                        print(data);
                                         if (data == 'success') {
                                           backToPreviewPage();
                                           Navigator.pop(context, true);
@@ -2182,16 +2204,28 @@ class _MenuScreenState extends State<MenuScreen> {
                                     ).then((index) {
                                       printingLoadingIndicator();
                                       initPlatformState();
+
                                       done = 1;
                                       for (int i = 1; i <= index; i++) {
-                                        initSaveToPath(i).then(
+                                        _networkImageToByte(i);
+                                        done++;
+                                        if (done == index) {
+                                          Future.delayed(
+                                              const Duration(
+                                                milliseconds: 3000,
+                                              ), () {
+                                            printWithM1withBytes(index);
+                                          });
+                                        }
+                                        _networkImageToByte(i).then(
                                           (_) {
                                             done++;
                                             if (done == index) {
                                               Future.delayed(
                                                   const Duration(
-                                                      milliseconds: 3000), () {
-                                                printWithM1(index);
+                                                    milliseconds: 3000,
+                                                  ), () {
+                                                printWithM1withBytes(index);
                                               });
                                             }
                                           },

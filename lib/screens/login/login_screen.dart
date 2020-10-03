@@ -20,23 +20,20 @@ class _LoginScreenState extends State<LoginScreen> {
   String checkPass = '';
   String checkCampany = '';
 
-  Future getSharePreferencNetworkConfig() async {
+  void getSharePreferencNetworkConfig() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey('Port') == false) {
-      return 'noConfig';
+    if (prefs.containsKey('Port')) {
+      globals.port = prefs.getString('Port');
+      globals.ipAddress = prefs.getString('IP');
+    } else {
+      globals.ipAddress = '124.248.164.229';
+      globals.port = '5006';
     }
-    globals.port = prefs.getString('Port');
-    globals.ipAddress = prefs.getString('IP');
   }
 
   setSharePreferencLogIn(String userLog) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('userLog', userLog);
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -48,36 +45,73 @@ class _LoginScreenState extends State<LoginScreen> {
             : size.width * 0.8;
     var red = 0xffE50B2E;
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              Image.asset(
-                'assets/images/background.png',
-                width: size.width,
-                height: size.height,
-                fit: BoxFit.cover,
-              ),
-            ],
+      body: Container(
+        width: double.infinity,
+        height: size.height,
+        padding: EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 10,
+        ),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage(
+              'assets/images/background.png',
+            ),
           ),
-          Positioned(
-            top: size.height * 0.21,
-            left: size.width * 0.05,
-            child: Container(
-              height: size.height * 0.72,
-              width: size.width * 0.9,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 3), // changes position of shadow
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                alignment: Alignment.centerRight,
+                margin: EdgeInsets.only(
+                  top: size.height * 0.05,
+                ),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SettingScreen(),
+                      ),
+                    ).then(
+                      (data) => data != null
+                          ? data ? getSharePreferencNetworkConfig() : null
+                          : null,
+                    );
+                  },
+                  child: Container(
+                    child: SvgPicture.asset(
+                      'assets/icons/settings.svg',
+                      width: 30.0,
+                      height: 30.0,
+                      color: Colors.white,
+                    ),
                   ),
-                ],
+                ),
               ),
-              child: SingleChildScrollView(
+              SizedBox(
+                height: size.height * .05,
+              ),
+              Container(
+                height: size.height * 0.72,
+                width: size.width * 0.9,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: <Widget>[
                     Container(
@@ -146,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 10),
+                            contentPadding: EdgeInsets.only(top: 16),
                             hintText: 'Enter Username',
                             hintStyle:
                                 TextStyle(color: Colors.grey, fontSize: 16.0),
@@ -221,42 +255,34 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: InkWell(
                           splashColor: Colors.black26,
                           onTap: () {
-                            getSharePreferencNetworkConfig().then((data) {
-                              if (data == 'noConfig') {
-                                validationDialog('No Network Configuration');
-                              } else {
-                                if (checkPass != null &&
-                                    checkUser != null &&
-                                    checkCampany != null &&
-                                    checkUser.trim() != '' &&
-                                    checkCampany.trim() != '' &&
-                                    checkPass.trim() != '') {
-                                  logInSubmit(
-                                          checkCampany, checkUser, checkPass)
-                                      .then(
-                                    (value) {
-                                      if (value == 'Username' ||
-                                          value == 'Password' ||
-                                          value == 'Company') {
-                                        validationDialog(value);
-                                      } else {
-                                        setSharePreferencLogIn(value);
-                                        globals.userToken = value;
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => MainScreenPage(),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                } else if (checkUser.trim() == '' ||
-                                    checkPass.trim() == '') {
-                                  validateTextfield();
-                                }
-                              }
-                            });
+                            if (checkPass != null &&
+                                checkUser != null &&
+                                checkUser.trim() != '' &&
+                                checkPass.trim() != '') {
+                              // getSharePreferencNetworkConfig();
+                              logInSubmit(checkCampany, checkUser, checkPass)
+                                  .then(
+                                (value) {
+                                  if (value == 'Username' ||
+                                      value == 'Password' ||
+                                      value == 'Company') {
+                                    validationDialog(value);
+                                  } else {
+                                    setSharePreferencLogIn(value);
+                                    globals.userToken = value;
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => MainScreenPage(),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            } else if (checkUser.trim() == '' ||
+                                checkPass.trim() == '') {
+                              validateTextfield();
+                            }
                           },
                           child: Container(
                             width: textfieldWidth,
@@ -277,32 +303,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-          Positioned(
-            top: size.height * .1,
-            right: 30,
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SettingScreen(),
-                  ),
-                ).then(
-                    (data) => data ? getSharePreferencNetworkConfig() : null);
-              },
-              child: Container(
-                child: SvgPicture.asset(
-                  'assets/icons/settings.svg',
-                  width: 30.0,
-                  height: 30.0,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          )
-        ],
+        ),
       ),
     );
   }

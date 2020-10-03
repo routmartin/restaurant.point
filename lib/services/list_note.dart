@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/note.dart';
-import 'package:pointrestaurant/utilities/path.dart';
+
 import '../utilities/globals.dart' as globals;
 
 Dio dio = Dio();
-
+String serverIP = 'http://${globals.ipAddress}:${globals.port}';
 List<Note> parseListNote(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
   return parsed.map<Note>((json) => Note.fromJson(json)).toList();
