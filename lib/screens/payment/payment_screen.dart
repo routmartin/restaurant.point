@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:network_image_to_byte/network_image_to_byte.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pointrestaurant/models/payment_load.dart';
 import 'package:pointrestaurant/services/payment/load_total_pay.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
@@ -48,31 +46,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
   int exChangeRateKh;
 // store rate and exchange date____________________________________
 
+  // ___________________________________ Section Work with M1 ______________________________________________
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-  List<BluetoothDevice> _devices = [];
   BluetoothDevice _device;
-  List<String> imgArr = new List();
-  var pathImage = '';
-  int done = 1;
-  String tmpPath = '';
-
+  Map<int, Uint8List> imgListBytes = Map();
   void _connect() {
     if (_device == null) {
       print('Device Not');
     } else {
       bluetooth.isConnected.then((isConnected) {
         if (!isConnected) {
-          bluetooth.connect(_device).catchError((error) {});
+          bluetooth.connect(_device).catchError((error) {
+            // print('throw errror from connect to bluetooth:' + error);
+          });
         }
       });
     }
   }
 
-  void _disconnect() {
-    bluetooth.disconnect();
-  }
-
-  Future<void> initPlatformState() async {
+  Future initPlatformState() async {
     List<BluetoothDevice> devices = [];
     try {
       devices = await bluetooth.getBondedDevices();
@@ -80,48 +72,40 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     if (!mounted) return;
     setState(() {
-      _devices = devices;
-      _device = _devices[0];
+      _device = devices[0];
       _connect();
     });
   }
 
-  Future<Uint8List> _networkImageToByte(int target) async {
-    String path = '$serverIP/temp/$target.png';
-    Uint8List byteImage = await networkImageToByte(path);
-    return byteImage;
-  }
-
-  Future initSaveToPath(int target) async {
-    imgArr.clear();
-    Uint8List bytes = await _networkImageToByte(target);
-    final tempDir = (await getApplicationDocumentsDirectory()).path;
-    imgArr.add('$tempDir/$target.png');
-    tmpPath = tempDir;
-    final file = await new File('$tempDir/$target.png').create();
-    file.writeAsBytesSync(bytes);
-  }
-
-  void printWithM1(int index) async {
-    for (int i = 0; i < index; i++) {
-      bluetooth.isConnected.then((isConnected) {
-        if (isConnected) {
-          bluetooth.printImage('$tmpPath/${i + 1}.png');
-          if (index == i + 1) {
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-            bluetooth.paperCut();
-            _disconnect();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MainScreenPage(),
-              ),
-            );
-          }
+  _convertNetworkImageToByte(int target) async {
+    await initPlatformState();
+    for (int i = 1; i <= target; i++) {
+      String path = '$serverIP/temp/$i.png';
+      await networkImageToByte(path).then((bytes) {
+        imgListBytes[i] = bytes;
+        if (i == target) {
+          printWithM1withBytes(target);
         }
       });
+    }
+  }
+
+  void printWithM1withBytes(int index) async {
+    for (int index = 1; index <= imgListBytes.length; index++) {
+      bluetooth.printImageBytes(imgListBytes[index]);
+      if (imgListBytes.length == index) {
+        bluetooth.printNewLine();
+        bluetooth.printNewLine();
+        bluetooth.printNewLine();
+        bluetooth.paperCut();
+        bluetooth.disconnect();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MainScreenPage(),
+          ),
+        );
+      }
     }
   }
 
@@ -131,9 +115,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
       context: context,
       builder: (BuildContext ctx) {
         return AlertDialog(
+          insetPadding: EdgeInsets.zero,
           content: Container(
-            width: 200,
-            height: 300,
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -150,6 +135,112 @@ class _PaymentScreenState extends State<PaymentScreen> {
       },
     );
   }
+
+  // ___________________________________ Section Work with M1 ______________________________________________
+
+  // BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  // List<BluetoothDevice> _devices = [];
+  // BluetoothDevice _device;
+  // List<String> imgArr = new List();
+  // var pathImage = '';
+  // int done = 1;
+  // String tmpPath = '';
+
+  // void _connect() {
+  //   if (_device == null) {
+  //     print('Device Not');
+  //   } else {
+  //     bluetooth.isConnected.then((isConnected) {
+  //       if (!isConnected) {
+  //         bluetooth.connect(_device).catchError((error) {});
+  //       }
+  //     });
+  //   }
+  // }
+
+  // void _disconnect() {
+  //   bluetooth.disconnect();
+  // }
+
+  // Future<void> initPlatformState() async {
+  //   List<BluetoothDevice> devices = [];
+  //   try {
+  //     devices = await bluetooth.getBondedDevices();
+  //   } on PlatformException {}
+
+  //   if (!mounted) return;
+  //   setState(() {
+  //     _devices = devices;
+  //     _device = _devices[0];
+  //     _connect();
+  //   });
+  // }
+
+  // Future<Uint8List> _networkImageToByte(int target) async {
+  //   String path = '$serverIP/temp/$target.png';
+  //   Uint8List byteImage = await networkImageToByte(path);
+  //   return byteImage;
+  // }
+
+  // Future initSaveToPath(int target) async {
+  //   imgArr.clear();
+  //   Uint8List bytes = await _networkImageToByte(target);
+  //   final tempDir = (await getApplicationDocumentsDirectory()).path;
+  //   imgArr.add('$tempDir/$target.png');
+  //   tmpPath = tempDir;
+  //   final file = await new File('$tempDir/$target.png').create();
+  //   file.writeAsBytesSync(bytes);
+  // }
+
+  // void printWithM1(int index) async {
+  //   for (int i = 0; i < index; i++) {
+  //     bluetooth.isConnected.then((isConnected) {
+  //       if (isConnected) {
+  //         bluetooth.printImage('$tmpPath/${i + 1}.png');
+  //         if (index == i + 1) {
+  //           bluetooth.printNewLine();
+  //           bluetooth.printNewLine();
+  //           bluetooth.printNewLine();
+  //           bluetooth.paperCut();
+  //           _disconnect();
+  //           Navigator.pushReplacement(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (_) => MainScreenPage(),
+  //             ),
+  //           );
+  //         }
+  //       }
+  //     });
+  //   }
+  // }
+
+  // printingLoadingIndicator() {
+  //   return showDialog(
+  //     barrierDismissible: false,
+  //     context: context,
+  //     builder: (BuildContext ctx) {
+  //       return AlertDialog(
+  //         insetPadding: EdgeInsets.zero,
+  //         content: Container(
+  //           width: double.infinity,
+  //           height: MediaQuery.of(context).size.height,
+  //           child: Center(
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //               children: <Widget>[
+  //                 Image.asset('assets/icons/printing.gif'),
+  //                 CircularProgressIndicator(
+  //                   backgroundColor: kPrimaryColor,
+  //                 )
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   void initState() {
@@ -559,30 +650,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                               return_us:
                                                                   usReturn,
                                                             ).then((index) {
+                                                              imgListBytes
+                                                                  .clear();
                                                               printingLoadingIndicator();
-                                                              initPlatformState();
-                                                              done = 1;
-                                                              for (int i = 1;
-                                                                  i <= index;
-                                                                  i++) {
-                                                                initSaveToPath(
-                                                                        i)
-                                                                    .then(
-                                                                  (_) {
-                                                                    done++;
-                                                                    if (done ==
-                                                                        index) {
-                                                                      Future.delayed(
-                                                                          const Duration(
-                                                                              milliseconds: 3000),
-                                                                          () {
-                                                                        printWithM1(
-                                                                            index);
-                                                                      });
-                                                                    }
-                                                                  },
-                                                                );
-                                                              }
+                                                              _convertNetworkImageToByte(
+                                                                  index);
+
+                                                              // printingLoadingIndicator();
+                                                              // initPlatformState();
+                                                              // done = 1;
+                                                              // for (int i = 1;
+                                                              //     i <= index;
+                                                              //     i++) {
+                                                              //   initSaveToPath(
+                                                              //           i)
+                                                              //       .then(
+                                                              //     (_) {
+                                                              //       done++;
+                                                              //       if (done ==
+                                                              //           index) {
+                                                              //         Future.delayed(
+                                                              //             const Duration(
+                                                              //                 milliseconds: 3000),
+                                                              //             () {
+                                                              //           printWithM1(
+                                                              //               index);
+                                                              //         });
+                                                              //       }
+                                                              //     },
+                                                              //   );
+                                                              // }
                                                             })
                                                           : Container();
                                                     },

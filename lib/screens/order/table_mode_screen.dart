@@ -85,8 +85,10 @@ class _TableModeScreenState extends State<TableModeScreen> {
     SwitchContainer.windowHeight = size.height;
     SwitchContainer.windowWidth = size.width;
     SwitchContainer().rederAnimateContainer(
-        orientation: orientation, size: size, pageState: _pageState);
-
+      orientation: orientation,
+      size: size,
+      pageState: _pageState,
+    );
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(

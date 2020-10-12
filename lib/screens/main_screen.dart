@@ -51,18 +51,18 @@ class _MainScreenPageState extends State<MainScreenPage> {
             type: BottomNavigationBarType.fixed,
             elevation: 20.0,
             iconSize: 24,
+            selectedItemColor: kPrimaryColor,
             selectedFontSize: 13,
             unselectedFontSize: 13,
-            selectedItemColor: kPrimaryColor,
-            unselectedItemColor: Color(0xFF828282),
-            selectedLabelStyle: TextStyle(
-              fontFamily: 'San-francisco',
-              fontWeight: FontWeight.w800,
-            ),
-            unselectedLabelStyle: TextStyle(
-              fontFamily: 'San-francisco',
-              fontWeight: FontWeight.bold,
-            ),
+            showUnselectedLabels: false,
+            // selectedLabelStyle: TextStyle(
+            //   fontFamily: 'San-francisco',
+            //   fontWeight: FontWeight.w800,
+            // ),
+            // unselectedLabelStyle: TextStyle(
+            //   fontFamily: 'San-francisco',
+            //   fontWeight: FontWeight.bold,
+            // ),
             currentIndex: _pageIndex,
             onTap: (index) {
               setState(() {

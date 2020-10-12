@@ -5,6 +5,7 @@ import 'package:pointrestaurant/models/ordersummery.dart';
 // import 'package:pointrestaurant/utilities/path.dart';
 import '../../utilities/globals.dart';
 
+Dio dio = Dio();
 String serverIP = 'http://$ipAddress:$port';
 
 List<Ordersummery> parseOrderSummery(String responseBody) {
@@ -14,7 +15,6 @@ List<Ordersummery> parseOrderSummery(String responseBody) {
       .toList();
 }
 
-Dio dio = Dio();
 Future<List<Ordersummery>> fetchOrderSummery({
   int sale_master_id,
   int table_id,

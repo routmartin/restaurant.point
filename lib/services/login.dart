@@ -13,7 +13,7 @@ Future logInSubmit(String company, String userName, String passWord) async {
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
-  print(response.data);
+
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
   }

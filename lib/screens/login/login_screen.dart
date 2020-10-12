@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  setSharePreferencLogIn(String userLog) async {
+  Future setSharePreferencLogIn(String userLog) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('userLog', userLog);
   }
@@ -259,23 +259,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                 checkUser != null &&
                                 checkUser.trim() != '' &&
                                 checkPass.trim() != '') {
-                              // getSharePreferencNetworkConfig();
+                              getSharePreferencNetworkConfig();
                               logInSubmit(checkCampany, checkUser, checkPass)
                                   .then(
-                                (value) {
-                                  if (value == 'Username' ||
-                                      value == 'Password' ||
-                                      value == 'Company') {
-                                    validationDialog(value);
+                                (token) {
+                                  if (token == 'Username' ||
+                                      token == 'Password' ||
+                                      token == 'Company') {
+                                    validationDialog(token);
                                   } else {
-                                    setSharePreferencLogIn(value);
-                                    globals.userToken = value;
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => MainScreenPage(),
-                                      ),
-                                    );
+                                    setSharePreferencLogIn(token).then((_) {
+                                      globals.userToken = token;
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => MainScreenPage(),
+                                        ),
+                                      );
+                                    });
                                   }
                                 },
                               );

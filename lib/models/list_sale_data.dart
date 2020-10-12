@@ -31,7 +31,7 @@ class ListSaleData {
   String toRawJson() => json.encode(toJson());
 
   factory ListSaleData.fromJson(Map<String, dynamic> json) => ListSaleData(
-        id: json["id"],
+        id: json["sale_master_id"],
         invoice: json["invoice"],
         totalDisItem: json["total_disItem"],
         subTotal: json["sub_total"],

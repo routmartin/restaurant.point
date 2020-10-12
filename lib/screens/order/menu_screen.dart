@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
-
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -70,17 +69,13 @@ class _MenuScreenState extends State<MenuScreen> {
   String txt_percent;
   // ignore: non_constant_identifier_names
   String txt_reason;
+  // ignore: non_constant_identifier_names
   bool move_with_auth = false;
   bool hasNote = false;
 
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-  List<BluetoothDevice> _devices = [];
   BluetoothDevice _device;
-  List<String> imgArr = new List();
-  List<Uint8List> imgListBytes = new List();
-  // var pathImage = '';
-  int done = 1;
-  String tmpPath = '';
+  Map<int, Uint8List> imgListBytes = Map();
   int _pageState = 0;
   String serverIP = 'http://${globals.ipAddress}:${globals.port}';
   final ValueNotifier<int> _selectItems = ValueNotifier<int>(0);
@@ -130,10 +125,6 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  void _disconnect() {
-    bluetooth.disconnect();
-  }
-
   Future initPlatformState() async {
     List<BluetoothDevice> devices = [];
     try {
@@ -142,71 +133,36 @@ class _MenuScreenState extends State<MenuScreen> {
 
     if (!mounted) return;
     setState(() {
-      _devices = devices;
-      _device = _devices[0];
+      _device = devices[0];
       _connect();
     });
   }
 
-  Future<Uint8List> _networkImageToByte(int target) async {
-    String path = '$serverIP/temp/$target.png';
-    Uint8List byteImage = await networkImageToByte(path);
-    imgListBytes.add(byteImage);
-    // return byteImage;
+  _convertNetworkImageToByte(int target) async {
+    await initPlatformState();
+    for (int i = 1; i <= target; i++) {
+      String path = '$serverIP/temp/$i.png';
+      await networkImageToByte(path).then((bytes) {
+        imgListBytes[i] = bytes;
+        if (i == target) {
+          printWithM1withBytes(target);
+        }
+      });
+    }
   }
-  // void _networkImageToByte(int target) async {
-  //   String path = '$serverIP/temp/$target.png';
-  //   Uint8List byteImage = await networkImageToByte(path);
-  //   imgListBytes.add(byteImage);
-  //   // return byteImage;
-  // }
 
-  // Future initSaveToPath(int target) async {
-  //   imgArr.clear();
-  //   Uint8List bytes = await _networkImageToByte(target);
-  //   // final tempDir = (await getApplicationDocumentsDirectory()).path;
-  //   // imgArr.add('$tempDir/$target.png');
-  //   imgListBytes.add(bytes);
-  //   // tmpPath = tempDir;
-  //   // final file = await new File('$tempDir/$target.png').create();
-  //   // file.writeAsBytesSync(bytes);
-  // }
-
-  // void printWithM1(int index) async {
-  //   for (int i = 0; i < index; i++) {
-  //     bluetooth.isConnected.then((isConnected) {
-  //       if (isConnected) {
-  //         bluetooth.printImage('$tmpPath/${i + 1}.png');
-  //         bluetooth.printImageBytes(bytes);
-  //         if (index == i + 1) {
-  //           bluetooth.printNewLine();
-  //           bluetooth.printNewLine();
-  //           bluetooth.printNewLine();
-  //           bluetooth.paperCut();
-  //           _disconnect();
-  //           Navigator.pop(context);
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
-
-  void printWithM1withBytes(Uint8List index) async {
-    bluetooth.isConnected.then((isConnected) {
-      if (isConnected) {
-        bluetooth.printImageBytes(index);
+  void printWithM1withBytes(int index) async {
+    for (int index = 1; index <= imgListBytes.length; index++) {
+      bluetooth.printImageBytes(imgListBytes[index]);
+      if (imgListBytes.length == index) {
+        bluetooth.printNewLine();
+        bluetooth.printNewLine();
+        bluetooth.printNewLine();
         bluetooth.paperCut();
-        _disconnect();
-        // Navigator.pop(context, true);
+        bluetooth.disconnect();
+        Navigator.pop(context);
       }
-    });
-    // print(imgListBytes);
-    // bluetooth.printNewLine();
-    // bluetooth.printNewLine();
-    // bluetooth.printNewLine();
-    // bluetooth.paperCut();
-    // _disconnect();
-    // Navigator.pop(context);
+    }
   }
   // ___________________________________ Section Work with M1 ______________________________________________
 
@@ -233,9 +189,10 @@ class _MenuScreenState extends State<MenuScreen> {
         context: context,
         builder: (BuildContext ctx) {
           return AlertDialog(
+            insetPadding: EdgeInsets.zero,
             content: Container(
-              width: 200,
-              height: 300,
+              width: double.infinity,
+              height: size.height,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -454,8 +411,7 @@ class _MenuScreenState extends State<MenuScreen> {
               opacity: a1.value,
               child: Center(
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                  width: orientation ? size.width * 0.8 : size.width * 1.1,
+                  width: orientation ? size.width * 0.8 : size.width,
                   height: orientation ? size.height * .9 : size.height * .7,
                   child: FutureBuilder(
                     future: movelistData,
@@ -470,6 +426,10 @@ class _MenuScreenState extends State<MenuScreen> {
                               width: double.infinity,
                               height: 60,
                               decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(5),
+                                  topRight: Radius.circular(5),
+                                ),
                                 color: Colors.grey[200],
                               ),
                               alignment: Alignment.center,
@@ -488,7 +448,7 @@ class _MenuScreenState extends State<MenuScreen> {
                               width: double.infinity,
                               height: orientation
                                   ? size.height * .75
-                                  : size.height * .55,
+                                  : size.height * .6,
                               child: VerticalTabs(
                                 indicatorColor: Color(0xffb01105),
                                 tabsWidth: orientation
@@ -527,20 +487,21 @@ class _MenuScreenState extends State<MenuScreen> {
                                     List<TableMove> tableList =
                                         snapshot.data[index].tables;
                                     return Container(
+                                      padding: EdgeInsets.only(
+                                          left: 10, bottom: 10, right: 10),
                                       color: Color(0xfff5f5f5),
-                                      padding: EdgeInsets.all(10),
                                       child: GridView.count(
                                         shrinkWrap: true,
                                         physics: ScrollPhysics(),
                                         scrollDirection: Axis.vertical,
-                                        mainAxisSpacing: 20,
-                                        crossAxisSpacing: 20,
+                                        mainAxisSpacing: 5,
+                                        crossAxisSpacing: 5,
                                         childAspectRatio: orientation
                                             ? size.height / 950
-                                            : size.height / 1000,
-                                        crossAxisCount: size.width <= 800.0
-                                            ? 2
-                                            : size.width >= 1000.0 ? 5 : 4,
+                                            : size.height / 500,
+                                        crossAxisCount: orientation
+                                            ? size.width >= 1000.0 ? 5 : 4
+                                            : 2,
                                         children: List<Widget>.generate(
                                           tableList.length,
                                           (index) {
@@ -566,95 +527,57 @@ class _MenuScreenState extends State<MenuScreen> {
                                                     tableId: tableList[index]
                                                         .tableId,
                                                   ),
-                                                  child: Column(
-                                                    children: <Widget>[
-                                                      CachedNetworkImage(
-                                                        width: double.infinity,
-                                                        height: orientation
-                                                            ? size.height * .15
-                                                            : size.height * .1,
-                                                        fit: BoxFit.cover,
-                                                        imageUrl: serverIP +
-                                                            tableList[index]
-                                                                .tableImage,
-                                                        placeholder: (context,
-                                                                url) =>
-                                                            CircularProgressIndicator(),
-                                                        errorWidget: (context,
-                                                                url, error) =>
-                                                            Container(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                      horizontal: 10,
+                                                    ),
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: <Widget>[
+                                                        SizedBox(
                                                           height: orientation
                                                               ? size.height *
-                                                                  .14
-                                                              : size.height *
-                                                                  .06,
-                                                          child: Icon(
-                                                            Icons.no_sim,
-                                                            color: Colors
-                                                                .grey[500],
-                                                            size: orientation
-                                                                ? 50
-                                                                : 30,
-                                                          ),
+                                                                  .01
+                                                              : 3,
                                                         ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 10,
-                                                        ),
-                                                        child: Column(
+                                                        Column(
                                                           mainAxisAlignment:
                                                               MainAxisAlignment
                                                                   .center,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
                                                           children: <Widget>[
-                                                            SizedBox(
-                                                              height: orientation
-                                                                  ? size.height *
-                                                                      .01
-                                                                  : 3,
-                                                            ),
-                                                            Column(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
+                                                            Text(
+                                                              tableList[index]
+                                                                  .tableName,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              textAlign:
+                                                                  TextAlign
                                                                       .center,
-                                                              children: <
-                                                                  Widget>[
-                                                                Text(
-                                                                  tableList[
-                                                                          index]
-                                                                      .tableName,
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .center,
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Color(
-                                                                        0xff121010),
-                                                                    fontFamily:
-                                                                        "San-francisco",
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        orientation
-                                                                            ? 15
-                                                                            : 14,
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                              style: TextStyle(
+                                                                color: Color(
+                                                                    0xff121010),
+                                                                fontFamily:
+                                                                    "San-francisco",
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize:
+                                                                    orientation
+                                                                        ? 15
+                                                                        : 14,
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -1233,7 +1156,7 @@ class _MenuScreenState extends State<MenuScreen> {
         },
       );
     }
-    // ___________________________Open operation function ____________________________
+    // ___________________________Open operation function ________________________
 
     showActionBottomSheet({saleDetailId}) {
       return PlatformActionSheet().displaySheet(context: context, actions: [
@@ -1257,10 +1180,6 @@ class _MenuScreenState extends State<MenuScreen> {
           onPressed: () =>
               showDiscountDialog(title: '\$', id: saleDetailId, runFunction: 1),
         ),
-        // ActionSheetAction(
-        //   text: "Split",
-        //   onPressed: () => Navigator.pop(context),
-        // ),
         ActionSheetAction(
           text: "Cancel",
           onPressed: () => Navigator.pop(context),
@@ -1269,7 +1188,7 @@ class _MenuScreenState extends State<MenuScreen> {
         )
       ]);
     }
-    // ___________________________Close operation function ____________________________
+    // ___________________________Close operation function _______________________
 
     // ____________________________Operation fucntion_____________________________
     reqestToDeleteItem({data}) {
@@ -1678,8 +1597,9 @@ class _MenuScreenState extends State<MenuScreen> {
                       child: InkWell(
                         onTap: restoreSaleMasterId != 0
                             ? () {
-                                requestOrderSummeryFunction();
                                 noteList = fetchListNote().then((value) {
+                                  requestOrderSummeryFunction();
+                                  _pageState = 1;
                                   if (value.length > 0) {
                                     hasNote = true;
                                     return value;
@@ -1688,7 +1608,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                     return null;
                                   }
                                 });
-                                _pageState = 1;
                               }
                             : showMessageDialog,
                         splashColor: Colors.black,
@@ -1932,36 +1851,16 @@ class _MenuScreenState extends State<MenuScreen> {
                                                       );
                                                     }),
                                                 hasNote
-                                                    ? Container(
-                                                        padding:
-                                                            EdgeInsets.all(8),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          border: data.notes
-                                                                      .length <
-                                                                  1
-                                                              ? Border.all(
-                                                                  width: 1,
-                                                                  color: Colors
-                                                                      .black54,
-                                                                )
-                                                              : null,
-                                                          color: data.notes
-                                                                      .length >=
-                                                                  1
-                                                              ? kPrimaryColor
-                                                              : null,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      15.0),
-                                                        ),
+                                                    ? ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15.0),
                                                         child: Material(
                                                           color: Colors
                                                               .transparent,
                                                           child: InkWell(
                                                             splashColor:
-                                                                Colors.black38,
+                                                                Colors.black12,
                                                             onTap: () {
                                                               setState(() {
                                                                 _pageState = 2;
@@ -1982,26 +1881,53 @@ class _MenuScreenState extends State<MenuScreen> {
                                                               sale_detail_id = data
                                                                   .saleDetailId;
                                                             },
-                                                            child: Padding(
+                                                            child: Container(
                                                               padding:
-                                                                  const EdgeInsets
-                                                                      .all(
-                                                                1.0,
+                                                                  EdgeInsets
+                                                                      .all(8),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border: data.notes
+                                                                            .length <
+                                                                        1
+                                                                    ? Border
+                                                                        .all(
+                                                                        width:
+                                                                            1,
+                                                                        color: Colors
+                                                                            .black54,
+                                                                      )
+                                                                    : null,
+                                                                color: data.notes
+                                                                            .length >=
+                                                                        1
+                                                                    ? kPrimaryColor
+                                                                    : null,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            15.0),
                                                               ),
-                                                              child: Text(
-                                                                "SPECIAL REQUEST",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 8,
-                                                                  fontFamily:
-                                                                      'San-francisco',
-                                                                  color: data.notes
-                                                                              .length >=
-                                                                          1
-                                                                      ? Colors
-                                                                          .white
-                                                                      : Colors
-                                                                          .black,
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                  1.0,
+                                                                ),
+                                                                child: Text(
+                                                                  "SPECIAL REQUEST",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize: 8,
+                                                                    fontFamily:
+                                                                        'San-francisco',
+                                                                    color: data.notes.length >=
+                                                                            1
+                                                                        ? Colors
+                                                                            .white
+                                                                        : Colors
+                                                                            .black,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
@@ -2202,35 +2128,9 @@ class _MenuScreenState extends State<MenuScreen> {
                                     press: () => printBillWithM1(
                                       sale_master_id: restoreSaleMasterId,
                                     ).then((index) {
+                                      imgListBytes.clear();
                                       printingLoadingIndicator();
-                                      initPlatformState();
-
-                                      done = 1;
-                                      for (int i = 1; i <= index; i++) {
-                                        _networkImageToByte(i);
-                                        done++;
-                                        if (done == index) {
-                                          Future.delayed(
-                                              const Duration(
-                                                milliseconds: 3000,
-                                              ), () {
-                                            printWithM1withBytes(index);
-                                          });
-                                        }
-                                        _networkImageToByte(i).then(
-                                          (_) {
-                                            done++;
-                                            if (done == index) {
-                                              Future.delayed(
-                                                  const Duration(
-                                                    milliseconds: 3000,
-                                                  ), () {
-                                                printWithM1withBytes(index);
-                                              });
-                                            }
-                                          },
-                                        );
-                                      }
+                                      _convertNetworkImageToByte(index);
                                     }),
                                   ),
                                 ],
@@ -2300,7 +2200,8 @@ class _MenuScreenState extends State<MenuScreen> {
           hasNote
               ? AnimatedContainer(
                   margin: EdgeInsets.only(
-                      left: orientation ? size.width * .013 : 0),
+                    left: orientation ? size.width * .013 : 0,
+                  ),
                   width: orientation ? size.width * .37 : size.width,
                   height: SwitchContainer.secondContainerHeight,
                   curve: Curves.fastLinearToSlowEaseIn,
@@ -2308,18 +2209,19 @@ class _MenuScreenState extends State<MenuScreen> {
                   transform: Matrix4.translationValues(
                       0, SwitchContainer.seconndContainerYOffset, 1),
                   decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15),
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        offset: Offset(0, 3),
+                        color: Colors.black12.withOpacity(0.3),
+                        blurRadius: 20,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: Offset(0, 3),
-                          color: Colors.black12.withOpacity(0.3),
-                          blurRadius: 20,
-                        ),
-                      ]),
+                    ],
+                  ),
                   child: Stack(
                     children: <Widget>[
                       Container(
@@ -2350,6 +2252,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                       return Material(
                                         color: Colors.transparent,
                                         child: InkWell(
+                                          splashColor: Colors.black12,
                                           onTap: () {
                                             if (growableList
                                                 .contains(data.noteId)) {
@@ -2361,7 +2264,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                             }
                                             setState(() {});
                                           },
-                                          splashColor: Colors.black12,
                                           child: Container(
                                             padding: EdgeInsets.symmetric(
                                               vertical: 10,

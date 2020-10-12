@@ -45,8 +45,8 @@ class CaculateIcon extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(15.0),
       child: Container(
-        width: 23,
-        height: 23,
+        width: 25,
+        height: 25,
         alignment: Alignment.centerRight,
         child: Material(
           borderRadius: BorderRadius.circular(15.0),

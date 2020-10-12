@@ -22,7 +22,6 @@ Future printtoKitchen({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.data);
     return response.data;
   }
   return null;
@@ -50,6 +49,7 @@ Future printBill({
 Future printBillWithM1({
   int sale_master_id,
 }) async {
+  print('invoking func $userToken');
   Response response = await dio.post(
     serverIP + '/Api/PrintBillInternal',
     data: {
@@ -58,11 +58,9 @@ Future printBillWithM1({
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
-      responseType: ResponseType.bytes,
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.data);
     return response.data;
   }
   return null;
@@ -123,6 +121,26 @@ Future payInternalPrint({
       "amount_us": amount_us,
       "return_kh": return_kh,
       "return_us": return_us,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return response.data;
+  }
+  return null;
+}
+
+Future reprintInvoiceWithM1({
+  int saleMasterId,
+}) async {
+  print('Id $saleMasterId');
+  Response response = await dio.post(
+    serverIP + '/Api/ReprintPrintInvoiceInternal',
+    data: {
+      "userToken": userToken,
+      "sale_master_id": saleMasterId,
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,

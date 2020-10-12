@@ -13,7 +13,6 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
-  String userToken = 'nolog';
   Future loadSharePreferenc() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('Port')) {
@@ -30,20 +29,19 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     super.initState();
     loadSharePreferenc().then((data) {
-      if (data != null) {
-        setState(() {
-          globals.userToken = data;
-        });
-      }
+      print('token : $data');
+      setState(() {
+        globals.userToken = data != null ? data : 'no';
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return SplashScreen(
-      seconds: 5,
+      seconds: 3,
       navigateAfterSeconds:
-          userToken == 'nolog' ? LoginScreen() : MainScreenPage(),
+          globals.userToken.length == 2 ? LoginScreen() : MainScreenPage(),
       image: new Image.asset(
         appbarLogo,
         width: 120,
