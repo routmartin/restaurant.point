@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final listSaleData = listSaleDataFromJson(jsonString);
-
 import 'dart:convert';
 
 class ListSaleData {
@@ -13,7 +9,9 @@ class ListSaleData {
     this.discountInvPercentage,
     this.discountInvDollars,
     this.grandTotal,
-    this.status,
+    this.payIn,
+    this.returnKh,
+    this.returnUS,
   });
 
   int id;
@@ -23,7 +21,9 @@ class ListSaleData {
   String discountInvPercentage;
   String discountInvDollars;
   String grandTotal;
-  String status;
+  String payIn;
+  String returnUS;
+  String returnKh;
 
   factory ListSaleData.fromRawJson(String str) =>
       ListSaleData.fromJson(json.decode(str));
@@ -38,7 +38,9 @@ class ListSaleData {
         discountInvPercentage: json["discount_inv_percentage"],
         discountInvDollars: json["discount_inv_dollars"],
         grandTotal: json["grand_total"],
-        status: json["status"],
+        payIn: json["payin"],
+        returnUS: json["return_us"],
+        returnKh: json["return_kh"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +51,8 @@ class ListSaleData {
         "discount_inv_percentage": discountInvPercentage,
         "discount_inv_dollars": discountInvDollars,
         "grand_total": grandTotal,
-        "status": status,
+        "payin": payIn,
+        "return_us": returnUS,
+        "return_kh": returnKh,
       };
 }

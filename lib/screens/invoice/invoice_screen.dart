@@ -147,6 +147,11 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                       itemCount: snapshot.data.length,
                       itemBuilder: (context, index) {
                         return Collapse(
+                            padding: EdgeInsets.only(
+                              top: 1,
+                              left: 10,
+                              right: 10,
+                            ),
                             value: growableList[index],
                             onChange: (bool value) {
                               for (int i = 0; i < growableList.length; i++) {
@@ -170,9 +175,8 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                 vertical: 25,
                                 horizontal: 30,
                               ),
-                              height: 230,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(8),
                                 color: Colors.grey[50],
                                 boxShadow: [
                                   BoxShadow(
@@ -305,7 +309,126 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                     ],
                                   ),
                                   SizedBox(
-                                    height: 20,
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        'SUBTOTAL',
+                                        style: TextStyle(
+                                          color: kPrimaryColor,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'San-francisco',
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data[index].subTotal,
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'San-francisco',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Divider(
+                                    height: 1.2,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        'PAY IN',
+                                        style: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'San-francisco',
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data[index].payIn,
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'San-francisco',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        'RETURN (\$)',
+                                        style: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'San-francisco',
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data[index].returnUS,
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'San-francisco',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        'RETURN (៛)',
+                                        style: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'San-francisco',
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data[index].returnKh,
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'San-francisco',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 10,
                                   ),
                                   Divider(
                                     height: 1.2,

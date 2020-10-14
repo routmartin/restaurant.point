@@ -58,7 +58,7 @@ class _MenuScreenState extends State<MenuScreen> {
   final f = new NumberFormat("#,##0.00");
   //_______________ OrderSummery _________________
   int totalItems = 0;
-  double totalAmount = 0;
+  // double totalAmount = 0;
   // ignore: non_constant_identifier_names
   int sale_detail_id;
   int restoreSaleMasterId;
@@ -80,7 +80,7 @@ class _MenuScreenState extends State<MenuScreen> {
   String serverIP = 'http://${globals.ipAddress}:${globals.port}';
   final ValueNotifier<int> _selectItems = ValueNotifier<int>(0);
   final ValueNotifier<double> _totalAmount = ValueNotifier<double>(0);
-  //_______________________________________________________________
+  //_______________________________________________________________________________________________________
   @override
   void initState() {
     super.initState();
@@ -89,27 +89,7 @@ class _MenuScreenState extends State<MenuScreen> {
     requestOrderSummeryFunction();
   }
 
-  requestMenuFunction() {
-    menuData = fetchMenuSevice(saleMasterId: restoreSaleMasterId);
-  }
-
-  requestOrderSummeryFunction() async {
-    orderSummery = fetchOrderSummery(
-      table_id: widget.tableId,
-      sale_master_id: restoreSaleMasterId,
-    ).then((value) {
-      _selectItems.value = value.length;
-      totalAmount = 0;
-      value.forEach((element) {
-        totalAmount += double.parse(element.amount);
-      });
-      _totalAmount.value = totalAmount;
-      return value;
-    });
-    setState(() {});
-  }
-
-  // ___________________________________ Section Work with M1 ______________________________________________
+// ___________________________________ Section Work with M1 ______________________________________________
 
   void _connect() {
     if (_device == null) {
@@ -164,12 +144,73 @@ class _MenuScreenState extends State<MenuScreen> {
       }
     }
   }
-  // ___________________________________ Section Work with M1 ______________________________________________
+  // ___________________________________ Section Work with M1 _______________________________________________
+
+  // ___________________________________ Operation Fucntion _________________________________________________
+  requestMenuFunction() {
+    menuData = fetchMenuSevice(saleMasterId: restoreSaleMasterId);
+  }
+
+  requestOrderSummeryFunction() async {
+    orderSummery = fetchOrderSummery(
+      table_id: widget.tableId,
+      sale_master_id: restoreSaleMasterId,
+    ).then((value) {
+      setState(() {
+        if (value != null) {
+          _selectItems.value = value.length;
+          _totalAmount.value = 0;
+          value.forEach((element) {
+            _totalAmount.value += double.parse(element.amount);
+          });
+        } else {
+          _selectItems.value = 0;
+          _totalAmount.value = 0;
+        }
+      });
+      return value;
+    });
+  }
+
+  reqestToDeleteItem({data}) {
+    deleteItems(
+      saleMasterId: restoreSaleMasterId,
+      saleDetailId: data.saleDetailId,
+    ).then((response) {
+      if (response == 'success') {
+        requestMenuFunction();
+        requestOrderSummeryFunction();
+      } else if (response == 'afterOrder' ||
+          response == 'beforeOrder' ||
+          response == 'afterBill') {
+        _showAuthenticator(
+          saleMasterId: widget.saleMasterId,
+          saleDetailId: data.saleDetailId,
+          callFun: 0,
+        );
+      }
+    });
+  }
+
+  requestAddItemsFunction({tableList, int qty = 1}) {
+    addOrderItems(
+      itemDetailId: tableList.itemDetailId,
+      saleMasterId: restoreSaleMasterId,
+      tableId: widget.tableId,
+      saleDetailId: tableList.saleDetailId,
+      qty: qty,
+    ).then((saleMasterId) {
+      restoreSaleMasterId = int.parse(saleMasterId);
+      requestMenuFunction();
+      requestOrderSummeryFunction();
+    });
+  }
+  // ___________________________________ Operation Fucntion _________________________________________________
 
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var orientation =
+    bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
     SwitchContainer.windowHeight = size.height;
     SwitchContainer.windowWidth = size.width;
@@ -178,985 +219,6 @@ class _MenuScreenState extends State<MenuScreen> {
       size: size,
       pageState: _pageState,
     );
-
-    backToPreviewPage() {
-      Navigator.pop(context, true);
-    }
-
-    printingLoadingIndicator() {
-      return showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext ctx) {
-          return AlertDialog(
-            insetPadding: EdgeInsets.zero,
-            content: Container(
-              width: double.infinity,
-              height: size.height,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Image.asset('assets/icons/printing.gif'),
-                    CircularProgressIndicator(
-                      backgroundColor: kPrimaryColor,
-                    )
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    showMessageDialog({message = 'NO ORDER ITEMS'}) {
-      Timer timer = Timer(Duration(milliseconds: 1000), () {
-        Navigator.of(context, rootNavigator: true).pop();
-      });
-      return showGeneralDialog(
-        barrierColor: Colors.black.withOpacity(0.9),
-        transitionDuration: Duration(milliseconds: 100),
-        barrierDismissible: false,
-        barrierLabel: '',
-        context: context,
-        pageBuilder: (context, animation1, animation2) {
-          return null;
-        },
-        transitionBuilder: (context, a1, a2, widget) {
-          var size = MediaQuery.of(context).size;
-          return Transform.scale(
-            scale: a1.value,
-            child: Opacity(
-              opacity: a1.value,
-              child: Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                  width: size.width * .5,
-                  height: size.height * .3,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Center(
-                    child: Container(
-                      child: Text(
-                        message,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontFamily: 'San-francisco',
-                          color: Colors.black,
-                          fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    confirmationDialog({String tableName, int tableId}) {
-      return showDialog(
-        context: context,
-        builder: (BuildContext ctx) {
-          return AlertDialog(
-            title: Text(
-              'CONFIRM MOVE TO TABLE : ' + tableName,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'San-francisco',
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(10.0),
-              ),
-            ),
-            content: Container(
-              width: orientation ? size.width * .35 : size.width * .8,
-              padding: EdgeInsets.all(10),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      child: FittedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  },
-                                  splashColor: Colors.black12,
-                                  child: Container(
-                                    width: orientation
-                                        ? size.width * .14
-                                        : size.width * .27,
-                                    height: 45.0,
-                                    alignment: Alignment.center,
-                                    decoration:
-                                        BoxDecoration(color: Colors.black12),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 9,
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Cancel',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        decoration: TextDecoration.none,
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  splashColor: Colors.black12,
-                                  onTap: () {
-                                    movetoTable(
-                                      saleMasterId: restoreSaleMasterId,
-                                      tableId: tableId,
-                                    ).then((_) {
-                                      if (move_with_auth) {
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                        backToPreviewPage();
-                                      } else {
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                        backToPreviewPage();
-                                      }
-                                    });
-                                  },
-                                  child: Container(
-                                    height: 45.0,
-                                    width: orientation
-                                        ? size.width * .14
-                                        : size.width * .27,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: kPrimaryColor,
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 9,
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Move',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        decoration: TextDecoration.none,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    showMovableDialog({int salMasterID}) {
-      return showGeneralDialog(
-        barrierColor: Colors.black.withOpacity(0.2),
-        transitionDuration: Duration(milliseconds: 100),
-        barrierDismissible: true,
-        barrierLabel: '',
-        context: context,
-        pageBuilder: (context, animation1, animation2) {
-          return null;
-        },
-        transitionBuilder: (context, a1, a2, widget) {
-          var size = MediaQuery.of(context).size;
-          return Transform.scale(
-            scale: a1.value,
-            child: Opacity(
-              opacity: a1.value,
-              child: Center(
-                child: Container(
-                  width: orientation ? size.width * 0.8 : size.width,
-                  height: orientation ? size.height * .9 : size.height * .7,
-                  child: FutureBuilder(
-                    future: movelistData,
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (!snapshot.hasData) {
-                        return CenterLoadingIndicator();
-                      }
-                      return SingleChildScrollView(
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              width: double.infinity,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(5),
-                                  topRight: Radius.circular(5),
-                                ),
-                                color: Colors.grey[200],
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Available Table'.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontFamily: 'San-francisco',
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w700,
-                                  decoration: TextDecoration.none,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              height: orientation
-                                  ? size.height * .75
-                                  : size.height * .6,
-                              child: VerticalTabs(
-                                indicatorColor: Color(0xffb01105),
-                                tabsWidth: orientation
-                                    ? size.width * .12
-                                    : size.width * .23,
-                                selectedTabBackgroundColor: null,
-                                contentScrollAxis: Axis.vertical,
-                                tabs: List.generate(
-                                  snapshot.data.length,
-                                  (index) {
-                                    return Tab(
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        height: 55,
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey[200],
-                                        ),
-                                        child: Text(
-                                          snapshot.data[index].floorName,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Color(0xff121010),
-                                            fontFamily: "San-francisco",
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                contents: List.generate(
-                                  snapshot.data.length,
-                                  (index) {
-                                    List<TableMove> tableList =
-                                        snapshot.data[index].tables;
-                                    return Container(
-                                      padding: EdgeInsets.only(
-                                          left: 10, bottom: 10, right: 10),
-                                      color: Color(0xfff5f5f5),
-                                      child: GridView.count(
-                                        shrinkWrap: true,
-                                        physics: ScrollPhysics(),
-                                        scrollDirection: Axis.vertical,
-                                        mainAxisSpacing: 5,
-                                        crossAxisSpacing: 5,
-                                        childAspectRatio: orientation
-                                            ? size.height / 950
-                                            : size.height / 500,
-                                        crossAxisCount: orientation
-                                            ? size.width >= 1000.0 ? 5 : 4
-                                            : 2,
-                                        children: List<Widget>.generate(
-                                          tableList.length,
-                                          (index) {
-                                            return Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                                border: Border.all(
-                                                  width: 1.3,
-                                                  color: Color(
-                                                    0xff0f0808,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  splashColor: Colors.black12,
-                                                  onTap: () =>
-                                                      confirmationDialog(
-                                                    tableName: tableList[index]
-                                                        .tableName,
-                                                    tableId: tableList[index]
-                                                        .tableId,
-                                                  ),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                      horizontal: 10,
-                                                    ),
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: <Widget>[
-                                                        SizedBox(
-                                                          height: orientation
-                                                              ? size.height *
-                                                                  .01
-                                                              : 3,
-                                                        ),
-                                                        Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              tableList[index]
-                                                                  .tableName,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: TextStyle(
-                                                                color: Color(
-                                                                    0xff121010),
-                                                                fontFamily:
-                                                                    "San-francisco",
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize:
-                                                                    orientation
-                                                                        ? 15
-                                                                        : 14,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
-    showDiscountDialog({title, int id, int runFunction}) {
-      txt_percent = null;
-      return showDialog(
-          context: context,
-          builder: (BuildContext ctx) {
-            return AlertDialog(
-              title: Text(
-                'DISCOUNT ($title)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'San-francisco',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10.0),
-                ),
-              ),
-              content: Container(
-                padding: EdgeInsets.all(10),
-                width: orientation ? size.width * .4 : size.width * .95,
-                height: orientation ? size.height * .2 : size.height * .25,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        width: size.width * .8,
-                        height: 50.0,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: TextFormField(
-                            onChanged: (val) {
-                              txt_percent = val;
-                            },
-                            keyboardType: TextInputType.number,
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.all(15.0),
-                              border: InputBorder.none,
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Container(
-                        child: FittedBox(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(7),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                    },
-                                    splashColor: Colors.black12,
-                                    child: Container(
-                                      width: orientation
-                                          ? size.width * .14
-                                          : size.width * .27,
-                                      height: 45.0,
-                                      alignment: Alignment.center,
-                                      decoration:
-                                          BoxDecoration(color: Colors.black12),
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 9,
-                                        horizontal: 20,
-                                      ),
-                                      child: Text(
-                                        'Cancel',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          decoration: TextDecoration.none,
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 20,
-                              ),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(7),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () {
-                                      if (txt_percent != null) {
-                                        switch (runFunction) {
-                                          case 0:
-                                            applyPercentDisItem(
-                                                    saleDetailId: id,
-                                                    dis_percent_item:
-                                                        txt_percent)
-                                                .then(
-                                              (_) {
-                                                Navigator.pop(context);
-                                              },
-                                            );
-                                            break;
-                                          case 1:
-                                            applyPercentDollItem(
-                                              saleDetailId: id,
-                                              dis_cash_item: txt_percent,
-                                            ).then(
-                                              (_) => Navigator.pop(context),
-                                            );
-                                            break;
-                                          case 2:
-                                            applyDiscountCashonInvoice(
-                                              sale_master_id: id,
-                                              dis_cash_inv: txt_percent,
-                                            ).then(
-                                              (_) => Navigator.pop(context),
-                                            );
-                                            break;
-                                          case 3:
-                                            applyDiscountPercentonInvoice(
-                                              sale_master_id: id,
-                                              dis_percent_inv: txt_percent,
-                                            ).then(
-                                              (_) => Navigator.pop(context),
-                                            );
-                                            break;
-                                          default:
-                                        }
-                                      }
-                                    },
-                                    splashColor: Colors.black12,
-                                    child: Container(
-                                      height: 45.0,
-                                      width: orientation
-                                          ? size.width * .14
-                                          : size.width * .27,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: kPrimaryColor,
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 9,
-                                        horizontal: 20,
-                                      ),
-                                      child: Text(
-                                        'Confirm',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          decoration: TextDecoration.none,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            );
-          });
-    }
-
-    _showAuthenticator({
-      int saleMasterId,
-      int saleDetailId,
-      int callFun,
-    }) {
-      return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(10.0),
-              ),
-            ),
-            content: Container(
-              padding: EdgeInsets.all(10),
-              width: orientation ? size.width * .4 : size.width * .95,
-              height: orientation ? size.height * .38 : size.height * .35,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    SizedBox(
-                      height: size.height * .06,
-                    ),
-                    Text(
-                      'No Permission'.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: 'San-francisco',
-                        color: Colors.black,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                    SizedBox(
-                      height: size.height * .05,
-                    ),
-                    Container(
-                      width: size.width * .9,
-                      height: 50.0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: TextFormField(
-                          onChanged: (val) => username = val,
-                          decoration: InputDecoration(
-                            hintText: 'Username',
-                            contentPadding: EdgeInsets.all(15.0),
-                            border: InputBorder.none,
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: size.height * .035,
-                    ),
-                    Container(
-                      width: size.width * .8,
-                      height: 50.0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: TextFormField(
-                          onChanged: (val) {
-                            password = val;
-                          },
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            hintText: 'Password',
-                            contentPadding: EdgeInsets.all(15.0),
-                            border: InputBorder.none,
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: <Widget>[
-              Container(
-                margin: EdgeInsets.only(bottom: 10, right: 25),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(7),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          splashColor: Colors.black12,
-                          child: Container(
-                            width: orientation
-                                ? size.width * .14
-                                : size.width * .27,
-                            height: 45.0,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(color: Colors.black12),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 9,
-                              horizontal: 20,
-                            ),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 13,
-                                decoration: TextDecoration.none,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(7),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            if (username != null && password != null) {
-                              if (callFun == 0) {
-                                overideDeleteItems(
-                                  saleDetailId: saleDetailId,
-                                  saleMasterId: restoreSaleMasterId,
-                                  username: username,
-                                  password: password,
-                                ).then((response) {
-                                  if (response == 'success') {
-                                    requestOrderSummeryFunction();
-                                    Navigator.pop(context);
-                                  } else if (response == 'failed') {
-                                    showMessageDialog(
-                                        message: 'CAN NOT DELETE THIS');
-                                  }
-                                });
-                              } else if (callFun == 1) {
-                                overideVoidInvice(
-                                  saleMasterId: restoreSaleMasterId,
-                                  username: username,
-                                  password: password,
-                                  reason: txt_reason,
-                                ).then((response) {
-                                  if (response == 'success') {
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
-                                    backToPreviewPage();
-                                  } else if (response == 'noPermission') {
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
-                                    showMessageDialog(message: 'NO PERMISSION');
-                                  }
-                                });
-                              } else if (callFun == 2) {
-                                requestAuthorizationMoveTable(
-                                  userName: username,
-                                  passWord: password,
-                                  saleMasterId: saleMasterId,
-                                ).then((data) {
-                                  if (data == 'success') {
-                                    move_with_auth = true;
-                                    movelistData = fetchMoveList();
-                                    showMovableDialog(
-                                      salMasterID: restoreSaleMasterId,
-                                    );
-                                  } else {}
-                                });
-                              }
-                            } else {
-                              print('no data');
-                            }
-                          },
-                          splashColor: Colors.black12,
-                          child: Container(
-                            height: 45.0,
-                            width: orientation
-                                ? size.width * .14
-                                : size.width * .27,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 9,
-                              horizontal: 20,
-                            ),
-                            child: Text(
-                              'Overide',
-                              style: TextStyle(
-                                fontSize: 13,
-                                decoration: TextDecoration.none,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          );
-        },
-      );
-    }
-
-    requestToVoidInvoid() {
-      return showDialog(
-        context: context,
-        builder: (BuildContext ctx) {
-          return AlertDialog(
-            title: Text(
-              'REQUEST TO VOID INVOICE',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'San-francisco',
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(10.0),
-              ),
-            ),
-            content: Container(
-              width: orientation ? size.width * .35 : size.width * .8,
-              padding: EdgeInsets.all(10),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      width: size.width * .8,
-                      height: size.height * .15,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: TextField(
-                          onChanged: (txt) {
-                            if (txt != null) {
-                              txt_reason = txt;
-                            }
-                          },
-                          maxLines: 4,
-                          keyboardType: TextInputType.text,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            hintText: 'Please give the reason',
-                            contentPadding: EdgeInsets.all(15.0),
-                            border: InputBorder.none,
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      child: FittedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  },
-                                  splashColor: Colors.black12,
-                                  child: Container(
-                                    width: orientation
-                                        ? size.width * .14
-                                        : size.width * .27,
-                                    height: 45.0,
-                                    alignment: Alignment.center,
-                                    decoration:
-                                        BoxDecoration(color: Colors.black12),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 9,
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Cancel',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        decoration: TextDecoration.none,
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  splashColor: Colors.black12,
-                                  onTap: () {
-                                    if (txt_reason != null) {
-                                      requestToVoidInvoice(
-                                              saleMasterId: restoreSaleMasterId,
-                                              reason: txt_reason)
-                                          .then((data) {
-                                        if (data == 'success') {
-                                          backToPreviewPage();
-                                          Navigator.pop(context, true);
-                                        } else if (data == 'voidBeforePaid' ||
-                                            data == 'voidAfterPaid') {
-                                          _showAuthenticator(
-                                            saleMasterId: restoreSaleMasterId,
-                                            callFun: 1,
-                                          );
-                                        }
-                                      });
-                                    }
-                                  },
-                                  child: Container(
-                                    height: 45.0,
-                                    width: orientation
-                                        ? size.width * .14
-                                        : size.width * .27,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: kPrimaryColor,
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 9,
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'VOID',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        decoration: TextDecoration.none,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-    // ___________________________Open operation function ________________________
 
     showActionBottomSheet({saleDetailId}) {
       return PlatformActionSheet().displaySheet(context: context, actions: [
@@ -1167,7 +229,7 @@ class _MenuScreenState extends State<MenuScreen> {
               table_name: widget.tableName,
               sale_master_id: restoreSaleMasterId,
               sale_detail_ids: saleDetailId,
-            ).then((value) => print(value));
+            );
           },
         ),
         ActionSheetAction(
@@ -1188,47 +250,9 @@ class _MenuScreenState extends State<MenuScreen> {
         )
       ]);
     }
-    // ___________________________Close operation function _______________________
-
-    // ____________________________Operation fucntion_____________________________
-    reqestToDeleteItem({data}) {
-      deleteItems(
-        saleMasterId: restoreSaleMasterId,
-        saleDetailId: data.saleDetailId,
-      ).then((response) {
-        if (response == 'success') {
-          requestMenuFunction();
-          requestOrderSummeryFunction();
-        } else if (response == 'afterOrder' ||
-            response == 'beforeOrder' ||
-            response == 'afterBill') {
-          _showAuthenticator(
-            saleMasterId: widget.saleMasterId,
-            saleDetailId: data.saleDetailId,
-            callFun: 0,
-          );
-        }
-      });
-    }
-
-    requestAddItemsFunction({tableList, int qty = 1}) {
-      addOrderItems(
-        itemDetailId: tableList.itemDetailId,
-        saleMasterId: restoreSaleMasterId,
-        tableId: widget.tableId,
-        saleDetailId: tableList.saleDetailId,
-        qty: qty,
-      ).then((saleMasterId) {
-        restoreSaleMasterId = int.parse(saleMasterId);
-        requestMenuFunction();
-        requestOrderSummeryFunction();
-      });
-    }
-    // ____________________________Operation fucntion_____________________________
 
     return Scaffold(
-      body: SafeArea(
-          child: Stack(
+      body: Stack(
         children: <Widget>[
           Container(
             child: Stack(
@@ -1317,6 +341,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                           child: Container(
                                             margin: EdgeInsets.only(top: 10),
                                             child: GridView.count(
+                                              padding: EdgeInsets.only(top: 1),
                                               shrinkWrap: true,
                                               physics: ScrollPhysics(),
                                               scrollDirection: Axis.vertical,
@@ -1524,23 +549,29 @@ class _MenuScreenState extends State<MenuScreen> {
                                         children: <Widget>[
                                           Container(
                                             alignment: Alignment.centerLeft,
-                                            child: Text(data.name,
-                                                style: TextStyle(
-                                                  color: Colors.black87,
-                                                )),
+                                            child: Text(
+                                              data.name,
+                                              style: TextStyle(
+                                                color: Colors.black87,
+                                              ),
+                                            ),
                                           ),
                                           SizedBox(
                                             width: 20,
                                           ),
-                                          GestureDetector(
-                                            onTap: () =>
-                                                reqestToDeleteItem(data: data),
-                                            child: BottomMiddleButton(
-                                              sign: Text(
-                                                'x',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.white,
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              splashColor: Colors.black26,
+                                              onTap: () => reqestToDeleteItem(
+                                                  data: data),
+                                              child: BottomMiddleButton(
+                                                sign: Text(
+                                                  'X',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -1595,7 +626,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       color: kPrimaryColor,
                       borderRadius: BorderRadius.circular(4),
                       child: InkWell(
-                        onTap: restoreSaleMasterId != 0
+                        onTap: _selectItems.value.toInt() > 0
                             ? () {
                                 noteList = fetchListNote().then((value) {
                                   requestOrderSummeryFunction();
@@ -2104,7 +1135,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                     },
                                   ),
                                   Button(
-                                    buttonName: "KITCHAN",
+                                    buttonName: "KITCHEN",
                                     press: () {
                                       printtoKitchen(
                                         table_name: widget.tableName,
@@ -2121,7 +1152,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                   // Button(
                                   //   buttonName: "PRINT BILL",
                                   //   press: () => printBill(
-                                  //       sale_master_id: restoreSaleMasterId),
+                                  //     sale_master_id: restoreSaleMasterId,
+                                  //   ),
                                   // ),
                                   Button(
                                     buttonName: "PRINT BILL",
@@ -2399,9 +1431,11 @@ class _MenuScreenState extends State<MenuScreen> {
                 )
               : Container(),
         ],
-      )),
+      ),
     );
   }
+
+// ___________________________ Internal Widget____________________________________________________
 
   _buildCancelButton(BuildContext context) {
     return Positioned(
@@ -2463,8 +1497,6 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
     );
   }
-
-// ___________________________ Internal Widget____________________________________________________
 
   _buildImageContainer(bool orientation, Size size, tableList, int index) {
     return Container(
@@ -2556,4 +1588,996 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
     );
   }
+
+// ---------------------------------------Open Show Dialog Section ----------------------------------------------
+
+  printingLoadingIndicator() {
+    return showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext ctx) {
+        var size = MediaQuery.of(context).size;
+        return AlertDialog(
+          insetPadding: EdgeInsets.zero,
+          content: Container(
+            width: double.infinity,
+            height: size.height,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Image.asset('assets/icons/printing.gif'),
+                  CircularProgressIndicator(
+                    backgroundColor: kPrimaryColor,
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  showMessageDialog({message = 'NO ORDER ITEMS'}) {
+    Timer timer = Timer(Duration(milliseconds: 1000), () {
+      Navigator.of(context, rootNavigator: true).pop();
+    });
+    return showGeneralDialog(
+      barrierColor: Colors.black.withOpacity(0.9),
+      transitionDuration: Duration(milliseconds: 100),
+      barrierDismissible: false,
+      barrierLabel: '',
+      context: context,
+      pageBuilder: (context, animation1, animation2) {
+        return null;
+      },
+      transitionBuilder: (context, a1, a2, widget) {
+        var size = MediaQuery.of(context).size;
+        return Transform.scale(
+          scale: a1.value,
+          child: Opacity(
+            opacity: a1.value,
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+                width: size.width * .5,
+                height: size.height * .3,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Center(
+                  child: Container(
+                    child: Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontFamily: 'San-francisco',
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  confirmationDialog({String tableName, int tableId}) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        var size = MediaQuery.of(context).size;
+        bool orientation =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        return AlertDialog(
+          title: Text(
+            'CONFIRM MOVE TO TABLE : ' + tableName,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'San-francisco',
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          content: Container(
+            width: orientation ? size.width * .35 : size.width * .8,
+            padding: EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    child: FittedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                splashColor: Colors.black12,
+                                child: Container(
+                                  width: orientation
+                                      ? size.width * .14
+                                      : size.width * .27,
+                                  height: 45.0,
+                                  alignment: Alignment.center,
+                                  decoration:
+                                      BoxDecoration(color: Colors.black12),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 9,
+                                    horizontal: 20,
+                                  ),
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      decoration: TextDecoration.none,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                splashColor: Colors.black12,
+                                onTap: () {
+                                  movetoTable(
+                                    saleMasterId: restoreSaleMasterId,
+                                    tableId: tableId,
+                                  ).then((_) {
+                                    if (move_with_auth) {
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      backToPreviewPage();
+                                    } else {
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      backToPreviewPage();
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  height: 45.0,
+                                  width: orientation
+                                      ? size.width * .14
+                                      : size.width * .27,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: kPrimaryColor,
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 9,
+                                    horizontal: 20,
+                                  ),
+                                  child: Text(
+                                    'Move',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      decoration: TextDecoration.none,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  backToPreviewPage() {
+    Navigator.pop(context, true);
+  }
+
+  _showAuthenticator({
+    int saleMasterId,
+    int saleDetailId,
+    int callFun,
+  }) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        var size = MediaQuery.of(context).size;
+        bool orientation =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          content: Container(
+            padding: EdgeInsets.all(10),
+            width: orientation ? size.width * .4 : size.width * .95,
+            height: orientation ? size.height * .38 : size.height * .35,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  SizedBox(
+                    height: size.height * .06,
+                  ),
+                  Text(
+                    'No Permission'.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'San-francisco',
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(
+                    height: size.height * .05,
+                  ),
+                  Container(
+                    width: size.width * .9,
+                    height: 50.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: TextFormField(
+                        onChanged: (val) => username = val,
+                        decoration: InputDecoration(
+                          hintText: 'Username',
+                          contentPadding: EdgeInsets.all(15.0),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: size.height * .035,
+                  ),
+                  Container(
+                    width: size.width * .8,
+                    height: 50.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: TextFormField(
+                        onChanged: (val) {
+                          password = val;
+                        },
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          contentPadding: EdgeInsets.all(15.0),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            Container(
+              margin: EdgeInsets.only(bottom: 10, right: 25),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        splashColor: Colors.black12,
+                        child: Container(
+                          width:
+                              orientation ? size.width * .14 : size.width * .27,
+                          height: 45.0,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: Colors.black12),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 9,
+                            horizontal: 20,
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 13,
+                              decoration: TextDecoration.none,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          if (username != null && password != null) {
+                            if (callFun == 0) {
+                              overideDeleteItems(
+                                saleDetailId: saleDetailId,
+                                saleMasterId: restoreSaleMasterId,
+                                username: username,
+                                password: password,
+                              ).then((response) {
+                                if (response == 'success') {
+                                  requestOrderSummeryFunction();
+                                  Navigator.pop(context);
+                                } else if (response == 'failed') {
+                                  showMessageDialog(
+                                      message: 'CAN NOT DELETE THIS');
+                                }
+                              });
+                            } else if (callFun == 1) {
+                              overideVoidInvice(
+                                saleMasterId: restoreSaleMasterId,
+                                username: username,
+                                password: password,
+                                reason: txt_reason,
+                              ).then((response) {
+                                if (response == 'success') {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  backToPreviewPage();
+                                } else if (response == 'noPermission') {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  showMessageDialog(message: 'NO PERMISSION');
+                                }
+                              });
+                            } else if (callFun == 2) {
+                              requestAuthorizationMoveTable(
+                                userName: username,
+                                passWord: password,
+                                saleMasterId: saleMasterId,
+                              ).then((data) {
+                                if (data == 'success') {
+                                  move_with_auth = true;
+                                  movelistData = fetchMoveList();
+                                  showMovableDialog(
+                                    salMasterID: restoreSaleMasterId,
+                                  );
+                                } else {}
+                              });
+                            }
+                          } else {
+                            print('no data');
+                          }
+                        },
+                        splashColor: Colors.black12,
+                        child: Container(
+                          height: 45.0,
+                          width:
+                              orientation ? size.width * .14 : size.width * .27,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 9,
+                            horizontal: 20,
+                          ),
+                          child: Text(
+                            'Overide',
+                            style: TextStyle(
+                              fontSize: 13,
+                              decoration: TextDecoration.none,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  showMovableDialog({int salMasterID}) {
+    return showGeneralDialog(
+      barrierColor: Colors.black.withOpacity(0.2),
+      transitionDuration: Duration(milliseconds: 100),
+      barrierDismissible: true,
+      barrierLabel: '',
+      context: context,
+      pageBuilder: (context, animation1, animation2) {
+        return null;
+      },
+      transitionBuilder: (context, a1, a2, widget) {
+        var size = MediaQuery.of(context).size;
+        bool orientation =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        return Transform.scale(
+          scale: a1.value,
+          child: Opacity(
+            opacity: a1.value,
+            child: Center(
+              child: Container(
+                width: orientation ? size.width * 0.8 : size.width,
+                height: orientation ? size.height * .9 : size.height * .7,
+                child: FutureBuilder(
+                  future: movelistData,
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (!snapshot.hasData) {
+                      return CenterLoadingIndicator();
+                    }
+                    return SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                            width: double.infinity,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5),
+                              ),
+                              color: Colors.grey[200],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              'Available Table'.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontFamily: 'San-francisco',
+                                color: Colors.black,
+                                fontWeight: FontWeight.w700,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            height: orientation
+                                ? size.height * .75
+                                : size.height * .6,
+                            child: VerticalTabs(
+                              indicatorColor: Color(0xffb01105),
+                              tabsWidth: orientation
+                                  ? size.width * .12
+                                  : size.width * .23,
+                              selectedTabBackgroundColor: null,
+                              contentScrollAxis: Axis.vertical,
+                              tabs: List.generate(
+                                snapshot.data.length,
+                                (index) {
+                                  return Tab(
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      height: 55,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                      ),
+                                      child: Text(
+                                        snapshot.data[index].floorName,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Color(0xff121010),
+                                          fontFamily: "San-francisco",
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              contents: List.generate(
+                                snapshot.data.length,
+                                (index) {
+                                  List<TableMove> tableList =
+                                      snapshot.data[index].tables;
+                                  return Container(
+                                    padding: EdgeInsets.only(
+                                        left: 10, bottom: 10, right: 10),
+                                    color: Color(0xfff5f5f5),
+                                    child: GridView.count(
+                                      shrinkWrap: true,
+                                      physics: ScrollPhysics(),
+                                      scrollDirection: Axis.vertical,
+                                      mainAxisSpacing: 5,
+                                      crossAxisSpacing: 5,
+                                      childAspectRatio: orientation
+                                          ? size.height / 950
+                                          : size.height / 500,
+                                      crossAxisCount: orientation
+                                          ? size.width >= 1000.0 ? 5 : 4
+                                          : 2,
+                                      children: List<Widget>.generate(
+                                        tableList.length,
+                                        (index) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              border: Border.all(
+                                                width: 1.3,
+                                                color: Color(
+                                                  0xff0f0808,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                splashColor: Colors.black12,
+                                                onTap: () => confirmationDialog(
+                                                  tableName: tableList[index]
+                                                      .tableName,
+                                                  tableId:
+                                                      tableList[index].tableId,
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 10,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: <Widget>[
+                                                      SizedBox(
+                                                        height: orientation
+                                                            ? size.height * .01
+                                                            : 3,
+                                                      ),
+                                                      Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: <Widget>[
+                                                          Text(
+                                                            tableList[index]
+                                                                .tableName,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                              color: Color(
+                                                                  0xff121010),
+                                                              fontFamily:
+                                                                  "San-francisco",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize:
+                                                                  orientation
+                                                                      ? 15
+                                                                      : 14,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  showDiscountDialog({title, int id, int runFunction}) {
+    txt_percent = null;
+    return showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          var size = MediaQuery.of(context).size;
+          bool orientation =
+              MediaQuery.of(context).orientation == Orientation.landscape;
+          return AlertDialog(
+            title: Text(
+              'DISCOUNT ($title)',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'San-francisco',
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(10.0),
+              ),
+            ),
+            content: Container(
+              padding: EdgeInsets.all(10),
+              width: orientation ? size.width * .4 : size.width * .95,
+              height: orientation ? size.height * .2 : size.height * .25,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      width: size.width * .8,
+                      height: 50.0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: TextFormField(
+                          onChanged: (val) {
+                            txt_percent = val;
+                          },
+                          keyboardType: TextInputType.number,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.all(15.0),
+                            border: InputBorder.none,
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Container(
+                      child: FittedBox(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                  },
+                                  splashColor: Colors.black12,
+                                  child: Container(
+                                    width: orientation
+                                        ? size.width * .14
+                                        : size.width * .27,
+                                    height: 45.0,
+                                    alignment: Alignment.center,
+                                    decoration:
+                                        BoxDecoration(color: Colors.black12),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 9,
+                                      horizontal: 20,
+                                    ),
+                                    child: Text(
+                                      'Cancel',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        decoration: TextDecoration.none,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 20,
+                            ),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    if (txt_percent != null) {
+                                      switch (runFunction) {
+                                        case 0:
+                                          applyPercentDisItem(
+                                                  saleDetailId: id,
+                                                  dis_percent_item: txt_percent)
+                                              .then(
+                                            (_) {
+                                              Navigator.pop(context);
+                                            },
+                                          );
+                                          break;
+                                        case 1:
+                                          applyPercentDollItem(
+                                            saleDetailId: id,
+                                            dis_cash_item: txt_percent,
+                                          ).then(
+                                            (_) => Navigator.pop(context),
+                                          );
+                                          break;
+                                        case 2:
+                                          applyDiscountCashonInvoice(
+                                            sale_master_id: id,
+                                            dis_cash_inv: txt_percent,
+                                          ).then(
+                                            (_) => Navigator.pop(context),
+                                          );
+                                          break;
+                                        case 3:
+                                          applyDiscountPercentonInvoice(
+                                            sale_master_id: id,
+                                            dis_percent_inv: txt_percent,
+                                          ).then(
+                                            (_) => Navigator.pop(context),
+                                          );
+                                          break;
+                                        default:
+                                      }
+                                    }
+                                  },
+                                  splashColor: Colors.black12,
+                                  child: Container(
+                                    height: 45.0,
+                                    width: orientation
+                                        ? size.width * .14
+                                        : size.width * .27,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: kPrimaryColor,
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 9,
+                                      horizontal: 20,
+                                    ),
+                                    child: Text(
+                                      'Confirm',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        decoration: TextDecoration.none,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+
+  requestToVoidInvoid() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        var size = MediaQuery.of(context).size;
+        bool orientation =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        return AlertDialog(
+          title: Text(
+            'REQUEST TO VOID INVOICE',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'San-francisco',
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          content: Container(
+            width: orientation ? size.width * .35 : size.width * .8,
+            padding: EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    width: size.width * .8,
+                    height: size.height * .15,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: TextField(
+                        onChanged: (txt) {
+                          if (txt != null) {
+                            txt_reason = txt;
+                          }
+                        },
+                        maxLines: 4,
+                        keyboardType: TextInputType.text,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: 'Please give the reason',
+                          contentPadding: EdgeInsets.all(15.0),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    child: FittedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                splashColor: Colors.black12,
+                                child: Container(
+                                  width: orientation
+                                      ? size.width * .14
+                                      : size.width * .27,
+                                  height: 45.0,
+                                  alignment: Alignment.center,
+                                  decoration:
+                                      BoxDecoration(color: Colors.black12),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 9,
+                                    horizontal: 20,
+                                  ),
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      decoration: TextDecoration.none,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                splashColor: Colors.black12,
+                                onTap: () {
+                                  if (txt_reason != null) {
+                                    requestToVoidInvoice(
+                                            saleMasterId: restoreSaleMasterId,
+                                            reason: txt_reason)
+                                        .then((data) {
+                                      if (data == 'success') {
+                                        backToPreviewPage();
+                                        Navigator.pop(context, true);
+                                      } else if (data == 'voidBeforePaid' ||
+                                          data == 'voidAfterPaid') {
+                                        _showAuthenticator(
+                                          saleMasterId: restoreSaleMasterId,
+                                          callFun: 1,
+                                        );
+                                      }
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  height: 45.0,
+                                  width: orientation
+                                      ? size.width * .14
+                                      : size.width * .27,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: kPrimaryColor,
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 9,
+                                    horizontal: 20,
+                                  ),
+                                  child: Text(
+                                    'VOID',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      decoration: TextDecoration.none,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// ---------------------------------------Close Show Dialog Section ---------------------------------------------
+
 }
