@@ -260,7 +260,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                           snapshot.data[index]
                                                       .discountInvPercentage ==
                                                   ''
-                                              ? '0'
+                                              ? '0.00'
                                               : snapshot.data[index]
                                                   .discountInvPercentage,
                                           textAlign: TextAlign.right,
@@ -293,7 +293,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                           snapshot.data[index].totalDisItem
                                                       .toString() ==
                                                   ''
-                                              ? '0'
+                                              ? '0.00'
                                               : snapshot
                                                   .data[index].totalDisItem
                                                   .toString(),
@@ -349,7 +349,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                   Row(
                                     children: <Widget>[
                                       Text(
-                                        'PAY IN',
+                                        'PAY (\$)',
                                         style: TextStyle(
                                           color: Colors.black54,
                                           fontSize: 15,
@@ -359,7 +359,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                       ),
                                       Expanded(
                                         child: Text(
-                                          snapshot.data[index].payIn,
+                                          snapshot.data[index].payUs.toString(),
                                           textAlign: TextAlign.right,
                                           style: TextStyle(
                                             color: Colors.black,
@@ -370,6 +370,38 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        'PAY (៛)',
+                                        style: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'San-francisco',
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          snapshot.data[index].payKh.toString(),
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'San-francisco',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Divider(
+                                    height: 1.2,
+                                    color: Colors.grey,
                                   ),
                                   SizedBox(
                                     height: 10,
