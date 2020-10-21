@@ -19,9 +19,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String checkUser = '';
   String checkPass = '';
   String checkCampany = '';
+  String authUser;
+  String authPass;
 
   void getSharePreferencNetworkConfig() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('userLog')) {
+      prefs.remove('userLog');
+    }
     if (prefs.containsKey('Port')) {
       globals.port = prefs.getString('Port');
       globals.ipAddress = prefs.getString('IP');
@@ -71,16 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => SettingScreen(),
-                      ),
-                    ).then(
-                      (data) => data != null
-                          ? data ? getSharePreferencNetworkConfig() : null
-                          : null,
-                    );
+                    _showAuthenticator();
                   },
                   child: Container(
                     child: SvgPicture.asset(
@@ -375,6 +371,192 @@ class _LoginScreenState extends State<LoginScreen> {
               },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  _showAuthenticator() {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        var size = MediaQuery.of(context).size;
+        bool orientation =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          content: Container(
+            padding: EdgeInsets.all(10),
+            width: orientation ? size.width * .4 : size.width * .95,
+            height: orientation ? size.height * .38 : size.height * .52,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  SizedBox(
+                    height: size.height * .06,
+                  ),
+                  Text(
+                    'Authenticator'.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'San-francisco',
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(
+                    height: size.height * .05,
+                  ),
+                  Container(
+                    width: size.width * .9,
+                    height: 50.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: TextFormField(
+                        onChanged: (txtUser) => authUser = txtUser,
+                        decoration: InputDecoration(
+                          hintText: 'Username',
+                          contentPadding: EdgeInsets.all(15.0),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: size.height * .025,
+                  ),
+                  Container(
+                    width: size.width * .8,
+                    height: 50.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: TextFormField(
+                        onChanged: (txtPass) => authPass = txtPass,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          contentPadding: EdgeInsets.all(15.0),
+                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: size.height * .05,
+                  ),
+                  FittedBox(
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(7),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              splashColor: Colors.black12,
+                              child: Container(
+                                width: orientation
+                                    ? size.width * .14
+                                    : size.width * .27,
+                                height: 45.0,
+                                alignment: Alignment.center,
+                                decoration:
+                                    BoxDecoration(color: Colors.black12),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 9,
+                                  horizontal: 20,
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    decoration: TextDecoration.none,
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 20,
+                        ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(7),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                if (authUser == 'martin' && authPass == '123') {
+                                  Navigator.pop(context);
+                                  authPass = '';
+                                  authUser = '';
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => SettingScreen(),
+                                    ),
+                                  ).then(
+                                    (data) => data != null
+                                        ? data
+                                            ? getSharePreferencNetworkConfig()
+                                            : null
+                                        : null,
+                                  );
+                                } else {
+                                  validationDialog(
+                                      'Invalid Username or Password');
+                                }
+                              },
+                              splashColor: Colors.black12,
+                              child: Container(
+                                height: 45.0,
+                                width: orientation
+                                    ? size.width * .14
+                                    : size.width * .27,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor,
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 9,
+                                  horizontal: 20,
+                                ),
+                                child: Text(
+                                  'Confirm',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    decoration: TextDecoration.none,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );

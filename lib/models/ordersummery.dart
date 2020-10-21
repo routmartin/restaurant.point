@@ -23,7 +23,7 @@ class Ordersummery {
   String disPercent;
   String amount;
   String pendingPrint;
-  List<AddNote> notes;
+  List<SummeryNote> notes;
 
   factory Ordersummery.fromRawJson(String str) =>
       Ordersummery.fromJson(json.decode(str));
@@ -40,8 +40,8 @@ class Ordersummery {
         disPercent: json["dis_percent"],
         amount: json["amount"],
         pendingPrint: json["pending_print"],
-        notes:
-            List<AddNote>.from(json["notes"].map((x) => AddNote.fromJson(x))),
+        notes: List<SummeryNote>.from(
+            json["notes"].map((x) => SummeryNote.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -62,34 +62,31 @@ class Ordersummery {
       };
 }
 
-class AddNote {
-  AddNote({
+class SummeryNote {
+  SummeryNote({
     this.noteId,
     this.noteName,
     this.notePrice,
-    this.pendingPrint,
   });
 
   int noteId;
   String noteName;
   String notePrice;
-  String pendingPrint;
 
-  factory AddNote.fromRawJson(String str) => AddNote.fromJson(json.decode(str));
+  factory SummeryNote.fromRawJson(String str) =>
+      SummeryNote.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory AddNote.fromJson(Map<String, dynamic> json) => AddNote(
+  factory SummeryNote.fromJson(Map<String, dynamic> json) => SummeryNote(
         noteId: json["note_id"],
         noteName: json["note_name"],
         notePrice: json["note_price"],
-        pendingPrint: json["pending_print"],
       );
 
   Map<String, dynamic> toJson() => {
         "note_id": noteId,
         "note_name": noteName,
         "note_price": notePrice,
-        "pending_print": pendingPrint,
       };
 }

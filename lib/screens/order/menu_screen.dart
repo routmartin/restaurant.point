@@ -776,7 +776,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                       ],
                                       child: Container(
                                         alignment: Alignment.centerLeft,
-                                        height: 80,
+                                        height: 105,
                                         decoration: BoxDecoration(
                                           border: Border(
                                             bottom: BorderSide(
@@ -791,74 +791,67 @@ class _MenuScreenState extends State<MenuScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: <Widget>[
-                                            Expanded(
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: <Widget>[
-                                                  Expanded(
-                                                    flex: 3,
-                                                    child:
-                                                        SingleChildScrollView(
-                                                      scrollDirection:
-                                                          Axis.horizontal,
-                                                      child: Row(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        children: <Widget>[
-                                                          Text(
-                                                            data.name,
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'San-francisco',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: SingleChildScrollView(
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    child: Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: <Widget>[
+                                                        Text(
+                                                          data.name,
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'San-francisco',
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.black,
                                                           ),
-                                                          SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          Text(
-                                                            "\$ ${data.unitPrice}",
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'San-francisco',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.centerRight,
-                                                      child: Text(
-                                                        "\$ ${data.amount}",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
                                                         ),
+                                                        SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          "\$ ${data.unitPrice}",
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'San-francisco',
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.black,
+                                                            fontSize: 13,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      "\$ ${data.amount}",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
                                                       ),
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                              ],
                                             ),
                                             SizedBox(
                                               height: 7,
@@ -967,7 +960,39 @@ class _MenuScreenState extends State<MenuScreen> {
                                                       )
                                                     : Container()
                                               ],
-                                            )
+                                            ),
+                                            SizedBox(
+                                              height: 7,
+                                            ),
+                                            Container(
+                                              width: double.infinity,
+                                              height: 20,
+                                              child: ListView.builder(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  itemCount: data.notes.length,
+                                                  itemBuilder: (_, index) {
+                                                    return Container(
+                                                      margin: EdgeInsets.only(
+                                                        right: 8,
+                                                      ),
+                                                      child: Text(
+                                                        '+ ' +
+                                                            data.notes[index]
+                                                                .noteName
+                                                                .toString() +
+                                                            ' (' +
+                                                            data.notes[index]
+                                                                .notePrice +
+                                                            ')',
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              'San-francisco',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -1372,11 +1397,13 @@ class _MenuScreenState extends State<MenuScreen> {
                                 },
                               ),
                             ),
+                            SizedBox(
+                              height: 50,
+                            ),
                             Container(
                               height: orientation
                                   ? size.height * 0.1
                                   : size.height * 0.08,
-                              padding: EdgeInsets.symmetric(horizontal: 10),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.only(
@@ -1440,7 +1467,7 @@ class _MenuScreenState extends State<MenuScreen> {
   _buildCancelButton(BuildContext context) {
     return Positioned(
       top: 12,
-      right: 8,
+      right: 15,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: Material(
@@ -2579,5 +2606,4 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
 // ---------------------------------------Close Show Dialog Section ---------------------------------------------
-
 }
