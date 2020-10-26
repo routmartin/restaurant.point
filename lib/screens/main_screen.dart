@@ -55,14 +55,6 @@ class _MainScreenPageState extends State<MainScreenPage> {
             selectedFontSize: 13,
             unselectedFontSize: 13,
             showUnselectedLabels: false,
-            // selectedLabelStyle: TextStyle(
-            //   fontFamily: 'San-francisco',
-            //   fontWeight: FontWeight.w800,
-            // ),
-            // unselectedLabelStyle: TextStyle(
-            //   fontFamily: 'San-francisco',
-            //   fontWeight: FontWeight.bold,
-            // ),
             currentIndex: _pageIndex,
             onTap: (index) {
               setState(() {
@@ -70,16 +62,6 @@ class _MainScreenPageState extends State<MainScreenPage> {
               });
             },
             items: [
-              // BottomNavigationBarItem(
-              //   icon: SvgPicture.asset(
-              //     'assets/icons/home.svg',
-              //     width: 20,
-              //     height: 20,
-              //   ),
-              //   title: Text(
-              //     'HOME',
-              //   ),
-              // ),
               BottomNavigationBarItem(
                 icon: SvgPicture.asset(
                   'assets/icons/cart.svg',

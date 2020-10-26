@@ -43,6 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     var size = MediaQuery.of(context).size;
     var textfieldWidth =
         MediaQuery.of(context).orientation == Orientation.landscape
@@ -93,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               Container(
                 height: size.height * 0.72,
-                width: size.width * 0.9,
+                width: orientation ? size.width * 0.45 : size.height * 0.9,
                 padding: EdgeInsets.symmetric(
                   horizontal: 10,
                 ),

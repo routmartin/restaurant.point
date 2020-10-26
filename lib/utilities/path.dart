@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utilities/globals.dart' as globals;
 
-// const String serverIP = 'http://192.168.0.189:5000';
+// const String serverIP = 'http://192.168.1.245:5000';
 // const String serverIP = 'http://124.248.164.229:5006';
 String serverIP = 'http://${globals.ipAddress}:${globals.port}';
 // User Admin

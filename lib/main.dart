@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'screens/loading.slash.dart';
+import 'package:pointrestaurant/screens/wifiprint.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(new MyApp());
 }
+// void main() => runApp(
+//       DevicePreview(
+//         // enabled: !kReleaseMode,
+//         builder: (context) => MyApp(),
+//       ),
+//     );
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext constraints) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 450) {
-          SystemChrome.setPreferredOrientations(
-            [
-              DeviceOrientation.portraitUp,
-            ],
-          );
-        } else {
-          SystemChrome.setPreferredOrientations([
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeLeft,
-          ]);
-        }
+        // if (constraints.maxWidth < 450) {
+        //   SystemChrome.setPreferredOrientations(
+        //     [
+        //       DeviceOrientation.portraitUp,
+        //     ],
+        //   );
+        // } else {
+        //   SystemChrome.setPreferredOrientations([
+        //     DeviceOrientation.landscapeLeft,
+        //     DeviceOrientation.landscapeLeft,
+        //   ]);
+        // }
         return OrientationBuilder(
           builder: (context, orientation) {
             return MaterialApp(
@@ -34,7 +39,7 @@ class MyApp extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              home: LoadingPage(),
+              home: WifiPrint(),
             );
           },
         );

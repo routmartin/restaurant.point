@@ -30,6 +30,7 @@ Future printtoKitchen({
 Future printBill({
   int sale_master_id,
 }) async {
+  print('userToken:' + sale_master_id.toString());
   Response response = await dio.post(
     serverIP + '/Api/PrintBill',
     data: {

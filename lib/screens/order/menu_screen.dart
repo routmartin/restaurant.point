@@ -1174,22 +1174,22 @@ class _MenuScreenState extends State<MenuScreen> {
                                       });
                                     },
                                   ),
-                                  // Button(
-                                  //   buttonName: "PRINT BILL",
-                                  //   press: () => printBill(
-                                  //     sale_master_id: restoreSaleMasterId,
-                                  //   ),
-                                  // ),
                                   Button(
                                     buttonName: "PRINT BILL",
-                                    press: () => printBillWithM1(
+                                    press: () => printBill(
                                       sale_master_id: restoreSaleMasterId,
-                                    ).then((index) {
-                                      imgListBytes.clear();
-                                      printingLoadingIndicator();
-                                      _convertNetworkImageToByte(index);
-                                    }),
+                                    ),
                                   ),
+                                  // Button(
+                                  //   buttonName: "PRINT BILL",
+                                  //   press: () => printBillWithM1(
+                                  //     sale_master_id: restoreSaleMasterId,
+                                  //   ).then((index) {
+                                  //     imgListBytes.clear();
+                                  //     printingLoadingIndicator();
+                                  //     _convertNetworkImageToByte(index);
+                                  //   }),
+                                  // ),
                                 ],
                               ),
                               SizedBox(
