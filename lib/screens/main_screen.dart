@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:pointrestaurant/screens/invoice/invoice_screen.dart';
+import 'package:pointrestaurant/screens/networt_print.dart';
 import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
-import 'package:pointrestaurant/screens/profile/info.dart';
 
 import '../utilities/style.main.dart';
-
-import 'invoice/invoice_screen.dart';
 
 class MainScreenPage extends StatefulWidget {
   @override
@@ -23,7 +22,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       TableModeScreen(),
       InvocieScreeen(),
-      Profile(),
+      NetworkPrinting(),
     ];
   }
 

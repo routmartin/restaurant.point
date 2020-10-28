@@ -26,10 +26,11 @@ dependencies:
   network_image_to_byte: ^0.0.1
   path_provider: ^1.6.11
   flutter_launcher_icons: ^0.8.0
-  esc_pos_utils: ^0.4.9
   image: ^2.1.12
+  esc_pos_utils: ^0.4.8
+  esc_pos_printer: ^3.2.8
   device_preview: ^0.4.8
-  esc_pos_printer: ^3.2.9  # image_picker: ^0.6.7+12
+  # image_picker: ^0.6.7+12
   # escposprinter:
   #   git:
   #       url: https://github.com/marcusfelix/esc-pos-printer-flutter.git

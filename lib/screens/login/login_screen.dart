@@ -91,10 +91,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(
-                height: size.height * .05,
+                height: size.width <= 400.0
+                    ? size.height * .25
+                    : size.width >= 1000.0
+                        ? size.height * .12
+                        : size.height * .15,
               ),
               Container(
-                height: size.height * 0.72,
+                height: size.width <= 400.0
+                    ? size.height * .6
+                    : size.width >= 1000.0
+                        ? size.height * .65
+                        : size.height * .5,
                 width: orientation ? size.width * 0.45 : size.height * 0.9,
                 padding: EdgeInsets.symmetric(
                   horizontal: 10,
@@ -393,8 +401,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           content: Container(
             padding: EdgeInsets.all(10),
-            width: orientation ? size.width * .4 : size.width * .95,
-            height: orientation ? size.height * .38 : size.height * .52,
+            width: orientation ? size.width * .3 : size.width,
+            height: size.width <= 400.0
+                ? size.height * .45
+                : size.width >= 1000.0 ? size.height * .52 : size.height * .4,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

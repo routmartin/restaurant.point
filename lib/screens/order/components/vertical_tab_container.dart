@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 
-class VerticalTabContainer extends StatelessWidget {
+class VerticalMenuContainer extends StatelessWidget {
   final AsyncSnapshot snapshot;
   final int index;
-  VerticalTabContainer({Key key, this.snapshot, this.index}) : super(key: key);
+  VerticalMenuContainer({Key key, this.snapshot, this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

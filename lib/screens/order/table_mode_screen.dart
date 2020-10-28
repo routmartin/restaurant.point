@@ -21,11 +21,10 @@ class TableModeScreen extends StatefulWidget {
 
 class _TableModeScreenState extends State<TableModeScreen> {
   Future<List<Floor>> floorData;
-  // Future<List<Ordersummery>> orderSummery;
+// Future<List<Ordersummery>> orderSummery;
 //________________Open Switch Container Layout________________________
 
   int _pageState = 0;
-
   int totalItems = 0;
   double totalAmount = 0;
 //________________Close Switch Container Layout________________________
@@ -56,6 +55,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
   //   });
   // }
 
+  // ignore: non_constant_identifier_names
   pushToMenuScree({sale_master_id, table_id, table_name}) {
     Navigator.push(
       context,
@@ -96,6 +96,9 @@ class _TableModeScreenState extends State<TableModeScreen> {
         width: double.infinity,
         child: Column(
           children: <Widget>[
+            SizedBox(
+              height: 20,
+            ),
             CampanyHeaderContianer(),
             Expanded(
               child: FutureBuilder(
@@ -109,8 +112,11 @@ class _TableModeScreenState extends State<TableModeScreen> {
                     height: size.height,
                     child: VerticalTabs(
                       indicatorColor: Color(0xffb01105),
-                      tabsWidth:
-                          orientation ? size.width * .09 : size.width * .23,
+                      tabsWidth: size.width <= 400.0
+                          ? size.height * .1
+                          : size.width >= 1000.0
+                              ? size.height * .13
+                              : size.height * .09,
                       selectedTabBackgroundColor: null,
                       contentScrollAxis: Axis.vertical,
                       tabs: List.generate(
@@ -129,84 +135,79 @@ class _TableModeScreenState extends State<TableModeScreen> {
                             margin: EdgeInsets.only(top: 10),
                             child: Column(
                               children: <Widget>[
-                                // _buildVerticleTitleHeader(snapshot, index),
                                 Expanded(
                                   child: GridView.count(
+                                    padding: EdgeInsets.all(1),
                                     shrinkWrap: true,
                                     physics: ScrollPhysics(),
                                     scrollDirection: Axis.vertical,
-                                    childAspectRatio: orientation
-                                        ? size.height / 750
-                                        : size.height / 700,
+                                    childAspectRatio: size.width <= 400.0
+                                        ? size.height / 800
+                                        : size.width >= 1000.0
+                                            ? size.height / 900
+                                            : size.height / 1000,
                                     crossAxisCount: size.width <= 800.0
                                         ? 2
                                         : size.width >= 1000.0 ? 5 : 4,
                                     children: List<Widget>.generate(
                                       tableList.length,
                                       (index) {
-                                        return Stack(
-                                          children: <Widget>[
-                                            Container(
-                                              margin: orientation
-                                                  ? EdgeInsets.only(
-                                                      bottom: 15,
-                                                      right: 10,
-                                                      left: 10,
-                                                    )
-                                                  : EdgeInsets.only(
-                                                      bottom: 10,
-                                                      right: 5,
-                                                      left: 5,
-                                                    ),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                                border: Border.all(
-                                                  width: 1.3,
-                                                  color: Color(
-                                                    0xff0f0808,
-                                                  ),
+                                        return Container(
+                                          margin: orientation
+                                              ? EdgeInsets.only(
+                                                  bottom: 15,
+                                                  right: 10,
+                                                  left: 10,
+                                                )
+                                              : EdgeInsets.only(
+                                                  bottom: 10,
+                                                  right: 5,
+                                                  left: 5,
                                                 ),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            border: Border.all(
+                                              width: 1.3,
+                                              color: Color(
+                                                0xff0f0808,
                                               ),
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                child: InkWell(
-                                                  splashColor: Colors.black12,
-                                                  onTap: () => pushToMenuScree(
-                                                    sale_master_id:
-                                                        tableList[index]
-                                                            .saleMasterId,
-                                                    table_id: tableList[index]
-                                                        .tableId,
-                                                    table_name: tableList[index]
-                                                        .tableName,
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: <Widget>[
-                                                      _buildImageContainer(
-                                                        orientation,
-                                                        size,
-                                                        tableList,
-                                                        index,
-                                                      ),
-                                                      SizedBox(
-                                                        height: 20,
-                                                      ),
-                                                      _buildContainerData(
-                                                        orientation,
-                                                        size,
-                                                        tableList,
-                                                        index,
-                                                      )
-                                                    ],
-                                                  ),
+                                            ),
+                                          ),
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              splashColor: Colors.black12,
+                                              onTap: () => pushToMenuScree(
+                                                sale_master_id: tableList[index]
+                                                    .saleMasterId,
+                                                table_id:
+                                                    tableList[index].tableId,
+                                                table_name:
+                                                    tableList[index].tableName,
+                                              ),
+                                              child: Container(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    _buildImageContainer(
+                                                      orientation,
+                                                      size,
+                                                      tableList,
+                                                      index,
+                                                    ),
+                                                    _buildContainerData(
+                                                      orientation,
+                                                      size,
+                                                      tableList,
+                                                      index,
+                                                    )
+                                                  ],
                                                 ),
                                               ),
                                             ),
-                                          ],
+                                          ),
                                         );
                                       },
                                     ),
@@ -297,7 +298,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
   _buildImageContainer(bool orientation, Size size, tableList, int index) {
     return Container(
       width: double.infinity,
-      height: orientation ? size.height * .14 : size.height * .09,
+      height: orientation ? size.height * .14 : size.height * .08,
       child: CachedNetworkImage(
         imageUrl: serverIP + tableList[index].tableImage,
         placeholder: (context, url) => CenterLoadingIndicator(),
@@ -315,7 +316,6 @@ class _TableModeScreenState extends State<TableModeScreen> {
 
   _buildMainFloorTab(AsyncSnapshot snapshot, int index) {
     return Container(
-      margin: EdgeInsets.all(5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
@@ -336,7 +336,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
             ),
             child: Container(
               alignment: Alignment.center,
-              height: 75,
+              height: 60,
               child: Image.asset(
                 floor,
                 fit: BoxFit.cover,
@@ -363,23 +363,6 @@ class _TableModeScreenState extends State<TableModeScreen> {
       ),
     );
   }
-
-  // _buildVerticleTitleHeader(AsyncSnapshot snapshot, int index) {
-  //   return Container(
-  //     alignment: Alignment.center,
-  //     padding: EdgeInsets.symmetric(
-  //       vertical: 10,
-  //     ),
-  //     child: Text(
-  //       snapshot.data[index].floorName,
-  //       style: TextStyle(
-  //         fontSize: 22,
-  //         fontWeight: FontWeight.w700,
-  //         fontFamily: 'San-francisco',
-  //       ),
-  //     ),
-  //   );
-  // }
 
   // orderSummery inner_width________________________
 }

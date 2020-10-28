@@ -1,14 +1,19 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import '../../utilities/globals.dart';
 
 Dio dio = Dio();
 
-Future printtoKitchen({
+Future printOrder({
   int sale_detail_ids = 0,
   int sale_master_id,
   String table_name,
 }) async {
+  print('sm$sale_master_id');
+  print('table$table_name');
+
   Response response = await dio.post(
     serverIP + '/Api/PrintOrder',
     data: {
@@ -23,6 +28,29 @@ Future printtoKitchen({
   );
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
+  }
+  return null;
+}
+
+Future printtoKitchenESC({
+  int sale_detail_ids = 0,
+  int sale_master_id,
+  String table_name,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/PrintOrderESCPos',
+    data: {
+      "userToken": userToken,
+      "master_id": sale_master_id,
+      "sale_detail_ids": sale_detail_ids,
+      "table_name": table_name,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return jsonDecode(response.data);
   }
   return null;
 }
@@ -62,6 +90,27 @@ Future printBillWithM1({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
+    return response.data;
+  }
+  return null;
+}
+
+Future printBillESC({
+  int sale_master_id,
+}) async {
+  print('userToken:' + sale_master_id.toString());
+  Response response = await dio.post(
+    serverIP + '/Api/PrintBillInternalESCPos',
+    data: {
+      "userToken": userToken,
+      "master_id": sale_master_id,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    print('drawing : ${response.data}');
     return response.data;
   }
   return null;

@@ -1,17 +1,18 @@
-import 'dart:typed_data';
-
+import 'package:flutter/material.dart';
 import 'package:esc_pos_printer/esc_pos_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image/image.dart';
 import 'package:network_image_to_byte/network_image_to_byte.dart';
+import 'package:pointrestaurant/services/table_model/print_sevices.dart';
+import '../utilities/globals.dart' as globals;
 
-class WifiPrint extends StatefulWidget {
+class NetworkPrinting extends StatefulWidget {
   @override
-  _WifiPrintState createState() => _WifiPrintState();
+  _NetworkPrintingState createState() => _NetworkPrintingState();
 }
 
+String serverIP = 'http://${globals.ipAddress}:${globals.port}';
+var imgBytesMartin;
 PrinterNetworkManager printerManager = PrinterNetworkManager();
 _connectPrinter() async {
   printerManager.selectPrinter('192.168.1.88', port: 9100);
@@ -20,37 +21,28 @@ _connectPrinter() async {
   print('Print result: ${res.msg}');
 }
 
-_convertNetworkImagetoBytes(path) async {
-  if (path == null) {
-    return;
-  }
+_printWithNetwork(data) async {
+  print(data);
+  String path = '$serverIP/temp/1.png';
   await networkImageToByte(path).then((bytes) {
-    return bytes;
-  });
+    imgBytesMartin = bytes;
+  }).then((_) => _connectPrinter());
 }
 
 Future<Ticket> testTicket() async {
   final profile = await CapabilityProfile.load();
   final Ticket ticket = Ticket(PaperSize.mm80, profile);
-
-  // Print image
-  final ByteData data = await rootBundle.load('assets/images/imginvoice.jpg');
-  final Uint8List bytes = data.buffer.asUint8List();
-  var image = decodeImage(bytes);
-  ticket.image(image);
-
-  // Print image using alternative commands
-  // ticket.imageRaster(image);
+  var image = decodeImage(imgBytesMartin);
+  ticket.imageRaster(image);
 
   ticket.feed(2);
   ticket.cut();
   return ticket;
 }
 
-class _WifiPrintState extends State<WifiPrint> {
+class _NetworkPrintingState extends State<NetworkPrinting> {
   @override
   void initState() {
-    _connectPrinter();
     super.initState();
   }
 
@@ -59,11 +51,19 @@ class _WifiPrintState extends State<WifiPrint> {
     return Material(
       child: Container(
         alignment: Alignment.center,
-        color: Colors.grey,
+        color: Colors.white,
         width: double.infinity,
         height: MediaQuery.of(context).size.height,
         child: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            // printBillESC(sale_master_id: 46).then(
+            //   (_) => _convertNetworkImagetoBytes(),
+            // );
+
+            printtoKitchenESC(sale_master_id: 4, table_name: 'តុលេខ 4').then(
+              (data) => _printWithNetwork(data),
+            );
+          },
           icon: Icon(
             Icons.print,
           ),

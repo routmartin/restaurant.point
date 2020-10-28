@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pointrestaurant/screens/wifiprint.dart';
+import 'package:flutter/services.dart';
+import 'package:pointrestaurant/screens/loading.slash.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,18 +18,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext constraints) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // if (constraints.maxWidth < 450) {
-        //   SystemChrome.setPreferredOrientations(
-        //     [
-        //       DeviceOrientation.portraitUp,
-        //     ],
-        //   );
-        // } else {
-        //   SystemChrome.setPreferredOrientations([
-        //     DeviceOrientation.landscapeLeft,
-        //     DeviceOrientation.landscapeLeft,
-        //   ]);
-        // }
+        if (constraints.maxWidth < 450) {
+          SystemChrome.setPreferredOrientations(
+            [
+              DeviceOrientation.portraitUp,
+            ],
+          );
+        } else {
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeLeft,
+          ]);
+        }
         return OrientationBuilder(
           builder: (context, orientation) {
             return MaterialApp(
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              home: WifiPrint(),
+              home: LoadingPage(),
             );
           },
         );
