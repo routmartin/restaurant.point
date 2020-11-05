@@ -11,9 +11,6 @@ Future printOrder({
   int sale_master_id,
   String table_name,
 }) async {
-  print('sm$sale_master_id');
-  print('table$table_name');
-
   Response response = await dio.post(
     serverIP + '/Api/PrintOrder',
     data: {
@@ -50,6 +47,7 @@ Future printtoKitchenESC({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
+    print(response.data);
     return jsonDecode(response.data);
   }
   return null;
@@ -71,6 +69,25 @@ Future printBill({
   );
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
+  }
+  return null;
+}
+
+Future printBillInternalESCPos({
+  int sale_master_id,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/PrintBillInternalESCPos',
+    data: {
+      "userToken": userToken,
+      "master_id": sale_master_id,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return jsonDecode(response.data);
   }
   return null;
 }
@@ -110,7 +127,6 @@ Future printBillESC({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
-    print('drawing : ${response.data}');
     return response.data;
   }
   return null;
@@ -182,10 +198,44 @@ Future payInternalPrint({
   return null;
 }
 
+Future payInternalPrintESCPos({
+  int sale_master_id,
+  int rate_kh_id,
+  int rate_us_id,
+  int exchange_rate_kh,
+  int exchange_rate_us,
+  int amount_kh,
+  int amount_us,
+  int return_kh,
+  double return_us,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/PayInternalPrintESCPos',
+    data: {
+      "userToken": userToken,
+      "sale_master_id": sale_master_id,
+      "rate_kh_id": rate_kh_id,
+      "rate_us_id": rate_us_id,
+      "exchange_rate_kh": exchange_rate_kh,
+      "exchange_rate_us": exchange_rate_us,
+      "amount_kh": amount_kh,
+      "amount_us": amount_us,
+      "return_kh": return_kh,
+      "return_us": return_us,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return jsonDecode(response.data);
+  }
+  return null;
+}
+
 Future reprintInvoiceWithM1({
   int saleMasterId,
 }) async {
-  print('Id $saleMasterId');
   Response response = await dio.post(
     serverIP + '/Api/ReprintPrintInvoiceInternal',
     data: {
@@ -198,6 +248,25 @@ Future reprintInvoiceWithM1({
   );
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
+  }
+  return null;
+}
+
+Future reprintPrintInvoiceInternalESCPos({
+  int saleMasterId,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/ReprintPrintInvoiceInternalESCPos',
+    data: {
+      "userToken": userToken,
+      "sale_master_id": saleMasterId,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return jsonDecode(response.data);
   }
   return null;
 }

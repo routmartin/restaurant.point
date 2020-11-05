@@ -6,12 +6,6 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(new MyApp());
 }
-// void main() => runApp(
-//       DevicePreview(
-//         // enabled: !kReleaseMode,
-//         builder: (context) => MyApp(),
-//       ),
-//     );
 
 class MyApp extends StatelessWidget {
   @override

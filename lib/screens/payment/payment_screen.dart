@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:esc_pos_printer/esc_pos_printer.dart';
+import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +14,8 @@ import 'package:pointrestaurant/services/table_model/print_sevices.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
-
+import 'package:image/image.dart' as Martin;
+import '../../utilities/globals.dart' as globals;
 import '../main_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -46,6 +49,46 @@ class _PaymentScreenState extends State<PaymentScreen> {
   int exChangeRateKh;
 // store rate and exchange date____________________________________
 
+// ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
+
+  PrinterNetworkManager printerManager = PrinterNetworkManager();
+
+  _printWithNetwork(data) async {
+    for (int i = 1; i <= data.length; i++) {
+      String path = '$serverIP/temp/$i.png';
+      await networkImageToByte(path).then((bytes) {
+        imgListBytes[i] = bytes;
+        _connectPrinter(data[i - 1]['host'], i);
+      });
+    }
+  }
+
+  _connectPrinter(host, int index) async {
+    print('this is host' + host);
+    printerManager.selectPrinter(host, port: 9100);
+    final PosPrintResult res =
+        await printerManager.printTicket(await testTicket(index));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MainScreenPage(),
+      ),
+    );
+    print('Print result: ${res.msg}');
+  }
+
+  Future<Ticket> testTicket(index) async {
+    final profile = await CapabilityProfile.load();
+    final Ticket ticket = Ticket(PaperSize.mm80, profile);
+    var image = Martin.decodeImage(imgListBytes[index]);
+    ticket.image(image);
+    ticket.feed(2);
+    ticket.cut();
+    return ticket;
+  }
+
+// ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
+
   // ___________________________________ Section Work with M1 ______________________________________________
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   BluetoothDevice _device;
@@ -57,7 +100,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       bluetooth.isConnected.then((isConnected) {
         if (!isConnected) {
           bluetooth.connect(_device).catchError((error) {
-            // print('throw errror from connect to bluetooth:' + error);
+            print('throw errror from connect to bluetooth:' + error);
           });
         }
       });
@@ -109,6 +152,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
+  // ___________________________________ Section Work with M1 ______________________________________________
   printingLoadingIndicator() {
     return showDialog(
       barrierDismissible: false,
@@ -135,112 +179,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
       },
     );
   }
-
-  // ___________________________________ Section Work with M1 ______________________________________________
-
-  // BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-  // List<BluetoothDevice> _devices = [];
-  // BluetoothDevice _device;
-  // List<String> imgArr = new List();
-  // var pathImage = '';
-  // int done = 1;
-  // String tmpPath = '';
-
-  // void _connect() {
-  //   if (_device == null) {
-  //     print('Device Not');
-  //   } else {
-  //     bluetooth.isConnected.then((isConnected) {
-  //       if (!isConnected) {
-  //         bluetooth.connect(_device).catchError((error) {});
-  //       }
-  //     });
-  //   }
-  // }
-
-  // void _disconnect() {
-  //   bluetooth.disconnect();
-  // }
-
-  // Future<void> initPlatformState() async {
-  //   List<BluetoothDevice> devices = [];
-  //   try {
-  //     devices = await bluetooth.getBondedDevices();
-  //   } on PlatformException {}
-
-  //   if (!mounted) return;
-  //   setState(() {
-  //     _devices = devices;
-  //     _device = _devices[0];
-  //     _connect();
-  //   });
-  // }
-
-  // Future<Uint8List> _networkImageToByte(int target) async {
-  //   String path = '$serverIP/temp/$target.png';
-  //   Uint8List byteImage = await networkImageToByte(path);
-  //   return byteImage;
-  // }
-
-  // Future initSaveToPath(int target) async {
-  //   imgArr.clear();
-  //   Uint8List bytes = await _networkImageToByte(target);
-  //   final tempDir = (await getApplicationDocumentsDirectory()).path;
-  //   imgArr.add('$tempDir/$target.png');
-  //   tmpPath = tempDir;
-  //   final file = await new File('$tempDir/$target.png').create();
-  //   file.writeAsBytesSync(bytes);
-  // }
-
-  // void printWithM1(int index) async {
-  //   for (int i = 0; i < index; i++) {
-  //     bluetooth.isConnected.then((isConnected) {
-  //       if (isConnected) {
-  //         bluetooth.printImage('$tmpPath/${i + 1}.png');
-  //         if (index == i + 1) {
-  //           bluetooth.printNewLine();
-  //           bluetooth.printNewLine();
-  //           bluetooth.printNewLine();
-  //           bluetooth.paperCut();
-  //           _disconnect();
-  //           Navigator.pushReplacement(
-  //             context,
-  //             MaterialPageRoute(
-  //               builder: (_) => MainScreenPage(),
-  //             ),
-  //           );
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
-
-  // printingLoadingIndicator() {
-  //   return showDialog(
-  //     barrierDismissible: false,
-  //     context: context,
-  //     builder: (BuildContext ctx) {
-  //       return AlertDialog(
-  //         insetPadding: EdgeInsets.zero,
-  //         content: Container(
-  //           width: double.infinity,
-  //           height: MediaQuery.of(context).size.height,
-  //           child: Center(
-  //             child: Column(
-  //               mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //               children: <Widget>[
-  //                 Image.asset('assets/icons/printing.gif'),
-  //                 CircularProgressIndicator(
-  //                   backgroundColor: kPrimaryColor,
-  //                 )
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   void initState() {
@@ -272,16 +210,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   ];
 
   int selectedIndex1 = 0;
-
-  // List<Widget> _buildItems1() {
-  //   return elements1
-  //       .map(
-  //         (val) => MySelectionItem(
-  //           title: val,
-  //         ),
-  //       )
-  //       .toList();
-  // }
 
   BoxDecoration cardShadow = BoxDecoration(
     color: Colors.white,
@@ -629,58 +557,61 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                                   child: InkWell(
                                                     onTap: () {
                                                       isReturn
-                                                          ? payInternalPrint(
-                                                              sale_master_id: widget
-                                                                  .saleMasterId,
-                                                              rate_us_id:
-                                                                  rateIdUS,
-                                                              rate_kh_id:
-                                                                  rateIdKh,
-                                                              exchange_rate_kh:
-                                                                  exChangeRateKh,
-                                                              exchange_rate_us:
-                                                                  exChangeRateUS,
-                                                              amount_us:
-                                                                  storeValInUS,
-                                                              amount_kh:
-                                                                  storeValInKH,
-                                                              return_kh:
-                                                                  khReturn
-                                                                      .round(),
-                                                              return_us:
-                                                                  usReturn,
-                                                            ).then((index) {
-                                                              imgListBytes
-                                                                  .clear();
-                                                              printingLoadingIndicator();
-                                                              _convertNetworkImageToByte(
-                                                                  index);
-
-                                                              // printingLoadingIndicator();
-                                                              // initPlatformState();
-                                                              // done = 1;
-                                                              // for (int i = 1;
-                                                              //     i <= index;
-                                                              //     i++) {
-                                                              //   initSaveToPath(
-                                                              //           i)
-                                                              //       .then(
-                                                              //     (_) {
-                                                              //       done++;
-                                                              //       if (done ==
-                                                              //           index) {
-                                                              //         Future.delayed(
-                                                              //             const Duration(
-                                                              //                 milliseconds: 3000),
-                                                              //             () {
-                                                              //           printWithM1(
-                                                              //               index);
-                                                              //         });
-                                                              //       }
-                                                              //     },
-                                                              //   );
-                                                              // }
-                                                            })
+                                                          ? globals.pay == 1
+                                                              ? payInternalPrintESCPos(
+                                                                  sale_master_id:
+                                                                      widget
+                                                                          .saleMasterId,
+                                                                  rate_us_id:
+                                                                      rateIdUS,
+                                                                  rate_kh_id:
+                                                                      rateIdKh,
+                                                                  exchange_rate_kh:
+                                                                      exChangeRateKh,
+                                                                  exchange_rate_us:
+                                                                      exChangeRateUS,
+                                                                  amount_us:
+                                                                      storeValInUS,
+                                                                  amount_kh:
+                                                                      storeValInKH,
+                                                                  return_kh:
+                                                                      khReturn
+                                                                          .round(),
+                                                                  return_us:
+                                                                      usReturn,
+                                                                ).then((value) {
+                                                                  printingLoadingIndicator();
+                                                                  _printWithNetwork(
+                                                                      value);
+                                                                })
+                                                              : payInternalPrint(
+                                                                  sale_master_id:
+                                                                      widget
+                                                                          .saleMasterId,
+                                                                  rate_us_id:
+                                                                      rateIdUS,
+                                                                  rate_kh_id:
+                                                                      rateIdKh,
+                                                                  exchange_rate_kh:
+                                                                      exChangeRateKh,
+                                                                  exchange_rate_us:
+                                                                      exChangeRateUS,
+                                                                  amount_us:
+                                                                      storeValInUS,
+                                                                  amount_kh:
+                                                                      storeValInKH,
+                                                                  return_kh:
+                                                                      khReturn
+                                                                          .round(),
+                                                                  return_us:
+                                                                      usReturn,
+                                                                ).then((index) {
+                                                                  imgListBytes
+                                                                      .clear();
+                                                                  printingLoadingIndicator();
+                                                                  _convertNetworkImageToByte(
+                                                                      index);
+                                                                })
                                                           : Container();
                                                     },
                                                     splashColor: kPrimaryColor

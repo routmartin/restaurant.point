@@ -14,13 +14,6 @@ class CampanyHeaderContianer extends StatelessWidget {
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(0, 4),
-            blurRadius: 10,
-            color: Colors.black12,
-          ),
-        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,

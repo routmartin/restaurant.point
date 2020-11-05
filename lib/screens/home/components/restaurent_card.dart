@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pointrestaurant/widget/botton_middle_button.dart';
 
 class RestaurantCard extends StatelessWidget {
   final String imgPath;

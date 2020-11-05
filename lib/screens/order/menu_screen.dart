@@ -9,8 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:esc_pos_printer/esc_pos_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
-import 'package:image/image.dart' as Martin;
-// import 'package:image/image.dart';
 import 'package:network_image_to_byte/network_image_to_byte.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
 import 'package:flutter_svg/svg.dart';
@@ -35,6 +33,7 @@ import 'package:pointrestaurant/widget/botton_middle_button.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 import '../../utilities/globals.dart' as globals;
+import 'package:image/image.dart' as Martin;
 import 'components/event_button.dart';
 import 'components/order_cal_icon.dart';
 import 'components/vertical_tab_container.dart';
@@ -93,6 +92,39 @@ class _MenuScreenState extends State<MenuScreen> {
     requestOrderSummeryFunction();
   }
 
+// ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
+
+  PrinterNetworkManager printerManager = PrinterNetworkManager();
+
+  _printWithNetwork(data) async {
+    for (int i = 1; i <= data.length; i++) {
+      String path = '$serverIP/temp/$i.png';
+      await networkImageToByte(path).then((bytes) {
+        imgListBytes[i] = bytes;
+        _connectPrinter(data[i - 1]['host'], i);
+      });
+    }
+  }
+
+  _connectPrinter(host, int index) async {
+    printerManager.selectPrinter(host, port: 9100);
+    final PosPrintResult res =
+        await printerManager.printTicket(await testTicket(index));
+    print('Print result: ${res.msg}');
+  }
+
+  Future<Ticket> testTicket(index) async {
+    final profile = await CapabilityProfile.load();
+    final Ticket ticket = Ticket(PaperSize.mm80, profile);
+    var image = Martin.decodeImage(imgListBytes[index]);
+    ticket.image(image);
+    ticket.feed(2);
+    ticket.cut();
+    return ticket;
+  }
+
+// ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
+
 // ___________________________________ Section Work with M1 ______________________________________________
 
   void _connect() {
@@ -122,50 +154,19 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  PrinterNetworkManager printerManager = PrinterNetworkManager();
-
-  _printWithNetwork(data) async {
-    for (int i = 1; i <= data.length; i++) {
+  _convertNetworkImageToByte(int target) async {
+    await initPlatformState();
+    for (int i = 1; i <= target; i++) {
       String path = '$serverIP/temp/$i.png';
       await networkImageToByte(path).then((bytes) {
         imgListBytes[i] = bytes;
-        if (i == data.length) {
-          print(data[i - 1]);
-          // printerManager.selectPrinter('192.168.1.88', port: 9100);
+        if (i == target) {
+          printWithM1withBytes(target);
         }
       });
     }
   }
 
-  // _connectPrinter() async {
-  //   printerManager.selectPrinter('192.168.1.88', port: 9100);
-  //   final PosPrintResult res =
-  //       await printerManager.printTicket(await testTicket());
-  //   print('Print result: ${res.msg}');
-  // }
-  Future<Ticket> testTicket() async {
-    final profile = await CapabilityProfile.load();
-    final Ticket ticket = Ticket(PaperSize.mm80, profile);
-    // var image = Martin.decodeImage(imgBytesMartin);
-    // ticket.imageRaster(image);
-
-    ticket.feed(2);
-    ticket.cut();
-    return ticket;
-  }
-
-  // _convertNetworkImageToByte(int target) async {
-  //   await initPlatformState();
-  //   for (int i = 1; i <= target; i++) {
-  //     String path = '$serverIP/temp/$i.png';
-  //     await networkImageToByte(path).then((bytes) {
-  //       imgListBytes[i] = bytes;
-  //       if (i == target) {
-  //         printWithM1withBytes(target);
-  //       }
-  //     });
-  //   }
-  // }
   void printWithM1withBytes(int index) async {
     for (int index = 1; index <= imgListBytes.length; index++) {
       bluetooth.printImageBytes(imgListBytes[index]);
@@ -353,11 +354,13 @@ class _MenuScreenState extends State<MenuScreen> {
                               return VerticalTabs(
                                 indicatorColor: kPrimaryColor,
                                 selectedTabBackgroundColor: Colors.transparent,
-                                tabsWidth: size.width <= 400.0
-                                    ? size.height * .1
-                                    : size.width >= 1000.0
-                                        ? size.height * .13
-                                        : size.height * .09,
+                                tabsWidth: size.width <= 360.0
+                                    ? size.height * .13
+                                    : size.width <= 400.0
+                                        ? size.height * .12
+                                        : size.width >= 1000.0
+                                            ? size.height * .14
+                                            : size.height * .09,
                                 contentScrollAxis: Axis.vertical,
                                 tabs: List.generate(
                                   snapshot.data.length,
@@ -375,24 +378,30 @@ class _MenuScreenState extends State<MenuScreen> {
                                   (index) {
                                     var tableList = snapshot.data[index].items;
                                     return Container(
+                                      color: baseBackgroundColor,
                                       child: Column(
                                         children: <Widget>[
                                           _buildTitleHeader(snapshot, index),
                                           Expanded(
                                             child: Container(
+                                              color: Colors.transparent,
                                               margin: EdgeInsets.only(top: 10),
                                               child: GridView.count(
                                                 padding:
                                                     EdgeInsets.only(top: 1),
                                                 shrinkWrap: true,
                                                 physics: ScrollPhysics(),
+                                                mainAxisSpacing: 10,
                                                 scrollDirection: Axis.vertical,
                                                 childAspectRatio: size.width <=
-                                                        400.0
-                                                    ? size.height / 1000
-                                                    : size.width >= 1000.0
+                                                        360.0
+                                                    ? size.height / 780
+                                                    : size.width <= 400.0
                                                         ? size.height / 800
-                                                        : size.height / 1150,
+                                                        : size.width >= 1000.0
+                                                            ? size.height / 870
+                                                            : size.height /
+                                                                1150,
                                                 crossAxisCount:
                                                     size.width <= 500.0
                                                         ? 2
@@ -402,64 +411,185 @@ class _MenuScreenState extends State<MenuScreen> {
                                                 children: List<Widget>.generate(
                                                   tableList.length,
                                                   (index) {
-                                                    return Container(
-                                                      margin: EdgeInsets.only(
-                                                        bottom: 10,
-                                                        right: 5,
-                                                        left: 5,
-                                                      ),
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5),
-                                                        border: Border.all(
-                                                          width: 1.3,
-                                                          color: Color(
-                                                            0xff0f0808,
+                                                    return Stack(
+                                                      children: <Widget>[
+                                                        Container(
+                                                          height:
+                                                              double.infinity,
+                                                          margin:
+                                                              EdgeInsets.only(
+                                                            bottom: 10,
+                                                            right: 5,
+                                                            left: 5,
                                                           ),
-                                                        ),
-                                                      ),
-                                                      child: Material(
-                                                        color:
-                                                            Colors.transparent,
-                                                        child: InkWell(
-                                                          splashColor:
-                                                              Colors.black12,
-                                                          onTap: () {
-                                                            requestAddItemsFunction(
-                                                              tableList:
-                                                                  tableList[
-                                                                      index],
-                                                            );
-                                                          },
-                                                          child:
-                                                              SingleChildScrollView(
-                                                            child: Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .center,
-                                                              children: <
-                                                                  Widget>[
-                                                                _buildImageContainer(
-                                                                  orientation,
-                                                                  size,
-                                                                  tableList,
-                                                                  index,
-                                                                ),
-                                                                SizedBox(
-                                                                  height: 10,
-                                                                ),
-                                                                _buildContainerData(
-                                                                  orientation,
-                                                                  size,
-                                                                  tableList,
-                                                                  index,
-                                                                )
-                                                              ],
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                            // border: Border.all(
+                                                            //   width: 1,
+                                                            //   color: Colors.grey,
+                                                            // ),
+                                                          ),
+                                                          child: Material(
+                                                            color: Colors
+                                                                .transparent,
+                                                            child: InkWell(
+                                                              splashColor:
+                                                                  Colors
+                                                                      .black12,
+                                                              onTap: () {
+                                                                requestAddItemsFunction(
+                                                                  tableList:
+                                                                      tableList[
+                                                                          index],
+                                                                );
+                                                              },
+                                                              child: Column(
+                                                                children: [
+                                                                  Container(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    height: size.width <=
+                                                                            400.0
+                                                                        ? size.height *
+                                                                            .1
+                                                                        : size.width >= 1000.0
+                                                                            ? size.height *
+                                                                                .18
+                                                                            : size.height *
+                                                                                .09,
+                                                                    child:
+                                                                        ClipRRect(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              10),
+                                                                      child:
+                                                                          CachedNetworkImage(
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                        imageUrl:
+                                                                            serverIP +
+                                                                                tableList[index].image,
+                                                                        placeholder:
+                                                                            (context, url) =>
+                                                                                CenterLoadingIndicator(),
+                                                                        errorWidget: (context,
+                                                                                url,
+                                                                                error) =>
+                                                                            Container(
+                                                                          height: orientation
+                                                                              ? size.height * .14
+                                                                              : size.height * .06,
+                                                                          child:
+                                                                              Icon(
+                                                                            Icons.image,
+                                                                            color:
+                                                                                Colors.grey[200],
+                                                                            size: orientation
+                                                                                ? 50
+                                                                                : 50,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  Expanded(
+                                                                    child:
+                                                                        Container(
+                                                                      padding:
+                                                                          const EdgeInsets
+                                                                              .symmetric(
+                                                                        horizontal:
+                                                                            10,
+                                                                      ),
+                                                                      child:
+                                                                          Column(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        children: <
+                                                                            Widget>[
+                                                                          Text(
+                                                                            tableList[index].itemName,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                TextStyle(
+                                                                              color: Color(0xff121010),
+                                                                              fontFamily: "San-francisco",
+                                                                              fontWeight: FontWeight.bold,
+                                                                              fontSize: orientation ? 15 : 14,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(
+                                                                            height:
+                                                                                5,
+                                                                          ),
+                                                                          Text(
+                                                                            '\$ ${tableList[index].price}',
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                TextStyle(
+                                                                              color: kPrimaryColor,
+                                                                              fontFamily: "San-francisco",
+                                                                              fontWeight: FontWeight.bold,
+                                                                              fontSize: orientation ? 13 : 14,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(
+                                                                            height:
+                                                                                5,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
+                                                        tableList[index].qty !=
+                                                                '0'
+                                                            ? Positioned.fill(
+                                                                bottom: -2,
+                                                                child: Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .bottomCenter,
+                                                                  child:
+                                                                      CaculateIcon(
+                                                                    qty: tableList[
+                                                                            index]
+                                                                        .qty,
+                                                                    funcMinus:
+                                                                        () {
+                                                                      requestAddItemsFunction(
+                                                                        tableList:
+                                                                            tableList[index],
+                                                                        qty: -1,
+                                                                      );
+                                                                    },
+                                                                    funcPlus:
+                                                                        () {
+                                                                      requestAddItemsFunction(
+                                                                        tableList:
+                                                                            tableList[index],
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            : Container()
+                                                      ],
                                                     );
                                                   },
                                                 ),
@@ -596,8 +726,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                               width: 10,
                                             ),
                                             VerticalDivider(
-                                              color: Colors.black,
-                                              width: 2.2,
+                                              color: Colors.grey[300],
+                                              width: 1.5,
                                             )
                                           ],
                                         ),
@@ -1210,21 +1340,34 @@ class _MenuScreenState extends State<MenuScreen> {
                                         });
                                       },
                                     ),
-                                    Button(
-                                      buttonName: "PRINT BILL",
-                                      press: () => printBill(
-                                        sale_master_id: restoreSaleMasterId,
-                                      ),
-                                    ),
+                                    globals.bill == 1
+                                        ? Button(
+                                            buttonName: "BILL",
+                                            press: () {
+                                              printBillInternalESCPos(
+                                                sale_master_id:
+                                                    restoreSaleMasterId,
+                                              ).then((value) {
+                                                _printWithNetwork(value);
+                                              });
+                                            },
+                                          )
+                                        : Button(
+                                            buttonName: "PRINT BILL",
+                                            press: () => printBillWithM1(
+                                              sale_master_id:
+                                                  restoreSaleMasterId,
+                                            ).then((index) {
+                                              imgListBytes.clear();
+                                              printingLoadingIndicator();
+                                              _convertNetworkImageToByte(index);
+                                            }),
+                                          ),
                                     // Button(
                                     //   buttonName: "PRINT BILL",
-                                    //   press: () => printBillWithM1(
+                                    //   press: () => printBill(
                                     //     sale_master_id: restoreSaleMasterId,
-                                    //   ).then((index) {
-                                    //     imgListBytes.clear();
-                                    //     printingLoadingIndicator();
-                                    //     _convertNetworkImageToByte(index);
-                                    //   }),
+                                    //   ),
                                     // ),
                                   ],
                                 ),
@@ -1567,105 +1710,14 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  _buildImageContainer(bool orientation, Size size, tableList, int index) {
-    return Container(
-      width: double.infinity,
-      height: size.width <= 400.0
-          ? size.height * .1
-          : size.width >= 1000.0 ? size.height * .12 : size.height * .09,
-      child: CachedNetworkImage(
-        fit: BoxFit.cover,
-        imageUrl: serverIP + tableList[index].image,
-        placeholder: (context, url) => CenterLoadingIndicator(),
-        errorWidget: (context, url, error) => Container(
-          height: orientation ? size.height * .14 : size.height * .06,
-          child: Icon(
-            Icons.no_sim,
-            color: Colors.grey[500],
-            size: orientation ? 50 : 50,
-          ),
-        ),
-      ),
-    );
-  }
-
-  _buildContainerData(bool orientation, Size size, tableList, int index) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          SizedBox(
-            height: 10,
-          ),
-          Text(
-            tableList[index].itemName,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xff121010),
-              fontFamily: "San-francisco",
-              fontWeight: FontWeight.bold,
-              fontSize: orientation ? 15 : 14,
-            ),
-          ),
-          SizedBox(
-            height: orientation ? size.height * .005 : 10,
-          ),
-          Text(
-            '\$ ${tableList[index].price}',
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: kPrimaryColor,
-              fontFamily: "San-francisco",
-              fontWeight: FontWeight.bold,
-              fontSize: orientation ? 13 : 14,
-            ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          tableList[index].qty != '0'
-              ? CaculateIcon(
-                  qty: tableList[index].qty,
-                  funcMinus: () {
-                    requestAddItemsFunction(
-                      tableList: tableList[index],
-                      qty: -1,
-                    );
-                  },
-                  funcPlus: () {
-                    requestAddItemsFunction(
-                      tableList: tableList[index],
-                    );
-                  },
-                )
-              : Container()
-        ],
-      ),
-    );
-  }
-
   _buildTitleHeader(AsyncSnapshot snapshot, int index) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(10),
-          bottomRight: Radius.circular(10),
-        ),
-      ),
-      alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(
-        vertical: 10,
-      ),
+      alignment: Alignment.centerRight,
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       child: Text(
         snapshot.data[index].typeName,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 15,
           fontWeight: FontWeight.w700,
           fontFamily: 'San-francisco',
         ),
@@ -1704,7 +1756,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   showMessageDialog({message = 'NO ORDER ITEMS'}) {
-    Timer timer = Timer(Duration(milliseconds: 1000), () {
+    Timer(Duration(milliseconds: 1000), () {
       Navigator.of(context, rootNavigator: true).pop();
     });
     return showGeneralDialog(

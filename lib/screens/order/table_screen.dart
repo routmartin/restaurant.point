@@ -1,17 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pointrestaurant/models/floor.dart';
-
 import 'package:pointrestaurant/services/table_model/table_service.dart';
-
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/utilities/switch.cofig.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:pointrestaurant/widget/company_header.dart';
-
 import 'package:vertical_tabs/vertical_tabs.dart';
-
 import 'menu_screen.dart';
 
 class TableModeScreen extends StatefulWidget {
@@ -21,7 +17,7 @@ class TableModeScreen extends StatefulWidget {
 
 class _TableModeScreenState extends State<TableModeScreen> {
   Future<List<Floor>> floorData;
-// Future<List<Ordersummery>> orderSummery;
+
 //________________Open Switch Container Layout________________________
 
   int _pageState = 0;
@@ -79,7 +75,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var orientation =
+    bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     SwitchContainer.windowHeight = size.height;
@@ -96,9 +92,17 @@ class _TableModeScreenState extends State<TableModeScreen> {
         width: double.infinity,
         child: Column(
           children: <Widget>[
-            SizedBox(
-              height: 20,
-            ),
+            size.width < 350
+                ? SizedBox(
+                    height: 10,
+                  )
+                : size.width >= 1000
+                    ? SizedBox(
+                        height: 25,
+                      )
+                    : SizedBox(
+                        height: 20,
+                      ),
             CampanyHeaderContianer(),
             Expanded(
               child: FutureBuilder(
@@ -112,11 +116,13 @@ class _TableModeScreenState extends State<TableModeScreen> {
                     height: size.height,
                     child: VerticalTabs(
                       indicatorColor: Color(0xffb01105),
-                      tabsWidth: size.width <= 400.0
-                          ? size.height * .1
-                          : size.width >= 1000.0
-                              ? size.height * .13
-                              : size.height * .09,
+                      tabsWidth: size.width <= 360.0
+                          ? size.height * .12
+                          : size.width <= 400.0
+                              ? size.height * .1
+                              : size.width >= 1000.0
+                                  ? size.height * .13
+                                  : size.height * .09,
                       selectedTabBackgroundColor: null,
                       contentScrollAxis: Axis.vertical,
                       tabs: List.generate(
@@ -141,11 +147,13 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                     shrinkWrap: true,
                                     physics: ScrollPhysics(),
                                     scrollDirection: Axis.vertical,
-                                    childAspectRatio: size.width <= 400.0
-                                        ? size.height / 800
-                                        : size.width >= 1000.0
-                                            ? size.height / 900
-                                            : size.height / 1000,
+                                    childAspectRatio: size.width <= 360.0
+                                        ? size.height / 700
+                                        : size.width <= 400.0
+                                            ? size.height / 800
+                                            : size.width >= 1000.0
+                                                ? size.height / 900
+                                                : size.height / 1000,
                                     crossAxisCount: size.width <= 800.0
                                         ? 2
                                         : size.width >= 1000.0 ? 5 : 4,
@@ -363,6 +371,4 @@ class _TableModeScreenState extends State<TableModeScreen> {
       ),
     );
   }
-
-  // orderSummery inner_width________________________
 }

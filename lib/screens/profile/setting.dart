@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 import '../../utilities/globals.dart' as globals;
 
 class SettingScreen extends StatefulWidget {
@@ -9,16 +12,30 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  String txtPort = '';
-  String txtIP = '';
+  String _txtPort = '';
+  String _txtIP = '';
 
   Future setSharePreferencNetworkConfig() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove('Port');
-    prefs.remove('IP');
-    prefs.setString('Port', txtPort);
-    prefs.setString('IP', txtIP);
-    return 'success';
+    if (prefs.containsKey('Port')) {
+      prefs.remove('Port');
+      prefs.remove('IP');
+    }
+
+    prefs.setString('Port', _txtPort);
+    prefs.setString('IP', _txtIP);
+
+    return true;
+  }
+
+  Future setSharePreferencPrinterConfig() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    prefs.setInt('bill', globals.bill);
+    prefs.setInt('pay', globals.pay);
+    prefs.setInt('reprint', globals.reprint);
+
+    return true;
   }
 
   @override
@@ -27,26 +44,20 @@ class _SettingScreenState extends State<SettingScreen> {
     bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    TextStyle textStyle = TextStyle(
-      fontWeight: FontWeight.w700,
-      fontSize: 16,
-      color: Colors.black87,
-      fontFamily: 'San-francisco',
-    );
     return Scaffold(
       backgroundColor: baseBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            width: double.infinity,
-            height: size.height,
+        child: Container(
+          width: double.infinity,
+          height: size.height,
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
                   height: size.width <= 400.0
-                      ? size.height * 0.2
+                      ? size.height * 0.24
                       : size.width >= 1000.0
                           ? size.height * 0.3
                           : size.height * 0.2,
@@ -91,11 +102,13 @@ class _SettingScreenState extends State<SettingScreen> {
                 Container(
                   margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                  height: size.width <= 400.0
-                      ? size.height * 0.5
-                      : size.width >= 1000.0
-                          ? size.height * 0.55
-                          : size.height * 0.45,
+                  height: size.width <= 360.0
+                      ? size.height * .65
+                      : size.width <= 400.0
+                          ? size.height * 0.5
+                          : size.width >= 1000.0
+                              ? size.height * 0.55
+                              : size.height * 0.45,
                   width: orientation ? size.width * .5 : size.width * .9,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
@@ -105,14 +118,22 @@ class _SettingScreenState extends State<SettingScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Text(
-                        'NETWORK configuration'.toUpperCase(),
-                        style: textStyle,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'NETWORK configuration'.toUpperCase(),
+                            style: textStyle,
+                          ),
+                          Icon(Icons.wifi_tethering)
+                        ],
+                      ),
+                      SizedBox(
+                        height: 30,
                       ),
                       Expanded(
                         child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 30),
+                          padding: EdgeInsets.symmetric(horizontal: 10),
                           child: Column(
                             children: <Widget>[
                               Column(
@@ -133,7 +154,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                       borderRadius: BorderRadius.circular(10),
                                       child: TextFormField(
                                         onChanged: (txt) {
-                                          txtIP = txt;
+                                          _txtIP = txt;
                                         },
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
@@ -173,7 +194,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                       borderRadius: BorderRadius.circular(10),
                                       child: TextFormField(
                                         onChanged: (txt) {
-                                          txtPort = txt;
+                                          _txtPort = txt;
                                         },
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
@@ -192,25 +213,17 @@ class _SettingScreenState extends State<SettingScreen> {
                                 ],
                               ),
                               SizedBox(
-                                height: 20,
-                              ),
-                              Divider(
-                                height: 2,
-                                color: Colors.black26,
-                              ),
-                              SizedBox(
-                                height: 15,
+                                height: 40,
                               ),
                               Container(
                                   child: InkWell(
                                 onTap: () {
-                                  if (txtPort != null &&
-                                      txtIP != null &&
-                                      txtIP.trim() != '' &&
-                                      txtPort.trim() != '') {
+                                  if (_txtIP.trim().length > 0 &&
+                                      _txtPort.trim().length > 0) {
+                                    print('get here');
                                     setSharePreferencNetworkConfig()
                                         .then((data) {
-                                      if (data == 'success') {
+                                      if (data) {
                                         Navigator.pop(context, true);
                                       } else {
                                         validateTextfield();
@@ -221,6 +234,11 @@ class _SettingScreenState extends State<SettingScreen> {
                                   }
                                 },
                                 child: Container(
+                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     'Save',
@@ -233,6 +251,196 @@ class _SettingScreenState extends State<SettingScreen> {
                                   ),
                                 ),
                               )),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  height: size.width <= 360.0
+                      ? size.height * 0.58
+                      : size.width <= 400.0
+                          ? size.height * 0.65
+                          : size.width >= 1000.0
+                              ? size.height * 0.5
+                              : size.height * 0.4,
+                  width: orientation ? size.width * .5 : size.width * .9,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'printer configuration'.toUpperCase(),
+                            style: textStyle,
+                          ),
+                          Icon(Icons.print)
+                        ],
+                      ),
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    'Bill Printing',
+                                    style: textStyle,
+                                  ),
+                                  ToggleSwitch(
+                                    minHeight: 35,
+                                    minWidth: 90,
+                                    activeBgColor: Colors.grey[800],
+                                    activeFgColor: Colors.white,
+                                    inactiveBgColor: Colors.grey[200],
+                                    inactiveFgColor: Colors.black87,
+                                    initialLabelIndex: globals.bill,
+                                    icons: [
+                                      Icons.phone_android,
+                                      FontAwesomeIcons.print
+                                    ],
+                                    labels: [
+                                      'M1',
+                                      'Printer',
+                                    ],
+                                    onToggle: (index) {
+                                      globals.bill = index;
+                                    },
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Divider(
+                                height: 2,
+                                color: Colors.black45,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    'Pay Printing',
+                                    style: textStyle,
+                                  ),
+                                  ToggleSwitch(
+                                    minHeight: 35,
+                                    minWidth: 90,
+                                    activeBgColor: Colors.grey[800],
+                                    activeFgColor: Colors.white,
+                                    inactiveBgColor: Colors.grey[200],
+                                    inactiveFgColor: Colors.black87,
+                                    initialLabelIndex: globals.pay,
+                                    icons: [
+                                      Icons.phone_android,
+                                      FontAwesomeIcons.print
+                                    ],
+                                    labels: [
+                                      'M1',
+                                      'Printer',
+                                    ],
+                                    onToggle: (index) {
+                                      globals.pay = index;
+                                    },
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Divider(
+                                height: 2,
+                                color: Colors.black45,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    'Reprinting',
+                                    style: textStyle,
+                                  ),
+                                  ToggleSwitch(
+                                    minHeight: 35,
+                                    minWidth: 90,
+                                    activeBgColor: Colors.grey[800],
+                                    activeFgColor: Colors.white,
+                                    inactiveBgColor: Colors.grey[200],
+                                    inactiveFgColor: Colors.black87,
+                                    initialLabelIndex: globals.reprint,
+                                    icons: [
+                                      Icons.phone_android,
+                                      FontAwesomeIcons.print
+                                    ],
+                                    labels: [
+                                      'M1',
+                                      'Printer',
+                                    ],
+                                    onToggle: (index) {
+                                      globals.reprint = index;
+                                    },
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Container(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: Material(
+                                    color: Colors.grey[300],
+                                    child: InkWell(
+                                      splashColor: Colors.black45,
+                                      onTap: () {
+                                        setSharePreferencPrinterConfig().then(
+                                            (response) => response
+                                                ? Navigator.pop(context, true)
+                                                : null);
+                                      },
+                                      child: Container(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          'Save',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16,
+                                            color: Colors.black,
+                                            fontFamily: 'San-francisco',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),

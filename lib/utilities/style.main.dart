@@ -64,3 +64,10 @@ BoxDecoration cardShadow = BoxDecoration(
     )
   ],
 );
+
+TextStyle textStyle = TextStyle(
+  fontWeight: FontWeight.w700,
+  fontSize: 16,
+  color: Colors.black87,
+  fontFamily: 'San-francisco',
+);

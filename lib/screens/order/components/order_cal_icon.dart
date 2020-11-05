@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 
 class CaculateIcon extends StatelessWidget {
@@ -15,12 +16,14 @@ class CaculateIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 80,
+      width: 90,
+      height: 28,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: Color(0xffE5E4E2),
+        color: baseBackgroundColor,
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           _buildIconButton(
               sysbol: '-', action: int.parse(qty) > 1 ? funcMinus : null),

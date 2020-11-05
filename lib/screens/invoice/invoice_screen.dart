@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
+import 'package:esc_pos_printer/esc_pos_printer.dart';
+import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_collapse/flutter_collapse.dart';
@@ -14,6 +16,8 @@ import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:pointrestaurant/widget/company_header.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart' as globals;
+import 'package:image/image.dart' as Martin;
 
 class InvocieScreeen extends StatefulWidget {
   @override
@@ -23,6 +27,39 @@ class InvocieScreeen extends StatefulWidget {
 class _InvocieScreeenState extends State<InvocieScreeen> {
   Future<List<ListSaleData>> listSaleData;
   List<bool> growableList = [];
+
+// ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
+
+  PrinterNetworkManager printerManager = PrinterNetworkManager();
+
+  _printWithNetwork(data) async {
+    for (int i = 1; i <= data.length; i++) {
+      String path = '$serverIP/temp/$i.png';
+      await networkImageToByte(path).then((bytes) {
+        imgListBytes[i] = bytes;
+        _connectPrinter(data[i - 1]['host'], i);
+      });
+    }
+  }
+
+  _connectPrinter(host, int index) async {
+    printerManager.selectPrinter(host, port: 9100);
+    final PosPrintResult res =
+        await printerManager.printTicket(await testTicket(index));
+    print('Print result: ${res.msg}');
+  }
+
+  Future<Ticket> testTicket(index) async {
+    final profile = await CapabilityProfile.load();
+    final Ticket ticket = Ticket(PaperSize.mm80, profile);
+    var image = Martin.decodeImage(imgListBytes[index]);
+    ticket.image(image);
+    ticket.feed(2);
+    ticket.cut();
+    return ticket;
+  }
+
+// ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
 
   // ___________________________________ Section Work with M1 ______________________________________________
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
@@ -35,7 +72,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
       bluetooth.isConnected.then((isConnected) {
         if (!isConnected) {
           bluetooth.connect(_device).catchError((error) {
-            // print('throw errror from connect to bluetooth:' + error);
+            print('throw errror from connect to bluetooth:' + error);
           });
         }
       });
@@ -124,29 +161,51 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    bool orientation =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     return Scaffold(
+      backgroundColor: baseBackgroundColor,
       body: Container(
         child: Column(
           children: <Widget>[
+            size.width < 360
+                ? SizedBox(
+                    height: 20,
+                  )
+                : size.width >= 1000
+                    ? SizedBox(
+                        height: 25,
+                      )
+                    : SizedBox(
+                        height: 20,
+                      ),
             CampanyHeaderContianer(),
             Expanded(
-              child: FutureBuilder(
-                future: listSaleData,
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CenterLoadingIndicator();
-                  }
-                  if (snapshot.data != null) {
-                    if (growableList.length == 0) {
-                      growableList.clear();
-                      for (int i = 0; i < snapshot.data.length; i++) {
-                        growableList.add(false);
-                      }
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 15,
+                ),
+                color: Colors.white,
+                width: orientation ? size.width * .5 : size.width * .9,
+                child: FutureBuilder(
+                  future: listSaleData,
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CenterLoadingIndicator();
                     }
-                    return ListView.builder(
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (context, index) {
-                        return Collapse(
+                    if (snapshot.data != null) {
+                      if (growableList.length == 0) {
+                        growableList.clear();
+                        for (int i = 0; i < snapshot.data.length; i++) {
+                          growableList.add(false);
+                        }
+                      }
+                      return ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (context, index) {
+                          return Collapse(
                             padding: EdgeInsets.only(
                               top: 1,
                               left: 10,
@@ -171,21 +230,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                             ),
                             body: Container(
                               width: double.infinity,
-                              padding: EdgeInsets.symmetric(
-                                vertical: 25,
-                                horizontal: 30,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.grey[50],
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: Offset(0, 3),
-                                    color: Color(0xffdbdbdb),
-                                    blurRadius: 20,
-                                  )
-                                ],
-                              ),
+                              padding: EdgeInsets.symmetric(vertical: 10),
                               child: Column(
                                 children: <Widget>[
                                   Row(
@@ -460,11 +505,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                     ],
                                   ),
                                   SizedBox(
-                                    height: 10,
-                                  ),
-                                  Divider(
-                                    height: 1.2,
-                                    color: Colors.grey,
+                                    height: 20,
                                   ),
                                   SizedBox(
                                     height: 10,
@@ -475,14 +516,22 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                       color: Colors.transparent,
                                       child: InkWell(
                                         onTap: () {
-                                          reprintInvoiceWithM1(
-                                            saleMasterId:
-                                                snapshot.data[index].id,
-                                          ).then((index) {
-                                            imgListBytes.clear();
-                                            printingLoadingIndicator();
-                                            _convertNetworkImageToByte(index);
-                                          });
+                                          globals.reprint == 1
+                                              ? reprintPrintInvoiceInternalESCPos(
+                                                  saleMasterId:
+                                                      snapshot.data[index].id,
+                                                ).then((value) {
+                                                  _printWithNetwork(value);
+                                                })
+                                              : reprintInvoiceWithM1(
+                                                  saleMasterId:
+                                                      snapshot.data[index].id,
+                                                ).then((index) {
+                                                  imgListBytes.clear();
+                                                  printingLoadingIndicator();
+                                                  _convertNetworkImageToByte(
+                                                      index);
+                                                });
                                         },
                                         splashColor: Colors.black54,
                                         child: Container(
@@ -504,16 +553,21 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                                   ),
                                 ],
                               ),
-                            ));
-                      },
+                            ),
+                          );
+                        },
+                      );
+                    }
+                    return Container(
+                      child: Center(
+                        child: Text(
+                          'NO DATA',
+                          style: textStyle,
+                        ),
+                      ),
                     );
-                  }
-                  return Container(
-                    child: Center(
-                      child: Text('NO DATA'),
-                    ),
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ],

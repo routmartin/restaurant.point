@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pointrestaurant/screens/invoice/invoice_screen.dart';
-import 'package:pointrestaurant/screens/networt_print.dart';
-import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
+import 'package:pointrestaurant/screens/order/table_screen.dart';
+import 'package:pointrestaurant/screens/profile/profile.dart';
 
 import '../utilities/style.main.dart';
 
@@ -22,7 +22,7 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageList = [
       TableModeScreen(),
       InvocieScreeen(),
-      NetworkPrinting(),
+      Profile(),
     ];
   }
 
@@ -41,18 +41,17 @@ class _MainScreenPageState extends State<MainScreenPage> {
             boxShadow: <BoxShadow>[
               BoxShadow(
                 color: Colors.black12,
-                blurRadius: 10,
+                blurRadius: 15,
               ),
             ],
           ),
           child: BottomNavigationBar(
-            selectedIconTheme: IconThemeData(color: kPrimaryColor),
             type: BottomNavigationBarType.fixed,
-            elevation: 20.0,
-            iconSize: 24,
-            selectedItemColor: kPrimaryColor,
-            selectedFontSize: 13,
-            unselectedFontSize: 13,
+            elevation: 10.0,
+            iconSize: 20,
+            selectedItemColor: Colors.black,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
             showUnselectedLabels: false,
             currentIndex: _pageIndex,
             onTap: (index) {

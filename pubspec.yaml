@@ -29,12 +29,8 @@ dependencies:
   image: ^2.1.12
   esc_pos_utils: ^0.4.8
   esc_pos_printer: ^3.2.8
-  device_preview: ^0.4.8
-  # image_picker: ^0.6.7+12
-  # escposprinter:
-  #   git:
-  #       url: https://github.com/marcusfelix/esc-pos-printer-flutter.git
-  #       ref: master
+  toggle_switch: "^0.1.8"
+  
 
 dev_dependencies:
   flutter_test:

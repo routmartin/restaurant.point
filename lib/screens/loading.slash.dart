@@ -15,13 +15,26 @@ class LoadingPage extends StatefulWidget {
 class _LoadingPageState extends State<LoadingPage> {
   Future loadSharePreferenc() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (prefs.containsKey('Port')) {
       globals.port = prefs.getString('Port');
       globals.ipAddress = prefs.getString('IP');
+      print('ip: ${globals.ipAddress}');
     } else {
       globals.ipAddress = '124.248.164.229';
       globals.port = '5006';
     }
+
+    if (prefs.containsKey('bill')) {
+      globals.bill = prefs.getInt('bill');
+    }
+    if (prefs.containsKey('pay')) {
+      globals.pay = prefs.getInt('pay');
+    }
+    if (prefs.containsKey('reprint')) {
+      globals.reprint = prefs.getInt('reprint');
+    }
+
     return prefs.getString('userLog');
   }
 
@@ -29,7 +42,6 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     super.initState();
     loadSharePreferenc().then((data) {
-      print('token : $data');
       setState(() {
         globals.userToken = data != null ? data : 'no';
       });

@@ -9,52 +9,62 @@ class VerticalMenuContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
     return Stack(
       children: <Widget>[
-        Container(
-          margin: EdgeInsets.only(bottom: 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(
-              width: 1.3,
-              color: Color(0xff0f0808),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            height: size.width <= 360.0
+                ? size.height * .13
+                : size.width <= 400.0
+                    ? size.height * .14
+                    : size.width >= 1000.0
+                        ? size.height * .16
+                        : size.height * .15,
+            margin: EdgeInsets.only(bottom: 5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.grey[200],
+                width: 0.8,
+              ),
             ),
-          ),
-          child: Column(
-            children: <Widget>[
-              Container(
-                height: 75,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  height: size.width <= 360.0
+                      ? size.height * .1
+                      : size.width <= 400.0
+                          ? size.height * .09
+                          : size.width >= 1000.0
+                              ? size.height * .2
+                              : size.height * .15,
+                  child: Image.network(
+                    serverIP + snapshot.data[index].photo,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  color: Colors.white,
+                  width: double.infinity,
+                  child: Text(
+                    snapshot.data[index].typeName,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
                       color: Colors.black,
-                      width: 1.5,
+                      letterSpacing: 0.7,
+                      fontFamily: "San-francisco",
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
                     ),
                   ),
                 ),
-                child: Image.network(
-                  serverIP + snapshot.data[index].photo,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              SizedBox(
-                height: 3,
-              ),
-              Text(
-                snapshot.data[index].typeName,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xff121010),
-                  fontFamily: "San-francisco",
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         snapshot.data[index].hasOrder.toString() != '0'
