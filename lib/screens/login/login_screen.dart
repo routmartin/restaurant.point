@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pointrestaurant/screens/profile/setting.dart';
 import 'package:pointrestaurant/services/login.dart';
 
 import 'package:pointrestaurant/utilities/style.main.dart';
+import 'package:pointrestaurant/widget/action_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utilities/globals.dart' as globals;
 import '../main_screen.dart';
@@ -51,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ? size.width * 0.4
             : size.width * 0.8;
     var red = 0xffE50B2E;
-    print(size.width);
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -74,12 +73,20 @@ class _LoginScreenState extends State<LoginScreen> {
             children: <Widget>[
               Container(
                 alignment: Alignment.centerRight,
-                margin: EdgeInsets.only(
-                  top: size.height * 0.05,
-                ),
+                margin: EdgeInsets.only(top: size.height * 0.05, right: 10),
                 child: InkWell(
                   onTap: () {
                     _showAuthenticator();
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (_) => SettingScreen(),
+                    //   ),
+                    // ).then(
+                    //   (data) => data != null
+                    //       ? data ? getSharePreferencNetworkConfig() : null
+                    //       : null,
+                    // );
                   },
                   child: Container(
                     child: SvgPicture.asset(
@@ -106,11 +113,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     : size.width <= 400.0
                         ? size.height * .6
                         : size.width >= 1000.0
-                            ? size.height * .65
+                            ? size.height * .55
                             : size.height * .5,
-                width: orientation ? size.width * 0.45 : size.height * 0.9,
+                width: size.width >= 1200
+                    ? size.width * 0.3
+                    : size.width >= 1000 ? size.width * 0.35 : size.width * 0.9,
                 padding: EdgeInsets.symmetric(
-                  horizontal: 10,
+                  horizontal: orientation ? 40 : 15,
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
@@ -401,8 +410,6 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (BuildContext context) {
         var size = MediaQuery.of(context).size;
-        bool orientation =
-            MediaQuery.of(context).orientation == Orientation.landscape;
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
@@ -411,14 +418,18 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           content: Container(
             padding: EdgeInsets.all(10),
-            width: orientation ? size.width * .3 : size.width,
+            width: size.width >= 1200
+                ? size.width * .2
+                : size.width >= 1000 ? size.width * 0.3 : size.width * 0.9,
             height: size.width <= 360.0
                 ? size.height * .52
                 : size.width <= 400.0
                     ? size.height * .45
-                    : size.width >= 1000.0
-                        ? size.height * .52
-                        : size.height * .4,
+                    : size.width >= 1200.0
+                        ? size.height * .38
+                        : size.width >= 1000.0
+                            ? size.height * .45
+                            : size.height * .4,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -480,53 +491,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     height: size.height * .05,
                   ),
-                  FittedBox(
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(7),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pop(context);
-                              },
-                              splashColor: Colors.black12,
-                              child: Container(
-                                width: orientation
-                                    ? size.width * .14
-                                    : size.width * .27,
-                                height: 45.0,
-                                alignment: Alignment.center,
-                                decoration:
-                                    BoxDecoration(color: Colors.black12),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 9,
-                                  horizontal: 20,
-                                ),
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    decoration: TextDecoration.none,
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(7),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            splashColor: Colors.black12,
+                            child: ActionButton(
+                              btnLabel: 'close',
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 20,
-                        ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(7),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
+                      ),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(7),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
                               onTap: () {
                                 if (authUser == 'martin' && authPass == '123') {
                                   Navigator.pop(context);
@@ -550,34 +540,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               },
                               splashColor: Colors.black12,
-                              child: Container(
-                                height: 45.0,
-                                width: orientation
-                                    ? size.width * .14
-                                    : size.width * .27,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 9,
-                                  horizontal: 20,
-                                ),
-                                child: Text(
-                                  'Confirm',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    decoration: TextDecoration.none,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                              child: ActionButton(
+                                btnLabel: 'Log',
+                                active: true,
+                              )),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),

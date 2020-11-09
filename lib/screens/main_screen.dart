@@ -3,8 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pointrestaurant/screens/invoice/invoice_screen.dart';
 import 'package:pointrestaurant/screens/order/table_screen.dart';
 import 'package:pointrestaurant/screens/profile/profile.dart';
-
-import '../utilities/style.main.dart';
+import 'package:pointrestaurant/services/closeshift/closeshift_services.dart';
 
 class MainScreenPage extends StatefulWidget {
   @override
@@ -12,18 +11,29 @@ class MainScreenPage extends StatefulWidget {
 }
 
 class _MainScreenPageState extends State<MainScreenPage> {
-  int _pageIndex;
+  int _pageIndex = 0;
+
   List<Widget> _pageList;
 
   @override
   void initState() {
-    _pageIndex = 0;
     super.initState();
+    _checkCashInOperation();
     _pageList = [
       TableModeScreen(),
       InvocieScreeen(),
-      Profile(),
+      ProfileScreen(),
     ];
+  }
+
+  _checkCashInOperation() async {
+    await cashRegistration().then((data) {
+      if (data[0]['cash_id'].toString().isEmpty) {
+        setState(() {
+          _pageIndex = 2;
+        });
+      }
+    });
   }
 
   @override

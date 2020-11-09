@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 
 class CampanyHeaderContianer extends StatelessWidget {
@@ -25,18 +26,26 @@ class CampanyHeaderContianer extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Container(
-              alignment: Alignment.centerRight,
-              margin: EdgeInsets.only(right: 10),
-              child: Text('SOFTPOINT AUTO ID',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'San-francisco',
-                  )),
-            ),
-          )
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Container(
+                alignment: Alignment.centerRight,
+                margin: EdgeInsets.only(right: 10),
+                child: MediaQuery.of(context).size.width <= 500
+                    ? SvgPicture.asset(
+                        'assets/icons/pointsystem.svg',
+                        fit: BoxFit.fitHeight,
+                        height: 50,
+                      )
+                    : SvgPicture.asset(
+                        'assets/icons/softpointlogo.svg',
+                        fit: BoxFit.fitHeight,
+                        height: 38,
+                      ),
+              ),
+            ],
+          ))
         ],
       ),
     );

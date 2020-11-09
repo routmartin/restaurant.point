@@ -6,18 +6,26 @@ class CaculateIcon extends StatelessWidget {
   final String qty;
   final Function funcMinus;
   final Function funcPlus;
+  final double btnSize;
+  final double btnRounder;
+  final double wrapperWidth;
+  final double wrapperHeight;
   const CaculateIcon({
     Key key,
     this.qty = '1',
     this.funcMinus,
     this.funcPlus,
+    this.wrapperWidth = 150,
+    this.wrapperHeight = 40,
+    this.btnSize = 40,
+    this.btnRounder = 20,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 90,
-      height: 28,
+      width: wrapperWidth,
+      height: wrapperHeight,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: baseBackgroundColor,
@@ -46,24 +54,22 @@ class CaculateIcon extends StatelessWidget {
 
   _buildIconButton({String sysbol, Function action}) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(15.0),
-      child: Container(
-        width: 25,
-        height: 25,
-        alignment: Alignment.centerRight,
-        child: Material(
-          borderRadius: BorderRadius.circular(15.0),
-          color: kPrimaryColor,
-          child: InkWell(
-            splashColor: Colors.black45,
-            onTap: action,
-            child: Center(
-              child: Text(
-                sysbol,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.white,
-                ),
+      borderRadius: BorderRadius.circular(btnRounder),
+      child: Material(
+        borderRadius: BorderRadius.circular(btnRounder),
+        color: kPrimaryColor,
+        child: InkWell(
+          splashColor: Colors.black45,
+          onTap: action,
+          child: Container(
+            width: btnSize,
+            height: btnSize,
+            alignment: Alignment.center,
+            child: Text(
+              sysbol,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.white,
               ),
             ),
           ),

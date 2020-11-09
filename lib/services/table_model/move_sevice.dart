@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/move_list.dart';
+import 'package:pointrestaurant/utilities/path.dart';
 import '../../utilities/globals.dart';
 
-String serverIP = 'http://$ipAddress:$port';
 Dio dio = Dio();
 
 List<MoveList> parseMoveList(String responseBody) {

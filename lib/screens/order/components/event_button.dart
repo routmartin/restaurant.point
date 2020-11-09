@@ -28,13 +28,13 @@ class Button extends StatelessWidget {
             alignment: Alignment.center,
             width: screeOrientation == lanscape ? 120 : size.width * 0.28,
             height: screeOrientation == Orientation.landscape
-                ? size.height * 0.054
+                ? size.height * 0.042
                 : 35,
             child: Text(
               buttonName,
               style: TextStyle(
                 fontSize: 14,
-                color: border ? kPrimaryColor : Colors.white,
+                color: border ? Colors.black : Colors.white,
                 fontFamily: 'San-francisco',
                 fontWeight: FontWeight.w800,
               ),

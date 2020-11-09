@@ -41,11 +41,20 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    bool orientation =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
+    double cardWidth =
+        size.width >= 1000 ? size.width * 0.26 : size.width * 0.9;
     return Scaffold(
       backgroundColor: baseBackgroundColor,
+      appBar: AppBar(
+        elevation: 1,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black,
+          ),
+          onPressed: () => Navigator.pop(context, true),
+        ),
+      ),
       body: SafeArea(
         child: Container(
           width: double.infinity,
@@ -59,9 +68,9 @@ class _SettingScreenState extends State<SettingScreen> {
                   height: size.width <= 400.0
                       ? size.height * 0.24
                       : size.width >= 1000.0
-                          ? size.height * 0.3
+                          ? size.height * 0.2
                           : size.height * 0.2,
-                  width: orientation ? size.width * .5 : size.width * .9,
+                  width: cardWidth,
                   margin: EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 5,
@@ -70,10 +79,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     horizontal: 20,
                     vertical: 15,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: cardDecoration,
                   child: Container(
                       alignment: Alignment.center,
                       child: Column(
@@ -107,14 +113,11 @@ class _SettingScreenState extends State<SettingScreen> {
                       : size.width <= 400.0
                           ? size.height * 0.5
                           : size.width >= 1000.0
-                              ? size.height * 0.55
+                              ? size.height * 0.5
                               : size.height * 0.45,
-                  width: orientation ? size.width * .5 : size.width * .9,
+                  width: cardWidth,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: cardDecoration,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -266,14 +269,11 @@ class _SettingScreenState extends State<SettingScreen> {
                       : size.width <= 400.0
                           ? size.height * 0.65
                           : size.width >= 1000.0
-                              ? size.height * 0.5
+                              ? size.height * 0.45
                               : size.height * 0.4,
-                  width: orientation ? size.width * .5 : size.width * .9,
+                  width: cardWidth,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: cardDecoration,
                   child: Column(
                     children: <Widget>[
                       Row(

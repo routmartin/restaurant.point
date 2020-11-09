@@ -47,10 +47,13 @@ Future printtoKitchenESC({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.data);
+    if (response.data == 'no_item_print') {
+      return response.data;
+    }
     return jsonDecode(response.data);
+  } else {
+    return 'no_item_print';
   }
-  return null;
 }
 
 Future printBill({

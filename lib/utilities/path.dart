@@ -17,5 +17,6 @@ const String noitemscart = 'assets/icons/NoItemsCart.svg';
 const String backgroundImg = 'assets/images/background.png';
 const String preLoading = 'assets/icons/indicator.gif';
 const String floor = 'assets/images/floor.png';
-const Color baseBackgroundColor = Color(0xffF4F4F7);
+const Color baseBackgroundColor = Color(0xffebebf0);
+// const Color baseBackgroundColor = Color(0xff02ccb4);
 const String emptydata = 'assets/images/empty.png';

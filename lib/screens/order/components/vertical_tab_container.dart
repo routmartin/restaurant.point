@@ -20,46 +20,45 @@ class VerticalMenuContainer extends StatelessWidget {
                 : size.width <= 400.0
                     ? size.height * .14
                     : size.width >= 1000.0
-                        ? size.height * .16
-                        : size.height * .15,
-            margin: EdgeInsets.only(bottom: 5),
+                        ? size.height * .18
+                        : size.height * .14,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Colors.grey[200],
-                width: 0.8,
-              ),
-            ),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(9),
+                boxShadow: [
+                  BoxShadow(color: Colors.grey[600], blurRadius: 10)
+                ]),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Container(
                   width: double.infinity,
                   height: size.width <= 360.0
-                      ? size.height * .1
+                      ? size.height * .11
                       : size.width <= 400.0
                           ? size.height * .09
                           : size.width >= 1000.0
-                              ? size.height * .2
-                              : size.height * .15,
+                              ? size.height * .12
+                              : size.height * .09,
                   child: Image.network(
                     serverIP + snapshot.data[index].photo,
                     fit: BoxFit.cover,
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  color: Colors.white,
-                  width: double.infinity,
-                  child: Text(
-                    snapshot.data[index].typeName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                      letterSpacing: 0.7,
-                      fontFamily: "San-francisco",
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    child: Text(
+                      snapshot.data[index].typeName,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        letterSpacing: 0.7,
+                        fontFamily: "San-francisco",
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
                     ),
                   ),
                 ),

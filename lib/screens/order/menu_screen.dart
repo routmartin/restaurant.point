@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,6 @@ import 'package:esc_pos_printer/esc_pos_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:network_image_to_byte/network_image_to_byte.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:platform_action_sheet/platform_action_sheet.dart';
 import 'package:pointrestaurant/models/menu.dart';
@@ -29,6 +29,7 @@ import 'package:pointrestaurant/services/table_model/order_summery_sevice.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/utilities/switch.cofig.dart';
+import 'package:pointrestaurant/widget/action_button.dart';
 import 'package:pointrestaurant/widget/botton_middle_button.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
@@ -53,6 +54,7 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  bool isLoading = false;
   Future<List<Menu>> menuData;
   Future<List<MoveList>> movelistData;
   Future<List<Ordersummery>> orderSummery;
@@ -61,7 +63,6 @@ class _MenuScreenState extends State<MenuScreen> {
   final f = new NumberFormat("#,##0.00");
   //_______________ OrderSummery _________________
   int totalItems = 0;
-  // double totalAmount = 0;
   // ignore: non_constant_identifier_names
   int sale_detail_id;
   int restoreSaleMasterId;
@@ -96,7 +97,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   PrinterNetworkManager printerManager = PrinterNetworkManager();
 
-  _printWithNetwork(data) async {
+  Future _printWithNetwork(data) async {
     for (int i = 1; i <= data.length; i++) {
       String path = '$serverIP/temp/$i.png';
       await networkImageToByte(path).then((bytes) {
@@ -108,9 +109,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   _connectPrinter(host, int index) async {
     printerManager.selectPrinter(host, port: 9100);
-    final PosPrintResult res =
-        await printerManager.printTicket(await testTicket(index));
-    print('Print result: ${res.msg}');
+    await printerManager.printTicket(await testTicket(index));
   }
 
   Future<Ticket> testTicket(index) async {
@@ -245,7 +244,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
+    Color styleBack = Color(0xffebebeb);
     bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
     SwitchContainer.windowHeight = size.height;
@@ -261,11 +261,26 @@ class _MenuScreenState extends State<MenuScreen> {
         ActionSheetAction(
           text: "Order Now",
           onPressed: () {
-            printOrder(
+            printtoKitchenESC(
               table_name: widget.tableName,
               sale_master_id: restoreSaleMasterId,
               sale_detail_ids: saleDetailId,
-            ).then((data) => _printWithNetwork(data));
+            ).then((value) {
+              if (value == 'no_item_print') {
+                showMessageDialog(
+                  message: 'Already Print',
+                );
+              } else {
+                setState(() {
+                  isLoading = true;
+                });
+                _printWithNetwork(value).then(
+                  (_) => setState(() {
+                    isLoading = false;
+                  }),
+                );
+              }
+            });
           },
         ),
         ActionSheetAction(
@@ -288,669 +303,1326 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: <Widget>[
-            Container(
+      body: isLoading
+          ? CenterLoadingIndicator()
+          : SafeArea(
               child: Stack(
                 children: <Widget>[
                   Container(
-                    height: size.height,
-                    width: double.infinity,
-                    margin: EdgeInsets.only(bottom: 80),
-                    child: Column(
+                    child: Stack(
                       children: <Widget>[
                         Container(
+                          height: size.height,
                           width: double.infinity,
-                          alignment: Alignment.centerLeft,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                offset: Offset(0, 4),
-                                blurRadius: 10,
-                                color: Colors.black12,
-                              ),
-                            ],
-                          ),
-                          child: Row(
+                          margin: EdgeInsets.only(bottom: 80),
+                          child: Column(
                             children: <Widget>[
-                              SizedBox(
-                                width: 5,
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.arrow_back_ios,
-                                  size: 20,
+                              Container(
+                                width: double.infinity,
+                                alignment: Alignment.centerLeft,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      offset: Offset(0, 4),
+                                      blurRadius: 10,
+                                      color: Colors.black12,
+                                    ),
+                                  ],
                                 ),
-                                onPressed: backToPreviewPage,
+                                child: Row(
+                                  children: <Widget>[
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_back_ios,
+                                        size: 20,
+                                      ),
+                                      onPressed: backToPreviewPage,
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        alignment: Alignment.centerRight,
+                                        margin: EdgeInsets.only(right: 20),
+                                        child: Text(
+                                          widget.tableName,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontFamily: 'San-francisco',
+                                            fontWeight: FontWeight.bold,
+                                            color: kPrimaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
                               Expanded(
-                                child: Container(
-                                  alignment: Alignment.centerRight,
-                                  margin: EdgeInsets.only(right: 20),
-                                  child: Text(
-                                    widget.tableName,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontFamily: 'San-francisco',
-                                      fontWeight: FontWeight.bold,
-                                      color: kPrimaryColor,
-                                    ),
-                                  ),
+                                child: FutureBuilder(
+                                  future: menuData,
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return CenterLoadingIndicator();
+                                    }
+                                    return VerticalTabs(
+                                      indicatorColor: kPrimaryColor,
+                                      selectedTabBackgroundColor:
+                                          baseBackgroundColor,
+                                      tabBackgroundColor: Color(0xfff7a116),
+                                      tabsWidth: size.width <= 360.0
+                                          ? size.width * .2
+                                          : size.width <= 400.0
+                                              ? size.width * .22
+                                              : size.width >= 1000.0
+                                                  ? size.width * .08
+                                                  : size.width * .22,
+                                      contentScrollAxis: Axis.vertical,
+                                      tabs: List.generate(
+                                        snapshot.data.length,
+                                        (index) {
+                                          return Tab(
+                                            child: VerticalMenuContainer(
+                                              snapshot: snapshot,
+                                              index: index,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      contents: List.generate(
+                                        snapshot.data.length,
+                                        (index) {
+                                          var tableList =
+                                              snapshot.data[index].items;
+                                          return Container(
+                                            color: baseBackgroundColor,
+                                            child: Column(
+                                              children: <Widget>[
+                                                // _buildTitleHeader(snapshot, index),
+                                                Expanded(
+                                                  child: Container(
+                                                    color: Colors.transparent,
+                                                    margin: EdgeInsets.only(
+                                                        top: 10),
+                                                    child: GridView.count(
+                                                      padding: EdgeInsets.only(
+                                                          top: 1),
+                                                      shrinkWrap: true,
+                                                      physics: ScrollPhysics(),
+                                                      mainAxisSpacing: 10,
+                                                      scrollDirection:
+                                                          Axis.vertical,
+                                                      childAspectRatio: size
+                                                                  .width <=
+                                                              360.0
+                                                          ? size.height / 780
+                                                          : size.width <= 400.0
+                                                              ? size.height /
+                                                                  900
+                                                              : size
+                                                                          .width >=
+                                                                      1000.0
+                                                                  ? size.height /
+                                                                      1100
+                                                                  : size.height /
+                                                                      1100,
+                                                      crossAxisCount:
+                                                          size.width <= 500.0
+                                                              ? 2
+                                                              : size.width >=
+                                                                      1000.0
+                                                                  ? 6
+                                                                  : 5,
+                                                      children:
+                                                          List<Widget>.generate(
+                                                        tableList.length,
+                                                        (index) {
+                                                          return Stack(
+                                                            children: <Widget>[
+                                                              Container(
+                                                                height: double
+                                                                    .infinity,
+                                                                margin:
+                                                                    orientation
+                                                                        ? EdgeInsets
+                                                                            .only(
+                                                                            bottom:
+                                                                                15,
+                                                                            right:
+                                                                                10,
+                                                                            left:
+                                                                                10,
+                                                                          )
+                                                                        : EdgeInsets
+                                                                            .only(
+                                                                            bottom:
+                                                                                10,
+                                                                            right:
+                                                                                5,
+                                                                            left:
+                                                                                5,
+                                                                          ),
+                                                                decoration:
+                                                                    cardDecoration,
+                                                                child: Material(
+                                                                  color: Colors
+                                                                      .transparent,
+                                                                  child:
+                                                                      InkWell(
+                                                                    splashColor:
+                                                                        Colors
+                                                                            .black12,
+                                                                    onTap: () {
+                                                                      requestAddItemsFunction(
+                                                                        tableList:
+                                                                            tableList[index],
+                                                                      );
+                                                                    },
+                                                                    child:
+                                                                        Column(
+                                                                      children: [
+                                                                        Container(
+                                                                          width:
+                                                                              double.infinity,
+                                                                          height: size.width <= 360.0
+                                                                              ? size.height * .11
+                                                                              : size.width <= 400.0 ? size.height * .115 : size.width >= 1000.0 ? size.height * .18 : size.height * .13,
+                                                                          child:
+                                                                              ClipRRect(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(10),
+                                                                            child:
+                                                                                CachedNetworkImage(
+                                                                              fit: BoxFit.cover,
+                                                                              imageUrl: serverIP + tableList[index].image,
+                                                                              placeholder: (context, url) => CenterLoadingIndicator(),
+                                                                              errorWidget: (context, url, error) => Container(
+                                                                                height: orientation ? size.height * .14 : size.height * .06,
+                                                                                child: Icon(
+                                                                                  Icons.image,
+                                                                                  color: Colors.grey[200],
+                                                                                  size: orientation ? 50 : 50,
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        Expanded(
+                                                                          child:
+                                                                              Container(
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(
+                                                                              horizontal: 10,
+                                                                            ),
+                                                                            child:
+                                                                                Column(
+                                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                                              children: <Widget>[
+                                                                                Text(
+                                                                                  tableList[index].itemName,
+                                                                                  overflow: TextOverflow.ellipsis,
+                                                                                  textAlign: TextAlign.center,
+                                                                                  style: TextStyle(
+                                                                                    color: Color(0xff121010),
+                                                                                    fontFamily: "San-francisco",
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                    fontSize: orientation ? 15 : 14,
+                                                                                  ),
+                                                                                ),
+                                                                                SizedBox(
+                                                                                  height: 5,
+                                                                                ),
+                                                                                Text(
+                                                                                  '\$ ${tableList[index].price}',
+                                                                                  overflow: TextOverflow.ellipsis,
+                                                                                  textAlign: TextAlign.center,
+                                                                                  style: TextStyle(
+                                                                                    color: kPrimaryColor,
+                                                                                    fontFamily: "San-francisco",
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                    fontSize: orientation ? 13 : 14,
+                                                                                  ),
+                                                                                ),
+                                                                                SizedBox(
+                                                                                  height: 5,
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                        )
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              tableList[index]
+                                                                          .qty !=
+                                                                      '0'
+                                                                  ? Positioned
+                                                                      .fill(
+                                                                      bottom: 0,
+                                                                      child:
+                                                                          Align(
+                                                                        alignment:
+                                                                            Alignment.bottomCenter,
+                                                                        child:
+                                                                            CaculateIcon(
+                                                                          wrapperHeight: size.width <= 500
+                                                                              ? 30
+                                                                              : 40,
+                                                                          wrapperWidth: size.width <= 500
+                                                                              ? 100
+                                                                              : 150,
+                                                                          btnRounder: size.width <= 500
+                                                                              ? 15
+                                                                              : 20,
+                                                                          btnSize: size.width <= 500
+                                                                              ? 30
+                                                                              : 40,
+                                                                          qty: tableList[index]
+                                                                              .qty,
+                                                                          funcMinus:
+                                                                              () {
+                                                                            requestAddItemsFunction(
+                                                                              tableList: tableList[index],
+                                                                              qty: -1,
+                                                                            );
+                                                                          },
+                                                                          funcPlus:
+                                                                              () {
+                                                                            requestAddItemsFunction(
+                                                                              tableList: tableList[index],
+                                                                            );
+                                                                          },
+                                                                        ),
+                                                                      ),
+                                                                    )
+                                                                  : Container()
+                                                            ],
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
                                 ),
                               )
                             ],
                           ),
                         ),
-                        Expanded(
-                          child: FutureBuilder(
-                            future: menuData,
-                            builder:
-                                (BuildContext context, AsyncSnapshot snapshot) {
-                              if (!snapshot.hasData) {
-                                return CenterLoadingIndicator();
-                              }
-                              return VerticalTabs(
-                                indicatorColor: kPrimaryColor,
-                                selectedTabBackgroundColor: Colors.transparent,
-                                tabsWidth: size.width <= 360.0
-                                    ? size.height * .13
-                                    : size.width <= 400.0
-                                        ? size.height * .12
-                                        : size.width >= 1000.0
-                                            ? size.height * .14
-                                            : size.height * .09,
-                                contentScrollAxis: Axis.vertical,
-                                tabs: List.generate(
-                                  snapshot.data.length,
-                                  (index) {
-                                    return Tab(
-                                      child: VerticalMenuContainer(
-                                        snapshot: snapshot,
-                                        index: index,
+                        Positioned(
+                          width: MediaQuery.of(context).size.width,
+                          left: 1,
+                          bottom: 0,
+                          child: Container(
+                            height: 80,
+                            color: styleBack,
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  width: size.width <= 360.0
+                                      ? size.width * .2
+                                      : size.width <= 400.0
+                                          ? size.width * .2
+                                          : size.width >= 1000.0
+                                              ? size.width * .12
+                                              : size.width * .2,
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 15),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      FittedBox(
+                                        child: Text(
+                                          'Selected',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: "San-francisco",
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xff787878),
+                                          ),
+                                        ),
                                       ),
-                                    );
-                                  },
+                                      FittedBox(
+                                        child: Text(
+                                          'Items',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontFamily: "San-francisco",
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xff787878),
+                                          ),
+                                        ),
+                                      ),
+                                      FittedBox(
+                                        child: ValueListenableBuilder(
+                                          valueListenable: _selectItems,
+                                          builder: (context, int value, child) {
+                                            return Text(
+                                              value.toString(),
+                                              style: TextStyle(
+                                                fontSize: 17.0,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                contents: List.generate(
-                                  snapshot.data.length,
-                                  (index) {
-                                    var tableList = snapshot.data[index].items;
-                                    return Container(
-                                      color: baseBackgroundColor,
-                                      child: Column(
-                                        children: <Widget>[
-                                          _buildTitleHeader(snapshot, index),
-                                          Expanded(
-                                            child: Container(
-                                              color: Colors.transparent,
-                                              margin: EdgeInsets.only(top: 10),
-                                              child: GridView.count(
-                                                padding:
-                                                    EdgeInsets.only(top: 1),
-                                                shrinkWrap: true,
-                                                physics: ScrollPhysics(),
-                                                mainAxisSpacing: 10,
-                                                scrollDirection: Axis.vertical,
-                                                childAspectRatio: size.width <=
-                                                        360.0
-                                                    ? size.height / 780
-                                                    : size.width <= 400.0
-                                                        ? size.height / 800
-                                                        : size.width >= 1000.0
-                                                            ? size.height / 870
-                                                            : size.height /
-                                                                1150,
-                                                crossAxisCount:
-                                                    size.width <= 500.0
-                                                        ? 2
-                                                        : size.width >= 1000.0
-                                                            ? 5
-                                                            : 4,
-                                                children: List<Widget>.generate(
-                                                  tableList.length,
-                                                  (index) {
-                                                    return Stack(
-                                                      children: <Widget>[
-                                                        Container(
-                                                          height:
-                                                              double.infinity,
-                                                          margin:
-                                                              EdgeInsets.only(
-                                                            bottom: 10,
-                                                            right: 5,
-                                                            left: 5,
-                                                          ),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.white,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                            // border: Border.all(
-                                                            //   width: 1,
-                                                            //   color: Colors.grey,
-                                                            // ),
-                                                          ),
-                                                          child: Material(
-                                                            color: Colors
-                                                                .transparent,
-                                                            child: InkWell(
-                                                              splashColor:
-                                                                  Colors
-                                                                      .black12,
-                                                              onTap: () {
-                                                                requestAddItemsFunction(
-                                                                  tableList:
-                                                                      tableList[
-                                                                          index],
-                                                                );
-                                                              },
-                                                              child: Column(
-                                                                children: [
-                                                                  Container(
-                                                                    width: double
-                                                                        .infinity,
-                                                                    height: size.width <=
-                                                                            400.0
-                                                                        ? size.height *
-                                                                            .1
-                                                                        : size.width >= 1000.0
-                                                                            ? size.height *
-                                                                                .18
-                                                                            : size.height *
-                                                                                .09,
-                                                                    child:
-                                                                        ClipRRect(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              10),
-                                                                      child:
-                                                                          CachedNetworkImage(
-                                                                        fit: BoxFit
-                                                                            .cover,
-                                                                        imageUrl:
-                                                                            serverIP +
-                                                                                tableList[index].image,
-                                                                        placeholder:
-                                                                            (context, url) =>
-                                                                                CenterLoadingIndicator(),
-                                                                        errorWidget: (context,
-                                                                                url,
-                                                                                error) =>
-                                                                            Container(
-                                                                          height: orientation
-                                                                              ? size.height * .14
-                                                                              : size.height * .06,
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons.image,
-                                                                            color:
-                                                                                Colors.grey[200],
-                                                                            size: orientation
-                                                                                ? 50
-                                                                                : 50,
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  Expanded(
-                                                                    child:
-                                                                        Container(
-                                                                      padding:
-                                                                          const EdgeInsets
-                                                                              .symmetric(
-                                                                        horizontal:
-                                                                            10,
-                                                                      ),
-                                                                      child:
-                                                                          Column(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: <
-                                                                            Widget>[
-                                                                          Text(
-                                                                            tableList[index].itemName,
-                                                                            overflow:
-                                                                                TextOverflow.ellipsis,
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style:
-                                                                                TextStyle(
-                                                                              color: Color(0xff121010),
-                                                                              fontFamily: "San-francisco",
-                                                                              fontWeight: FontWeight.bold,
-                                                                              fontSize: orientation ? 15 : 14,
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                            height:
-                                                                                5,
-                                                                          ),
-                                                                          Text(
-                                                                            '\$ ${tableList[index].price}',
-                                                                            overflow:
-                                                                                TextOverflow.ellipsis,
-                                                                            textAlign:
-                                                                                TextAlign.center,
-                                                                            style:
-                                                                                TextStyle(
-                                                                              color: kPrimaryColor,
-                                                                              fontFamily: "San-francisco",
-                                                                              fontWeight: FontWeight.bold,
-                                                                              fontSize: orientation ? 13 : 14,
-                                                                            ),
-                                                                          ),
-                                                                          SizedBox(
-                                                                            height:
-                                                                                5,
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  )
-                                                                ],
-                                                              ),
+                                Expanded(
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 1),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: FutureBuilder(
+                                      future: orderSummery,
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot snapshot) {
+                                        if (snapshot.data != null) {
+                                          return ListView.builder(
+                                            itemCount: snapshot.data.length,
+                                            scrollDirection: Axis.horizontal,
+                                            itemBuilder: (context, index) {
+                                              var data = snapshot.data[index];
+                                              return Container(
+                                                margin: EdgeInsets.symmetric(
+                                                  vertical: 5,
+                                                  horizontal: 10,
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Container(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Text(
+                                                        data.name,
+                                                        style: TextStyle(
+                                                          color: Colors.black87,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Material(
+                                                      color: Colors.transparent,
+                                                      child: InkWell(
+                                                        splashColor:
+                                                            Colors.black26,
+                                                        onTap: () =>
+                                                            reqestToDeleteItem(
+                                                                data: data),
+                                                        child:
+                                                            BottomMiddleButton(
+                                                          sign: Text(
+                                                            'X',
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color:
+                                                                  Colors.white,
                                                             ),
                                                           ),
                                                         ),
-                                                        tableList[index].qty !=
-                                                                '0'
-                                                            ? Positioned.fill(
-                                                                bottom: -2,
-                                                                child: Align(
-                                                                  alignment:
-                                                                      Alignment
-                                                                          .bottomCenter,
-                                                                  child:
-                                                                      CaculateIcon(
-                                                                    qty: tableList[
-                                                                            index]
-                                                                        .qty,
-                                                                    funcMinus:
-                                                                        () {
-                                                                      requestAddItemsFunction(
-                                                                        tableList:
-                                                                            tableList[index],
-                                                                        qty: -1,
-                                                                      );
-                                                                    },
-                                                                    funcPlus:
-                                                                        () {
-                                                                      requestAddItemsFunction(
-                                                                        tableList:
-                                                                            tableList[index],
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                ),
-                                                              )
-                                                            : Container()
-                                                      ],
-                                                    );
-                                                  },
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    VerticalDivider(
+                                                      color: Colors.grey[300],
+                                                      width: 1.5,
+                                                    )
+                                                  ],
                                                 ),
+                                              );
+                                            },
+                                          );
+                                        } else {
+                                          return Container();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(4),
+                            margin: EdgeInsets.symmetric(
+                              vertical: 5,
+                            ),
+                            width: size.width <= 360.0
+                                ? size.width * .22
+                                : size.width <= 400.0
+                                    ? size.width * .3
+                                    : size.width >= 1000.0
+                                        ? size.width * .2
+                                        : size.width * .3,
+                            height: 75,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Material(
+                              color: kPrimaryColor,
+                              borderRadius: BorderRadius.circular(4),
+                              child: InkWell(
+                                onTap: _selectItems.value.toInt() > 0
+                                    ? () {
+                                        noteList =
+                                            fetchListNote().then((value) {
+                                          requestOrderSummeryFunction();
+                                          _pageState = 1;
+                                          if (value.length > 0) {
+                                            hasNote = true;
+                                            return value;
+                                          } else {
+                                            hasNote = false;
+                                            return null;
+                                          }
+                                        });
+                                      }
+                                    : showMessageDialog,
+                                splashColor: Colors.black,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      ValueListenableBuilder(
+                                        valueListenable: _totalAmount,
+                                        builder:
+                                            (context, double value, child) {
+                                          return Text(
+                                            '\$ ${f.format(value)}',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Container(
+                                            width: 40,
+                                            height: 22,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                            child: Text(
+                                              'USD',
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                                color: kPrimaryColor,
                                               ),
                                             ),
                                           ),
+                                          SizedBox(
+                                            width: 2,
+                                          ),
+                                          Text(
+                                            'Order',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          )
                                         ],
-                                      ),
-                                    );
-                                  },
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           ),
                         )
                       ],
                     ),
                   ),
-                  Positioned(
-                    width: MediaQuery.of(context).size.width,
-                    left: 1,
-                    bottom: 0,
-                    child: Container(
-                      height: 80,
-                      color: Color(0xffebebeb),
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            width: MediaQuery.of(context).size.width * .2,
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 15),
+                  AnimatedContainer(
+                    alignment: Alignment.center,
+                    width: size.width >= 1200
+                        ? size.width * .33
+                        : size.width >= 1000 ? size.width * 0.35 : null,
+                    height: size.height,
+                    curve: Curves.fastLinearToSlowEaseIn,
+                    duration: Duration(milliseconds: 1000),
+                    transform: Matrix4.translationValues(
+                      SwitchContainer.firstContainerXOffset,
+                      SwitchContainer.firstContainerYOffset,
+                      1,
+                    ),
+                    decoration: BoxDecoration(
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          offset: Offset(1, 4),
+                          color: Colors.black12.withOpacity(.1),
+                          blurRadius: 20,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: <Widget>[
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SingleChildScrollView(
                             child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                FittedBox(
-                                  child: Text(
-                                    'Selected',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: "San-francisco",
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xff787878),
-                                    ),
-                                  ),
-                                ),
-                                FittedBox(
-                                  child: Text(
-                                    'Items',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontFamily: "San-francisco",
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xff787878),
-                                    ),
-                                  ),
-                                ),
-                                FittedBox(
-                                  child: ValueListenableBuilder(
-                                    valueListenable: _selectItems,
-                                    builder: (context, int value, child) {
-                                      return Text(
-                                        value.toString(),
-                                        style: TextStyle(
-                                          fontSize: 17.0,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
+                                _buildHeaderTitle(size, "Your Order Summary"),
+                                Container(
+                                  height: orientation
+                                      ? size.height * 0.42
+                                      : size.height * 0.4,
+                                  color: baseBackgroundColor,
+                                  child: FutureBuilder(
+                                    future: orderSummery,
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot snapshot) {
+                                      if (snapshot.data != null) {
+                                        return ListView.builder(
+                                          itemCount: snapshot.data.length,
+                                          itemBuilder: (context, index) {
+                                            var data = snapshot.data[index];
+                                            return Slidable(
+                                              actionExtentRatio: 0.25,
+                                              actionPane:
+                                                  SlidableStrechActionPane(),
+                                              secondaryActions: [
+                                                IconSlideAction(
+                                                  caption: 'More',
+                                                  color: Colors.grey[350],
+                                                  icon: Icons.more_horiz,
+                                                  onTap: () =>
+                                                      showActionBottomSheet(
+                                                    saleDetailId:
+                                                        data.saleDetailId,
+                                                  ),
+                                                ),
+                                                IconSlideAction(
+                                                  caption: 'Delete',
+                                                  color: kPrimaryColor,
+                                                  icon: Icons.delete,
+                                                  onTap: () {
+                                                    reqestToDeleteItem(
+                                                        data: data);
+                                                  },
+                                                ),
+                                              ],
+                                              child: Container(
+                                                alignment: Alignment.centerLeft,
+                                                height: 140,
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      width: 0.3,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.fromLTRB(
+                                                    15, 10, 15, 10),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: <Widget>[
+                                                        Expanded(
+                                                          flex: 3,
+                                                          child:
+                                                              SingleChildScrollView(
+                                                            scrollDirection:
+                                                                Axis.horizontal,
+                                                            child: Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Text(
+                                                                  data.name,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        'San-francisco',
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: 10,
+                                                                ),
+                                                                Text(
+                                                                  "\$ ${data.unitPrice}",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        'San-francisco',
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontSize:
+                                                                        13,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          flex: 1,
+                                                          child: Align(
+                                                            alignment: Alignment
+                                                                .centerRight,
+                                                            child: Text(
+                                                              "\$ ${data.amount}",
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .black,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(
+                                                      height: 7,
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: <Widget>[
+                                                        CaculateIcon(
+                                                            qty: data.qty,
+                                                            wrapperHeight: 50,
+                                                            wrapperWidth: 100,
+                                                            btnRounder: 15,
+                                                            btnSize: 30,
+                                                            funcMinus: () {
+                                                              requestAddItemsFunction(
+                                                                tableList: data,
+                                                                qty: -1,
+                                                              );
+                                                            },
+                                                            funcPlus: () {
+                                                              requestAddItemsFunction(
+                                                                tableList: data,
+                                                              );
+                                                            }),
+                                                        hasNote
+                                                            ? ClipRRect(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            15.0),
+                                                                child: Material(
+                                                                  color: Colors
+                                                                      .transparent,
+                                                                  child:
+                                                                      InkWell(
+                                                                    splashColor:
+                                                                        Colors
+                                                                            .black12,
+                                                                    onTap: () {
+                                                                      setState(
+                                                                          () {
+                                                                        _pageState =
+                                                                            2;
+                                                                      });
+                                                                      growableList
+                                                                          .clear();
+                                                                      for (int i =
+                                                                              0;
+                                                                          i < data.notes.length;
+                                                                          i++) {
+                                                                        growableList
+                                                                            .add(
+                                                                          data.notes[i]
+                                                                              .noteId,
+                                                                        );
+                                                                      }
+                                                                      sale_detail_id =
+                                                                          data.saleDetailId;
+                                                                    },
+                                                                    child:
+                                                                        Container(
+                                                                      padding:
+                                                                          EdgeInsets.all(
+                                                                              8),
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        border: data.notes.length <
+                                                                                1
+                                                                            ? Border.all(
+                                                                                width: 1,
+                                                                                color: Colors.black54,
+                                                                              )
+                                                                            : null,
+                                                                        color: data.notes.length >=
+                                                                                1
+                                                                            ? kPrimaryColor
+                                                                            : null,
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(15.0),
+                                                                      ),
+                                                                      child:
+                                                                          Padding(
+                                                                        padding:
+                                                                            const EdgeInsets.all(
+                                                                          1.0,
+                                                                        ),
+                                                                        child:
+                                                                            Text(
+                                                                          "SPECIAL REQUEST",
+                                                                          style:
+                                                                              TextStyle(
+                                                                            fontSize:
+                                                                                8,
+                                                                            fontFamily:
+                                                                                'San-francisco',
+                                                                            color: data.notes.length >= 1
+                                                                                ? Colors.white
+                                                                                : Colors.black,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            : Container()
+                                                      ],
+                                                    ),
+                                                    SizedBox(
+                                                      height: 7,
+                                                    ),
+                                                    Container(
+                                                      width: double.infinity,
+                                                      height: 20,
+                                                      child: ListView.builder(
+                                                          scrollDirection:
+                                                              Axis.horizontal,
+                                                          itemCount:
+                                                              data.notes.length,
+                                                          itemBuilder:
+                                                              (_, index) {
+                                                            return Container(
+                                                              margin: EdgeInsets
+                                                                  .only(
+                                                                right: 8,
+                                                              ),
+                                                              child: Text(
+                                                                '+ ' +
+                                                                    data
+                                                                        .notes[
+                                                                            index]
+                                                                        .noteName
+                                                                        .toString() +
+                                                                    ' (' +
+                                                                    data
+                                                                        .notes[
+                                                                            index]
+                                                                        .notePrice +
+                                                                    ')',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      'San-francisco',
+                                                                ),
+                                                              ),
+                                                            );
+                                                          }),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      } else {
+                                        return Container(
+                                          width: double.infinity,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Image.asset(
+                                                  'assets/images/empty.png'),
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'No Items'.toUpperCase(),
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontFamily: 'San-francisco',
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
                                     },
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            width: MediaQuery.of(context).size.width * .5,
-                            margin: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 1),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: FutureBuilder(
-                              future: orderSummery,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot snapshot) {
-                                if (snapshot.data != null) {
-                                  return ListView.builder(
-                                    itemCount: snapshot.data.length,
-                                    scrollDirection: Axis.horizontal,
-                                    itemBuilder: (context, index) {
-                                      var data = snapshot.data[index];
-                                      return Container(
-                                        margin: EdgeInsets.symmetric(
-                                          vertical: 5,
-                                          horizontal: 10,
-                                        ),
-                                        child: Row(
+                                Container(
+                                  height: size.height * .1,
+                                  color: Colors.grey[100],
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 10),
+                                        child: Column(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.start,
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: <Widget>[
-                                            Container(
-                                              alignment: Alignment.centerLeft,
-                                              child: Text(
-                                                data.name,
-                                                style: TextStyle(
-                                                  color: Colors.black87,
-                                                ),
+                                            Text(
+                                              'Total',
+                                              style: TextStyle(
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
                                               ),
                                             ),
-                                            SizedBox(
-                                              width: 20,
+                                            SizedBox(height: 10),
+                                            Text(
+                                              'Order Items',
+                                              style: TextStyle(
+                                                fontSize: 15.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
                                             ),
-                                            Material(
-                                              color: Colors.transparent,
-                                              child: InkWell(
-                                                splashColor: Colors.black26,
-                                                onTap: () => reqestToDeleteItem(
-                                                    data: data),
-                                                child: BottomMiddleButton(
-                                                  sign: Text(
-                                                    'X',
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.white,
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: <Widget>[
+                                            ValueListenableBuilder(
+                                              valueListenable: _totalAmount,
+                                              builder: (context, double value,
+                                                  child) {
+                                                return Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 10,
+                                                    horizontal: 25,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: kPrimaryColor,
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(10),
+                                                      bottomLeft:
+                                                          Radius.circular(10),
                                                     ),
+                                                  ),
+                                                  child: Text(
+                                                    '\$ ${f.format(value)}',
+                                                    style: TextStyle(
+                                                        fontSize: 15.0,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            ValueListenableBuilder(
+                                              valueListenable: _selectItems,
+                                              builder:
+                                                  (context, int value, child) {
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 15),
+                                                  child: Text(
+                                                    value.toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 18.0,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: kPrimaryColor,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      top: BorderSide(
+                                        width: .5,
+                                        color: Colors.grey[400],
+                                      ),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: <Widget>[
+                                          Button(
+                                            buttonName: "VOID",
+                                            press: requestToVoidInvoid,
+                                          ),
+                                          Button(
+                                            buttonName: "DISCOUNT (%)",
+                                            press: () {
+                                              showDiscountDialog(
+                                                title: 'INVOICE %',
+                                                id: restoreSaleMasterId,
+                                                runFunction: 3,
+                                              );
+                                            },
+                                          ),
+                                          Button(
+                                            buttonName: "DISCOUNT (\$)",
+                                            press: () {
+                                              showDiscountDialog(
+                                                title: 'INVOICE \$',
+                                                id: restoreSaleMasterId,
+                                                runFunction: 2,
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: <Widget>[
+                                          Button(
+                                            buttonName: "MOVE",
+                                            press: () {
+                                              requestPermissionToMove()
+                                                  .then((data) {
+                                                if (data == 'moveTable') {
+                                                  _showAuthenticator(
+                                                      callFun: 2);
+                                                } else if (data == 'success') {
+                                                  movelistData =
+                                                      fetchMoveList();
+                                                  showMovableDialog(
+                                                    salMasterID:
+                                                        restoreSaleMasterId,
+                                                  );
+                                                }
+                                              });
+                                            },
+                                          ),
+                                          Button(
+                                            buttonName: "KITCHEN",
+                                            press: () {
+                                              printtoKitchenESC(
+                                                table_name: widget.tableName,
+                                                sale_master_id:
+                                                    restoreSaleMasterId,
+                                              ).then((value) {
+                                                if (value == 'no_item_print') {
+                                                  showMessageDialog(
+                                                    message: 'Already Print',
+                                                  );
+                                                } else {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+                                                  _printWithNetwork(value).then(
+                                                    (_) => setState(() {
+                                                      isLoading = false;
+                                                    }),
+                                                  );
+                                                }
+                                              });
+                                            },
+                                          ),
+                                          globals.bill == 1
+                                              ? Button(
+                                                  buttonName: "BILL",
+                                                  press: () {
+                                                    printBillInternalESCPos(
+                                                      sale_master_id:
+                                                          restoreSaleMasterId,
+                                                    ).then((value) {
+                                                      setState(() {
+                                                        isLoading = true;
+                                                      });
+                                                      _printWithNetwork(value)
+                                                          .then(
+                                                        (_) => setState(() {
+                                                          isLoading = false;
+                                                        }),
+                                                      );
+                                                    });
+                                                  },
+                                                )
+                                              : Button(
+                                                  buttonName: "PRINT BILL",
+                                                  press: () => printBillWithM1(
+                                                    sale_master_id:
+                                                        restoreSaleMasterId,
+                                                  ).then((index) {
+                                                    imgListBytes.clear();
+                                                    printingLoadingIndicator();
+                                                    _convertNetworkImageToByte(
+                                                        index);
+                                                  }),
+                                                ),
+                                          // Button(
+                                          //   buttonName: "PRINT BILL",
+                                          //   press: () => printBill(
+                                          //     sale_master_id: restoreSaleMasterId,
+                                          //   ),
+                                          // ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 10,
+                                          horizontal: 15,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        PaymentScreen(
+                                                      saleMasterId:
+                                                          restoreSaleMasterId,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              splashColor:
+                                                  kPrimaryColor.withOpacity(.5),
+                                              child: Container(
+                                                width: double.infinity,
+                                                height: 55,
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  border: Border.all(
+                                                    color: kPrimaryColor,
+                                                    width: 1.3,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  'PAYMENT',
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: kPrimaryColor,
+                                                    fontFamily: 'San-francisco',
+                                                    fontWeight: FontWeight.w800,
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            VerticalDivider(
-                                              color: Colors.grey[300],
-                                              width: 1.5,
-                                            )
-                                          ],
+                                          ),
                                         ),
-                                      );
-                                    },
-                                  );
-                                } else {
-                                  return Container(
-                                    width: double.infinity,
-                                    child: Center(
-                                      child: Text(
-                                        'No Items'.toUpperCase(),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w800,
-                                          fontFamily: 'San-francisco',
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: EdgeInsets.all(4),
-                      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 2),
-                      width: size.width * .28,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Material(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(4),
-                        child: InkWell(
-                          onTap: _selectItems.value.toInt() > 0
-                              ? () {
-                                  noteList = fetchListNote().then((value) {
-                                    requestOrderSummeryFunction();
-                                    _pageState = 1;
-                                    if (value.length > 0) {
-                                      hasNote = true;
-                                      return value;
-                                    } else {
-                                      hasNote = false;
-                                      return null;
-                                    }
-                                  });
-                                }
-                              : showMessageDialog,
-                          splashColor: Colors.black,
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                ValueListenableBuilder(
-                                  valueListenable: _totalAmount,
-                                  builder: (context, double value, child) {
-                                    return Text(
-                                      '\$ ${f.format(value)}',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
+                                      )
+                                    ],
+                                  ),
                                 ),
-                                SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Container(
-                                      width: 40,
-                                      height: 22,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        'USD',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: kPrimaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 2,
-                                    ),
-                                    Text(
-                                      'Order',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  ],
-                                )
                               ],
                             ),
                           ),
                         ),
-                      ),
+                        _pageState == 1
+                            ? _buildCancelButton(context)
+                            : Container()
+                      ],
                     ),
-                  )
-                ],
-              ),
-            ),
-            AnimatedContainer(
-              alignment: Alignment.center,
-              width: orientation ? size.width * .4 : null,
-              height: orientation ? size.height * .86 : null,
-              curve: Curves.fastLinearToSlowEaseIn,
-              duration: Duration(milliseconds: 1000),
-              transform: Matrix4.translationValues(
-                SwitchContainer.firstContainerXOffset,
-                SwitchContainer.firstContainerYOffset,
-                1,
-              ),
-              decoration: BoxDecoration(
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    offset: Offset(1, 4),
-                    color: Colors.black12.withOpacity(.1),
-                    blurRadius: 20,
-                    spreadRadius: 3,
                   ),
-                ],
-              ),
-              child: Stack(
-                children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: <Widget>[
-                          _buildHeaderTitle(size, "Your Order Summary"),
-                          Container(
-                            height: orientation
-                                ? size.height * 0.42
-                                : size.height * 0.4,
-                            color: Color(0xfff0f0f0),
-                            child: FutureBuilder(
-                              future: orderSummery,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot snapshot) {
-                                if (snapshot.data != null) {
-                                  return ListView.builder(
-                                    itemCount: snapshot.data.length,
-                                    itemBuilder: (context, index) {
-                                      var data = snapshot.data[index];
-                                      return Slidable(
-                                        actionExtentRatio: 0.25,
-                                        actionPane: SlidableStrechActionPane(),
-                                        secondaryActions: [
-                                          IconSlideAction(
-                                            caption: 'More',
-                                            color: Colors.grey[350],
-                                            icon: Icons.more_horiz,
-                                            onTap: () => showActionBottomSheet(
-                                              saleDetailId: data.saleDetailId,
-                                            ),
-                                          ),
-                                          IconSlideAction(
-                                            caption: 'Delete',
-                                            color: kPrimaryColor,
-                                            icon: Icons.delete,
-                                            onTap: () {
-                                              reqestToDeleteItem(data: data);
-                                            },
-                                          ),
-                                        ],
-                                        child: Container(
-                                          alignment: Alignment.centerLeft,
-                                          height: size.width <= 400.0
-                                              ? 105
-                                              : size.width >= 1000.0
-                                                  ? 110
-                                                  : 120,
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                width: 0.2,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.fromLTRB(
-                                              15, 10, 15, 10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: <Widget>[
-                                                  Expanded(
-                                                    flex: 3,
-                                                    child:
-                                                        SingleChildScrollView(
-                                                      scrollDirection:
-                                                          Axis.horizontal,
+                  hasNote
+                      ? AnimatedContainer(
+                          margin: EdgeInsets.only(left: size.width * 0.009),
+                          width: size.width >= 1200
+                              ? size.width * 0.28
+                              : size.width >= 1000 ? size.width * 0.32 : null,
+                          height: SwitchContainer.secondContainerHeight,
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          duration: Duration(milliseconds: 1000),
+                          transform: Matrix4.translationValues(
+                              SwitchContainer.seconndContainerXOffset,
+                              SwitchContainer.seconndContainerYOffset,
+                              1),
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                offset: Offset(0, 3),
+                                color: Colors.black12.withOpacity(0.05),
+                                blurRadius: 20,
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: <Widget>[
+                              Container(
+                                decoration: cardDecoration,
+                                height: orientation
+                                    ? size.height * 0.75
+                                    : double.infinity,
+                                width: orientation
+                                    ? size.width * 0.4
+                                    : double.infinity,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: <Widget>[
+                                      _buildHeaderTitle(
+                                          size, "Special Request"),
+                                      Container(
+                                        height: orientation
+                                            ? size.height * 0.5
+                                            : size.height * 0.5,
+                                        color: bkColor,
+                                        child: FutureBuilder(
+                                          future: noteList,
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return CenterLoadingIndicator();
+                                            }
+                                            return ListView.builder(
+                                              itemCount: snapshot.data.length,
+                                              itemBuilder: (context, index) {
+                                                var data = snapshot.data[index];
+                                                return Material(
+                                                  color: Colors.transparent,
+                                                  child: InkWell(
+                                                    splashColor: Colors.black12,
+                                                    onTap: () {
+                                                      if (growableList.contains(
+                                                          data.noteId)) {
+                                                        growableList.remove(
+                                                            data.noteId);
+                                                      } else {
+                                                        growableList
+                                                            .add(data.noteId);
+                                                        growableList =
+                                                            growableList
+                                                                .toSet()
+                                                                .toList();
+                                                      }
+                                                      setState(() {});
+                                                    },
+                                                    child: Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                        vertical: 10,
+                                                        horizontal: 30,
+                                                      ),
+                                                      height: 55,
+                                                      decoration: BoxDecoration(
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                            width: 0.4,
+                                                            color: Colors
+                                                                .grey[400],
+                                                          ),
+                                                        ),
+                                                      ),
                                                       child: Row(
                                                         crossAxisAlignment:
                                                             CrossAxisAlignment
@@ -959,691 +1631,140 @@ class _MenuScreenState extends State<MenuScreen> {
                                                             MainAxisAlignment
                                                                 .start,
                                                         children: <Widget>[
-                                                          Text(
-                                                            data.name,
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'San-francisco',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color:
-                                                                  Colors.black,
+                                                          Container(
+                                                            alignment: Alignment
+                                                                .centerRight,
+                                                            child: Checkbox(
+                                                              activeColor:
+                                                                  kPrimaryColor,
+                                                              checkColor:
+                                                                  Colors.white,
+                                                              value:
+                                                                  growableList
+                                                                      .any(
+                                                                (element) =>
+                                                                    element ==
+                                                                    data.noteId,
+                                                              ),
+                                                              onChanged:
+                                                                  (val) {},
                                                             ),
                                                           ),
-                                                          SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          Text(
-                                                            "\$ ${data.unitPrice}",
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'San-francisco',
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
+                                                          Expanded(
+                                                              child: Row(
+                                                            children: <Widget>[
+                                                              Text(
+                                                                data.noteName
+                                                                    .toString(),
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      'San-francisco',
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w800,
+                                                                  fontSize: 16,
+                                                                ),
+                                                              ),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  data.notePrice
+                                                                      .toString(),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .right,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        'San-francisco',
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w800,
+                                                                    fontSize:
+                                                                        13,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          )),
                                                         ],
                                                       ),
                                                     ),
                                                   ),
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.centerRight,
-                                                      child: Text(
-                                                        "\$ ${data.amount}",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height: 7,
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  CaculateIcon(
-                                                      qty: data.qty,
-                                                      funcMinus: () {
-                                                        requestAddItemsFunction(
-                                                          tableList: data,
-                                                          qty: -1,
-                                                        );
-                                                      },
-                                                      funcPlus: () {
-                                                        requestAddItemsFunction(
-                                                          tableList: data,
-                                                        );
-                                                      }),
-                                                  hasNote
-                                                      ? ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      15.0),
-                                                          child: Material(
-                                                            color: Colors
-                                                                .transparent,
-                                                            child: InkWell(
-                                                              splashColor:
-                                                                  Colors
-                                                                      .black12,
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  _pageState =
-                                                                      2;
-                                                                });
-                                                                growableList
-                                                                    .clear();
-                                                                for (int i = 0;
-                                                                    i <
-                                                                        data.notes
-                                                                            .length;
-                                                                    i++) {
-                                                                  growableList
-                                                                      .add(
-                                                                    data
-                                                                        .notes[
-                                                                            i]
-                                                                        .noteId,
-                                                                  );
-                                                                }
-                                                                sale_detail_id =
-                                                                    data.saleDetailId;
-                                                              },
-                                                              child: Container(
-                                                                padding:
-                                                                    EdgeInsets
-                                                                        .all(8),
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  border: data.notes
-                                                                              .length <
-                                                                          1
-                                                                      ? Border
-                                                                          .all(
-                                                                          width:
-                                                                              1,
-                                                                          color:
-                                                                              Colors.black54,
-                                                                        )
-                                                                      : null,
-                                                                  color: data.notes
-                                                                              .length >=
-                                                                          1
-                                                                      ? kPrimaryColor
-                                                                      : null,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              15.0),
-                                                                ),
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .all(
-                                                                    1.0,
-                                                                  ),
-                                                                  child: Text(
-                                                                    "SPECIAL REQUEST",
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontSize:
-                                                                          8,
-                                                                      fontFamily:
-                                                                          'San-francisco',
-                                                                      color: data.notes.length >= 1
-                                                                          ? Colors
-                                                                              .white
-                                                                          : Colors
-                                                                              .black,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : Container()
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height: 7,
-                                              ),
-                                              Container(
-                                                width: double.infinity,
-                                                height: 20,
-                                                child: ListView.builder(
-                                                    scrollDirection:
-                                                        Axis.horizontal,
-                                                    itemCount:
-                                                        data.notes.length,
-                                                    itemBuilder: (_, index) {
-                                                      return Container(
-                                                        margin: EdgeInsets.only(
-                                                          right: 8,
-                                                        ),
-                                                        child: Text(
-                                                          '+ ' +
-                                                              data.notes[index]
-                                                                  .noteName
-                                                                  .toString() +
-                                                              ' (' +
-                                                              data.notes[index]
-                                                                  .notePrice +
-                                                              ')',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'San-francisco',
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }),
-                                              ),
-                                            ],
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        height: orientation
+                                            ? size.height * 0.1
+                                            : size.height * 0.08,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.only(
+                                            bottomLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(10),
                                           ),
                                         ),
-                                      );
-                                    },
-                                  );
-                                } else {
-                                  return Container(
-                                    width: double.infinity,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        SvgPicture.asset(
-                                          noitemscart,
-                                          fit: BoxFit.contain,
-                                        ),
-                                        SizedBox(
-                                          height: 5,
-                                        ),
-                                        Text(
-                                          'No Items'.toUpperCase(),
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                            fontFamily: 'San-francisco',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                          Container(
-                            height: size.height * 0.08,
-                            color: Colors.grey[100],
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 15,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      'Order Items',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      'Total',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: <Widget>[
-                                      ValueListenableBuilder(
-                                        valueListenable: _selectItems,
-                                        builder: (context, int value, child) {
-                                          return Text(
-                                            value.toString(),
-                                            style: TextStyle(
-                                              fontSize: 14.0,
-                                              color: Colors.black87,
-                                              fontWeight: FontWeight.bold,
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            Button(
+                                              buttonName: "Reset",
+                                              border: true,
+                                              press: () {
+                                                growableList.clear();
+                                                setState(() {});
+                                              },
                                             ),
-                                          );
-                                        },
-                                      ),
-                                      SizedBox(height: 5),
-                                      ValueListenableBuilder(
-                                        valueListenable: _totalAmount,
-                                        builder:
-                                            (context, double value, child) {
-                                          return Text(
-                                            '\$ ${f.format(value)}',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: kPrimaryColor,
+                                            SizedBox(
+                                              width: 10,
                                             ),
-                                          );
-                                        },
-                                      ),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Button(
+                                              buttonName: "Apply",
+                                              press: () {
+                                                applySpecialRequest(
+                                                  noteList: growableList,
+                                                  saleMasterId:
+                                                      restoreSaleMasterId,
+                                                  saleDetailId: sale_detail_id,
+                                                ).then((value) {
+                                                  if (value == 'success') {
+                                                    _pageState = 1;
+                                                    requestOrderSummeryFunction();
+                                                  }
+                                                });
+                                              },
+                                            )
+                                          ],
+                                        ),
+                                      )
                                     ],
                                   ),
-                                )
-                              ],
-                            ),
+                                ),
+                              ),
+                              _pageState == 2
+                                  ? _buildCancelButton(context)
+                                  : Container()
+                            ],
                           ),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 12,
-                            ),
-                            child: Column(
-                              children: <Widget>[
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    Button(
-                                      buttonName: "VOID",
-                                      press: requestToVoidInvoid,
-                                    ),
-                                    Button(
-                                      buttonName: "DISCOUNT (%)",
-                                      press: () {
-                                        showDiscountDialog(
-                                          title: 'INVOICE %',
-                                          id: restoreSaleMasterId,
-                                          runFunction: 3,
-                                        );
-                                      },
-                                    ),
-                                    Button(
-                                      buttonName: "DISCOUNT (\$)",
-                                      press: () {
-                                        showDiscountDialog(
-                                          title: 'INVOICE \$',
-                                          id: restoreSaleMasterId,
-                                          runFunction: 2,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    Button(
-                                      buttonName: "MOVE",
-                                      press: () {
-                                        requestPermissionToMove().then((data) {
-                                          if (data == 'moveTable') {
-                                            _showAuthenticator(callFun: 2);
-                                          } else if (data == 'success') {
-                                            movelistData = fetchMoveList();
-                                            showMovableDialog(
-                                              salMasterID: restoreSaleMasterId,
-                                            );
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    Button(
-                                      buttonName: "KITCHEN",
-                                      press: () {
-                                        printtoKitchenESC(
-                                          table_name: widget.tableName,
-                                          sale_master_id: restoreSaleMasterId,
-                                        ).then((value) {
-                                          if (value == 'no_item_print') {
-                                            showMessageDialog(
-                                              message:
-                                                  'Already Print to Kitchan',
-                                            );
-                                          } else {
-                                            _printWithNetwork(value);
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    globals.bill == 1
-                                        ? Button(
-                                            buttonName: "BILL",
-                                            press: () {
-                                              printBillInternalESCPos(
-                                                sale_master_id:
-                                                    restoreSaleMasterId,
-                                              ).then((value) {
-                                                _printWithNetwork(value);
-                                              });
-                                            },
-                                          )
-                                        : Button(
-                                            buttonName: "PRINT BILL",
-                                            press: () => printBillWithM1(
-                                              sale_master_id:
-                                                  restoreSaleMasterId,
-                                            ).then((index) {
-                                              imgListBytes.clear();
-                                              printingLoadingIndicator();
-                                              _convertNetworkImageToByte(index);
-                                            }),
-                                          ),
-                                    // Button(
-                                    //   buttonName: "PRINT BILL",
-                                    //   press: () => printBill(
-                                    //     sale_master_id: restoreSaleMasterId,
-                                    //   ),
-                                    // ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 15,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => PaymentScreen(
-                                                saleMasterId:
-                                                    restoreSaleMasterId,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        splashColor:
-                                            kPrimaryColor.withOpacity(.5),
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 55,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: kPrimaryColor,
-                                              width: 1.3,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'PAYMENT',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              color: kPrimaryColor,
-                                              fontFamily: 'San-francisco',
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  _pageState == 1 ? _buildCancelButton(context) : Container()
+                        )
+                      : Container(),
                 ],
               ),
             ),
-            hasNote
-                ? AnimatedContainer(
-                    margin: EdgeInsets.only(
-                      left: orientation ? size.width * .013 : 0,
-                    ),
-                    width: orientation ? size.width * .37 : size.width,
-                    height: SwitchContainer.secondContainerHeight,
-                    curve: Curves.fastLinearToSlowEaseIn,
-                    duration: Duration(milliseconds: 1000),
-                    transform: Matrix4.translationValues(
-                        0, SwitchContainer.seconndContainerYOffset, 1),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: Offset(0, 3),
-                          color: Colors.black12.withOpacity(0.3),
-                          blurRadius: 20,
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: <Widget>[
-                        Container(
-                          height:
-                              orientation ? size.height * 0.8 : double.infinity,
-                          width:
-                              orientation ? size.width * 0.4 : double.infinity,
-                          color: Colors.white,
-                          child: Column(
-                            children: <Widget>[
-                              _buildHeaderTitle(size, "Special Request"),
-                              Container(
-                                height: orientation
-                                    ? size.height * 0.52
-                                    : size.height * 0.5,
-                                color: Colors.white,
-                                child: FutureBuilder(
-                                  future: noteList,
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return CenterLoadingIndicator();
-                                    }
-                                    return ListView.builder(
-                                      itemCount: snapshot.data.length,
-                                      itemBuilder: (context, index) {
-                                        var data = snapshot.data[index];
-                                        return Material(
-                                          color: Colors.transparent,
-                                          child: InkWell(
-                                            splashColor: Colors.black12,
-                                            onTap: () {
-                                              if (growableList
-                                                  .contains(data.noteId)) {
-                                                growableList
-                                                    .remove(data.noteId);
-                                              } else {
-                                                growableList.add(data.noteId);
-                                                growableList = growableList
-                                                    .toSet()
-                                                    .toList();
-                                              }
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(
-                                                vertical: 10,
-                                                horizontal: 30,
-                                              ),
-                                              height: 55,
-                                              decoration: BoxDecoration(
-                                                border: Border(
-                                                  bottom: BorderSide(
-                                                    width: 0.4,
-                                                    color: Colors.grey[400],
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  Container(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Checkbox(
-                                                      activeColor:
-                                                          kPrimaryColor,
-                                                      checkColor: Colors.white,
-                                                      value: growableList.any(
-                                                        (element) =>
-                                                            element ==
-                                                            data.noteId,
-                                                      ),
-                                                      onChanged: (val) {},
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                      child: Row(
-                                                    children: <Widget>[
-                                                      Text(
-                                                        data.noteName
-                                                            .toString(),
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'San-francisco',
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          fontSize: 16,
-                                                        ),
-                                                      ),
-                                                      Expanded(
-                                                        child: Text(
-                                                          data.notePrice
-                                                              .toString(),
-                                                          textAlign:
-                                                              TextAlign.right,
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'San-francisco',
-                                                            color: Colors.black,
-                                                            fontWeight:
-                                                                FontWeight.w800,
-                                                            fontSize: 13,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              Container(
-                                height: orientation
-                                    ? size.height * 0.1
-                                    : size.height * 0.08,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(10),
-                                    bottomRight: Radius.circular(10),
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Button(
-                                      buttonName: "Reset",
-                                      border: true,
-                                      press: () {
-                                        growableList.clear();
-                                        setState(() {});
-                                      },
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Button(
-                                      buttonName: "Apply",
-                                      press: () {
-                                        applySpecialRequest(
-                                          noteList: growableList,
-                                          saleMasterId: restoreSaleMasterId,
-                                          saleDetailId: sale_detail_id,
-                                        ).then((value) {
-                                          if (value == 'success') {
-                                            _pageState = 1;
-                                            requestOrderSummeryFunction();
-                                          }
-                                        });
-                                      },
-                                    )
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        _pageState == 2
-                            ? _buildCancelButton(context)
-                            : Container()
-                      ],
-                    ),
-                  )
-                : Container(),
-          ],
-        ),
-      ),
     );
   }
 
@@ -1651,13 +1772,13 @@ class _MenuScreenState extends State<MenuScreen> {
 
   _buildCancelButton(BuildContext context) {
     return Positioned(
-      top: 12,
+      top: 20,
       right: 15,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(18),
         child: Material(
           color: Color(0xffcc2d2d),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: () {
               setState(() {
@@ -1670,8 +1791,8 @@ class _MenuScreenState extends State<MenuScreen> {
             },
             splashColor: Colors.white38,
             child: Container(
-              width: 25,
-              height: 25,
+              width: 36,
+              height: 36,
               child: Center(
                 child: Text(
                   'x',
@@ -1693,7 +1814,7 @@ class _MenuScreenState extends State<MenuScreen> {
     return Container(
       height: size.height * 0.08,
       decoration: BoxDecoration(
-        color: bkColor,
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(10),
           topRight: Radius.circular(10),
@@ -1705,21 +1826,6 @@ class _MenuScreenState extends State<MenuScreen> {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  _buildTitleHeader(AsyncSnapshot snapshot, int index) {
-    return Container(
-      alignment: Alignment.centerRight,
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      child: Text(
-        snapshot.data[index].typeName,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          fontFamily: 'San-francisco',
         ),
       ),
     );
@@ -1760,7 +1866,7 @@ class _MenuScreenState extends State<MenuScreen> {
       Navigator.of(context, rootNavigator: true).pop();
     });
     return showGeneralDialog(
-      barrierColor: Colors.black.withOpacity(0.9),
+      barrierColor: Colors.black.withOpacity(0.7),
       transitionDuration: Duration(milliseconds: 100),
       barrierDismissible: false,
       barrierLabel: '',
@@ -1769,7 +1875,7 @@ class _MenuScreenState extends State<MenuScreen> {
         return null;
       },
       transitionBuilder: (context, a1, a2, widget) {
-        var size = MediaQuery.of(context).size;
+        Size size = MediaQuery.of(context).size;
         return Transform.scale(
           scale: a1.value,
           child: Opacity(
@@ -1777,7 +1883,7 @@ class _MenuScreenState extends State<MenuScreen> {
             child: Center(
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-                width: size.width * .5,
+                width: size.width >= 1200 ? size.width * .3 : size.width * .5,
                 height: size.height * .3,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -2379,8 +2485,6 @@ class _MenuScreenState extends State<MenuScreen> {
         context: context,
         builder: (BuildContext ctx) {
           var size = MediaQuery.of(context).size;
-          bool orientation =
-              MediaQuery.of(context).orientation == Orientation.landscape;
           return AlertDialog(
             title: Text(
               'DISCOUNT ($title)',
@@ -2398,11 +2502,10 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
             content: Container(
               padding: EdgeInsets.all(10),
-              width: orientation ? size.width * .4 : size.width * .95,
-              // height: orientation ? size.height * .2 : size.height * .25,
+              width: size.width >= 1200 ? size.width * .25 : size.width * .5,
               height: size.width <= 400.0
                   ? size.width * .95
-                  : size.width >= 1000.0 ? size.width * .4 : size.width * .4,
+                  : size.width >= 1000.0 ? size.height * .2 : size.height * .4,
               child: SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
@@ -2430,122 +2533,81 @@ class _MenuScreenState extends State<MenuScreen> {
                       height: 20,
                     ),
                     Container(
-                      child: FittedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
                                   onTap: () {
                                     Navigator.pop(context);
                                   },
                                   splashColor: Colors.black12,
-                                  child: Container(
-                                    width: orientation
-                                        ? size.width * .14
-                                        : size.width * .27,
-                                    height: 45.0,
-                                    alignment: Alignment.center,
-                                    decoration:
-                                        BoxDecoration(color: Colors.black12),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 9,
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Cancel',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        decoration: TextDecoration.none,
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                                  child: ActionButton(
+                                    btnLabel: 'close',
+                                  )),
                             ),
-                            SizedBox(
-                              width: 20,
-                            ),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    if (txt_percent != null) {
-                                      switch (runFunction) {
-                                        case 0:
-                                          applyPercentDisItem(
-                                                  saleDetailId: id,
-                                                  dis_percent_item: txt_percent)
-                                              .then(
-                                            (_) {
-                                              Navigator.pop(context);
-                                            },
-                                          );
-                                          break;
-                                        case 1:
-                                          applyPercentDollItem(
-                                            saleDetailId: id,
-                                            dis_cash_item: txt_percent,
-                                          ).then(
-                                            (_) => Navigator.pop(context),
-                                          );
-                                          break;
-                                        case 2:
-                                          applyDiscountCashonInvoice(
-                                            sale_master_id: id,
-                                            dis_cash_inv: txt_percent,
-                                          ).then(
-                                            (_) => Navigator.pop(context),
-                                          );
-                                          break;
-                                        case 3:
-                                          applyDiscountPercentonInvoice(
-                                            sale_master_id: id,
-                                            dis_percent_inv: txt_percent,
-                                          ).then(
-                                            (_) => Navigator.pop(context),
-                                          );
-                                          break;
-                                        default:
-                                      }
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  if (txt_percent != null) {
+                                    switch (runFunction) {
+                                      case 0:
+                                        applyPercentDisItem(
+                                                saleDetailId: id,
+                                                dis_percent_item: txt_percent)
+                                            .then(
+                                          (_) {
+                                            Navigator.pop(context);
+                                          },
+                                        );
+                                        break;
+                                      case 1:
+                                        applyPercentDollItem(
+                                          saleDetailId: id,
+                                          dis_cash_item: txt_percent,
+                                        ).then(
+                                          (_) => Navigator.pop(context),
+                                        );
+                                        break;
+                                      case 2:
+                                        applyDiscountCashonInvoice(
+                                          sale_master_id: id,
+                                          dis_cash_inv: txt_percent,
+                                        ).then(
+                                          (_) => Navigator.pop(context),
+                                        );
+                                        break;
+                                      case 3:
+                                        applyDiscountPercentonInvoice(
+                                          sale_master_id: id,
+                                          dis_percent_inv: txt_percent,
+                                        ).then(
+                                          (_) => Navigator.pop(context),
+                                        );
+                                        break;
+                                      default:
                                     }
-                                  },
-                                  splashColor: Colors.black12,
-                                  child: Container(
-                                    height: 45.0,
-                                    width: orientation
-                                        ? size.width * .14
-                                        : size.width * .27,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: kPrimaryColor,
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 9,
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Confirm',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        decoration: TextDecoration.none,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
+                                  }
+                                },
+                                splashColor: Colors.black12,
+                                child: ActionButton(
+                                  btnLabel: 'Confirm',
+                                  active: true,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     )
                   ],
@@ -2717,5 +2779,5 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-// ---------------------------------------Close Show Dialog Section ---------------------------------------------
+// --------------------------------------- Close Show Dialog Section ---------------------------------------------
 }

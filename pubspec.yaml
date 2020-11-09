@@ -51,6 +51,4 @@ flutter:
     - family: San-francisco
       fonts:
         - asset: assets/fonts/SF-UI-Display-Regular.otf
-    - family: NothingYouCouldDo
-      fonts:
-        - asset: assets/fonts/NothingYouCouldDo.ttf
+   

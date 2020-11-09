@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/models/floor.dart';
+import 'package:pointrestaurant/services/closeshift/closeshift_services.dart';
 import 'package:pointrestaurant/services/table_model/table_service.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/utilities/switch.cofig.dart';
+import 'package:pointrestaurant/widget/action_button.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:pointrestaurant/widget/company_header.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
@@ -101,7 +104,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
                         height: 25,
                       )
                     : SizedBox(
-                        height: 20,
+                        height: 30,
                       ),
             CampanyHeaderContianer(),
             Expanded(
@@ -115,21 +118,21 @@ class _TableModeScreenState extends State<TableModeScreen> {
                     width: double.infinity,
                     height: size.height,
                     child: VerticalTabs(
-                      indicatorColor: Color(0xffb01105),
+                      indicatorColor: kPrimaryColor,
+                      selectedTabBackgroundColor: Colors.transparent,
                       tabsWidth: size.width <= 360.0
-                          ? size.height * .12
+                          ? size.width * .2
                           : size.width <= 400.0
-                              ? size.height * .1
+                              ? size.width * .22
                               : size.width >= 1000.0
-                                  ? size.height * .13
-                                  : size.height * .09,
-                      selectedTabBackgroundColor: null,
+                                  ? size.width * .08
+                                  : size.width * .22,
                       contentScrollAxis: Axis.vertical,
                       tabs: List.generate(
                         snapshot.data.length,
                         (index) {
                           return Tab(
-                            child: _buildMainFloorTab(snapshot, index),
+                            child: _buildMainFloorTab(snapshot, index, size),
                           );
                         },
                       ),
@@ -143,20 +146,21 @@ class _TableModeScreenState extends State<TableModeScreen> {
                               children: <Widget>[
                                 Expanded(
                                   child: GridView.count(
-                                    padding: EdgeInsets.all(1),
+                                    padding: EdgeInsets.only(top: 1),
                                     shrinkWrap: true,
                                     physics: ScrollPhysics(),
+                                    mainAxisSpacing: 10,
                                     scrollDirection: Axis.vertical,
                                     childAspectRatio: size.width <= 360.0
-                                        ? size.height / 700
+                                        ? size.height / 780
                                         : size.width <= 400.0
-                                            ? size.height / 800
-                                            : size.width >= 1000.0
-                                                ? size.height / 900
+                                            ? size.height / 900
+                                            : size.width >= 1200.0
+                                                ? size.height / 1100
                                                 : size.height / 1000,
-                                    crossAxisCount: size.width <= 800.0
+                                    crossAxisCount: size.width <= 500.0
                                         ? 2
-                                        : size.width >= 1000.0 ? 5 : 4,
+                                        : size.width >= 1000.0 ? 6 : 5,
                                     children: List<Widget>.generate(
                                       tableList.length,
                                       (index) {
@@ -172,16 +176,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                                   right: 5,
                                                   left: 5,
                                                 ),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                            border: Border.all(
-                                              width: 1.3,
-                                              color: Color(
-                                                0xff0f0808,
-                                              ),
-                                            ),
-                                          ),
+                                          decoration: cardDecoration,
                                           child: Material(
                                             color: Colors.transparent,
                                             child: InkWell(
@@ -199,17 +194,154 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: <Widget>[
-                                                    _buildImageContainer(
-                                                      orientation,
-                                                      size,
-                                                      tableList,
-                                                      index,
+                                                    Container(
+                                                      width: double.infinity,
+                                                      height: size.width <=
+                                                              360.0
+                                                          ? size.height * .11
+                                                          : size
+                                                                      .width <=
+                                                                  400.0
+                                                              ? size
+                                                                      .height *
+                                                                  .115
+                                                              : size
+                                                                          .width >=
+                                                                      1000.0
+                                                                  ? size.height *
+                                                                      .18
+                                                                  : size.height *
+                                                                      .13,
+                                                      child: CachedNetworkImage(
+                                                        imageUrl: serverIP +
+                                                            tableList[index]
+                                                                .tableImage,
+                                                        placeholder: (context,
+                                                                url) =>
+                                                            CenterLoadingIndicator(),
+                                                        errorWidget: (context,
+                                                                url, error) =>
+                                                            Image.asset(
+                                                                'assets/images/table.jpg'),
+                                                      ),
                                                     ),
-                                                    _buildContainerData(
-                                                      orientation,
-                                                      size,
-                                                      tableList,
-                                                      index,
+                                                    Expanded(
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 10,
+                                                        ),
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: <Widget>[
+                                                            tableList[index]
+                                                                        .tableStatus !=
+                                                                    'free'
+                                                                ? SizedBox(
+                                                                    height: orientation
+                                                                        ? size.height *
+                                                                            .015
+                                                                        : 4,
+                                                                  )
+                                                                : SizedBox(
+                                                                    height: orientation
+                                                                        ? size.height *
+                                                                            .03
+                                                                        : 12,
+                                                                  ),
+                                                            Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: <
+                                                                  Widget>[
+                                                                Text(
+                                                                  tableList[
+                                                                          index]
+                                                                      .tableName,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Color(
+                                                                        0xff121010),
+                                                                    fontFamily:
+                                                                        "San-francisco",
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        orientation
+                                                                            ? 18
+                                                                            : 11,
+                                                                  ),
+                                                                ),
+                                                                tableList[index]
+                                                                            .tableStatus !=
+                                                                        'free'
+                                                                    ? SizedBox(
+                                                                        height: orientation
+                                                                            ? size.height *
+                                                                                .015
+                                                                            : 4,
+                                                                      )
+                                                                    : SizedBox(
+                                                                        height: orientation
+                                                                            ? size.height *
+                                                                                .014
+                                                                            : 3,
+                                                                      ),
+                                                                tableList[index]
+                                                                            .tableStatus !=
+                                                                        'free'
+                                                                    ? Container(
+                                                                        padding: EdgeInsets.symmetric(
+                                                                            vertical:
+                                                                                3,
+                                                                            horizontal:
+                                                                                6),
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              kPrimaryColor,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(5),
+                                                                        ),
+                                                                        child:
+                                                                            Center(
+                                                                          child:
+                                                                              Text(
+                                                                            tableList[index].checkinDuration,
+                                                                            overflow:
+                                                                                TextOverflow.ellipsis,
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                TextStyle(
+                                                                              color: Colors.white,
+                                                                              fontFamily: "San-francisco",
+                                                                              fontWeight: FontWeight.bold,
+                                                                              fontSize: orientation ? 15 : 11,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      )
+                                                                    : Container()
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
                                                     )
                                                   ],
                                                 ),
@@ -237,135 +369,46 @@ class _TableModeScreenState extends State<TableModeScreen> {
     );
   }
 
-  _buildContainerData(bool orientation, Size size, tableList, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          tableList[index].tableStatus != 'free'
-              ? SizedBox(
-                  height: orientation ? size.height * .015 : 4,
-                )
-              : SizedBox(
-                  height: orientation ? size.height * .03 : 12,
-                ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                tableList[index].tableName,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xff121010),
-                  fontFamily: "San-francisco",
-                  fontWeight: FontWeight.bold,
-                  fontSize: orientation ? 18 : 11,
-                ),
-              ),
-              tableList[index].tableStatus != 'free'
-                  ? SizedBox(
-                      height: orientation ? size.height * .015 : 4,
-                    )
-                  : SizedBox(
-                      height: orientation ? size.height * .014 : 3,
-                    ),
-              tableList[index].tableStatus != 'free'
-                  ? Container(
-                      padding: EdgeInsets.symmetric(vertical: 3, horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Center(
-                        child: Text(
-                          tableList[index].checkinDuration,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: "San-francisco",
-                            fontWeight: FontWeight.bold,
-                            fontSize: orientation ? 15 : 11,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Container()
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  _buildImageContainer(bool orientation, Size size, tableList, int index) {
+  _buildMainFloorTab(AsyncSnapshot snapshot, int index, Size size) {
     return Container(
-      width: double.infinity,
-      height: orientation ? size.height * .14 : size.height * .08,
-      child: CachedNetworkImage(
-        imageUrl: serverIP + tableList[index].tableImage,
-        placeholder: (context, url) => CenterLoadingIndicator(),
-        errorWidget: (context, url, error) => Container(
-          height: orientation ? size.height * .14 : size.height * .06,
-          child: Icon(
-            Icons.no_sim,
-            color: Colors.grey[500],
-            size: orientation ? 50 : 30,
-          ),
-        ),
-      ),
-    );
-  }
-
-  _buildMainFloorTab(AsyncSnapshot snapshot, int index) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        border: Border.all(
-          width: 1.3,
-          color: Color(0xff0f0808),
-        ),
-      ),
+      height: size.width <= 360.0
+          ? size.height * .13
+          : size.width <= 400.0
+              ? size.height * .14
+              : size.width >= 1000.0 ? size.height * .18 : size.height * .14,
+      decoration: cardDecoration,
       child: Column(
         children: <Widget>[
           Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
+            width: double.infinity,
+            height: size.width <= 360.0
+                ? size.height * .11
+                : size.width <= 400.0
+                    ? size.height * .09
+                    : size.width >= 1000.0
+                        ? size.height * .12
+                        : size.height * .09,
+            child: Image.asset(
+              floor,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              alignment: Alignment.center,
+              width: double.infinity,
+              child: Text(
+                snapshot.data[index].floorName,
+                textAlign: TextAlign.center,
+                style: TextStyle(
                   color: Colors.black,
-                  width: 1.5,
+                  letterSpacing: 0.7,
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
               ),
             ),
-            child: Container(
-              alignment: Alignment.center,
-              height: 60,
-              child: Image.asset(
-                floor,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 3,
-          ),
-          Text(
-            snapshot.data[index].floorName,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xff121010),
-              fontFamily: "San-francisco",
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-            ),
-          ),
-          SizedBox(
-            height: 5,
           ),
         ],
       ),

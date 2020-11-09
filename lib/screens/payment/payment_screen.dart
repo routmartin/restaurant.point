@@ -32,7 +32,7 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   final f = new NumberFormat("#,##0.00");
   final formatToRiel = new NumberFormat("#,##0");
-
+  bool _isLoading = false;
   Future<List<PaymentLoad>> paymentData;
   double khReturn = 0.0;
   double usReturn = 0.0;
@@ -66,15 +66,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
   _connectPrinter(host, int index) async {
     print('this is host' + host);
     printerManager.selectPrinter(host, port: 9100);
-    final PosPrintResult res =
-        await printerManager.printTicket(await testTicket(index));
+    await printerManager.printTicket(await testTicket(index));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => MainScreenPage(),
       ),
     );
-    print('Print result: ${res.msg}');
   }
 
   Future<Ticket> testTicket(index) async {
@@ -153,33 +151,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   // ___________________________________ Section Work with M1 ______________________________________________
-  printingLoadingIndicator() {
-    return showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext ctx) {
-        return AlertDialog(
-          insetPadding: EdgeInsets.zero,
-          content: Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  Image.asset('assets/icons/printing.gif'),
-                  CircularProgressIndicator(
-                    backgroundColor: kPrimaryColor,
-                  )
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -225,457 +196,509 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    var orientation =
+    Size size = MediaQuery.of(context).size;
+    double cardWidth =
+        size.width >= 1000 ? size.width * 0.35 : size.width * 0.9;
+    bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
     return Scaffold(
-      body: FutureBuilder(
-        future: paymentData,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (!snapshot.hasData) {
-            return CenterLoadingIndicator();
-          }
-          totalPrice = double.parse(snapshot.data[0].total.grandTotalUs);
-          double rowWidth = 90;
-          return Stack(
-            children: <Widget>[
-              _buildHeader(context),
-              Positioned.fill(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 20.0,
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.top,
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
-                          child: DefaultTabController(
-                            child: new LayoutBuilder(
-                              builder: (BuildContext context,
-                                  BoxConstraints viewportConstraints) {
-                                return SingleChildScrollView(
-                                  child: Column(
-                                    children: <Widget>[
-                                      // _______________________Total Header__________________
-                                      Container(
-                                        margin: EdgeInsets.only(
-                                          bottom: 20,
-                                        ),
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 20,
-                                          horizontal: 25,
-                                        ),
-                                        height: orientation
-                                            ? size.height * .23
-                                            : size.height * .2,
-                                        width: orientation
-                                            ? size.width * .5
-                                            : size.width * .95,
-                                        decoration: cardShadow,
+      body: _isLoading
+          ? CenterLoadingIndicator()
+          : FutureBuilder(
+              future: paymentData,
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (!snapshot.hasData) {
+                  return CenterLoadingIndicator();
+                }
+                totalPrice = double.parse(snapshot.data[0].total.grandTotalUs);
+                double rowWidth = 90;
+                return Stack(
+                  children: <Widget>[
+                    _buildHeader(context),
+                    Positioned.fill(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top + 30.0,
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: MediaQuery.of(context).padding.top,
+                            ),
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
+                                child: DefaultTabController(
+                                  child: new LayoutBuilder(
+                                    builder: (BuildContext context,
+                                        BoxConstraints viewportConstraints) {
+                                      return SingleChildScrollView(
                                         child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
                                           children: <Widget>[
-                                            Row(
-                                              children: <Widget>[
-                                                Text(
-                                                  '',
-                                                  style: TextStyle(
-                                                    fontFamily: 'San-francisco',
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
+                                            // _______________________Total Header__________________
+                                            Container(
+                                              margin: EdgeInsets.only(
+                                                bottom: 20,
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 20,
+                                                horizontal: 25,
+                                              ),
+                                              height: orientation
+                                                  ? size.height * .3
+                                                  : size.height * .3,
+                                              width: cardWidth,
+                                              decoration: cardShadow,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Row(
                                                     children: <Widget>[
                                                       Text(
-                                                        'USD ( \$ )',
-                                                        textAlign:
-                                                            TextAlign.right,
+                                                        '',
                                                         style: TextStyle(
                                                           fontFamily:
                                                               'San-francisco',
                                                           fontSize: 18,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w700,
+                                                          color: Colors.black87,
                                                         ),
                                                       ),
-                                                      SizedBox(
-                                                        width: 20,
-                                                      ),
-                                                      Container(
-                                                        width: rowWidth,
-                                                        child: Text(
-                                                          'Riel ( ​៛ )',
-                                                          textAlign:
-                                                              TextAlign.right,
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'San-francisco',
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
+                                                      Expanded(
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: <Widget>[
+                                                            Text(
+                                                              'USD ( \$ )',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width: 20,
+                                                            ),
+                                                            Container(
+                                                              width: rowWidth,
+                                                              child: Text(
+                                                                'Riel ( ​៛ )',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .right,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      'San-francisco',
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            Divider(
-                                              color: Colors.black45,
-                                              height: 1.2,
-                                            ),
-                                            Row(
-                                              children: <Widget>[
-                                                Text(
-                                                  'Total :',
-                                                  style: TextStyle(
-                                                    fontFamily: 'San-francisco',
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Colors.black87,
+                                                  Divider(
+                                                    color: Colors.black45,
+                                                    height: 1.2,
                                                   ),
-                                                ),
-                                                Expanded(
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
+                                                  Row(
                                                     children: <Widget>[
                                                       Text(
-                                                        snapshot.data[0].total
-                                                            .grandTotalUs,
-                                                        textAlign:
-                                                            TextAlign.right,
+                                                        'Total :',
                                                         style: TextStyle(
                                                           fontFamily:
                                                               'San-francisco',
                                                           fontSize: 18,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w700,
+                                                          color: Colors.black87,
                                                         ),
                                                       ),
-                                                      SizedBox(
-                                                        width: 20,
-                                                      ),
-                                                      Container(
-                                                        width: 100,
-                                                        child: Text(
-                                                          formatToRiel.format(
-                                                            double.parse(
+                                                      Expanded(
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: <Widget>[
+                                                            Text(
                                                               snapshot
                                                                   .data[0]
                                                                   .total
-                                                                  .grandTotalKh,
+                                                                  .grandTotalUs,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.right,
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'San-francisco',
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
+                                                            SizedBox(
+                                                              width: 20,
+                                                            ),
+                                                            Container(
+                                                              width: 100,
+                                                              child: Text(
+                                                                formatToRiel
+                                                                    .format(
+                                                                  double.parse(
+                                                                    snapshot
+                                                                        .data[0]
+                                                                        .total
+                                                                        .grandTotalKh,
+                                                                  ),
+                                                                ),
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .right,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      'San-francisco',
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: <Widget>[
-                                                Text(
-                                                  'Return :',
-                                                  style: TextStyle(
-                                                    fontFamily: 'San-francisco',
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
+                                                  Row(
                                                     children: <Widget>[
                                                       Text(
-                                                        isReturn
-                                                            ? f.format(usReturn)
-                                                            : "( " +
-                                                                f.format(
-                                                                    usReturn) +
-                                                                " )",
-                                                        textAlign:
-                                                            TextAlign.right,
+                                                        'Return :',
                                                         style: TextStyle(
                                                           fontFamily:
                                                               'San-francisco',
                                                           fontSize: 18,
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                              FontWeight.w700,
+                                                          color: Colors.black87,
                                                         ),
                                                       ),
-                                                      SizedBox(
-                                                        width: 20,
-                                                      ),
-                                                      Container(
-                                                        width: rowWidth,
-                                                        child: Text(
-                                                          isReturn
-                                                              ? (formatToRiel
-                                                                  .format((khReturn /
-                                                                              100)
-                                                                          .round() *
-                                                                      100)
-                                                                  .split(
-                                                                      '.')[0])
-                                                              : "( " +
-                                                                  (formatToRiel
-                                                                      .format(
-                                                                          (khReturn / 100).round() *
-                                                                              100)
-                                                                      .split(
-                                                                          '.')[0]) +
-                                                                  " )",
-                                                          textAlign:
-                                                              TextAlign.right,
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'San-francisco',
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
+                                                      Expanded(
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .end,
+                                                          children: <Widget>[
+                                                            Text(
+                                                              isReturn
+                                                                  ? f.format(
+                                                                      usReturn)
+                                                                  : "( " +
+                                                                      f.format(
+                                                                          usReturn) +
+                                                                      " )",
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width: 20,
+                                                            ),
+                                                            Container(
+                                                              width: rowWidth,
+                                                              child: Text(
+                                                                isReturn
+                                                                    ? (formatToRiel
+                                                                            .format((khReturn / 100).round() *
+                                                                                100)
+                                                                            .split('.')[
+                                                                        0])
+                                                                    : "( " +
+                                                                        (formatToRiel
+                                                                            .format((khReturn / 100).round() *
+                                                                                100)
+                                                                            .split('.')[0]) +
+                                                                        " )",
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .right,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      'San-francisco',
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        width: orientation
-                                            ? size.width * .5
-                                            : size.width * .95,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          border: Border.all(
-                                            width: 1.2,
-                                            color: Colors.grey[300],
-                                          ),
-                                        ),
-                                        child: Column(
-                                          children: <Widget>[
-                                            Container(
-                                              height: size.height * .42,
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: new TabBar(
-                                                        tabs: [
-                                                          Tab(text: "CASH"),
-                                                          // Tab(
-                                                          //     text:
-                                                          //         "CREDIT / DEBIT CARD"),
-                                                          // Tab(text: "MEMBER"),
-                                                        ],
-                                                        labelColor:
-                                                            Colors.white,
-                                                        unselectedLabelColor:
-                                                            kPrimaryColor,
-                                                        indicatorPadding:
-                                                            EdgeInsets.only(
-                                                                left: 30,
-                                                                right: 30),
-                                                        indicator:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(7),
-                                                          color: kPrimaryColor,
-                                                        )),
-                                                  ),
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Padding(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                                vertical: 10),
-                                                        child: TabBarView(
-                                                            children: [
-                                                              _buildPayOnCash(
-                                                                  size: size,
-                                                                  textfieldWidth:
-                                                                      size
-                                                                          .width,
-                                                                  data: snapshot
-                                                                      .data[0]
-                                                                      .currency),
-                                                              // _buildBankCard(
-                                                              //     size,
-                                                              //     size.width),
-                                                              // _buildMemberShip(
-                                                              //     size,
-                                                              //     orientation)
-                                                            ])),
                                                   ),
                                                 ],
                                               ),
                                             ),
                                             Container(
-                                              margin: EdgeInsets.symmetric(
-                                                  vertical: 15, horizontal: 20),
-                                              child: ClipRRect(
+                                              width: cardWidth,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
                                                 borderRadius:
                                                     BorderRadius.circular(10),
-                                                child: Material(
-                                                  color: Colors.transparent,
-                                                  child: InkWell(
-                                                    onTap: () {
-                                                      isReturn
-                                                          ? globals.pay == 1
-                                                              ? payInternalPrintESCPos(
-                                                                  sale_master_id:
-                                                                      widget
-                                                                          .saleMasterId,
-                                                                  rate_us_id:
-                                                                      rateIdUS,
-                                                                  rate_kh_id:
-                                                                      rateIdKh,
-                                                                  exchange_rate_kh:
-                                                                      exChangeRateKh,
-                                                                  exchange_rate_us:
-                                                                      exChangeRateUS,
-                                                                  amount_us:
-                                                                      storeValInUS,
-                                                                  amount_kh:
-                                                                      storeValInKH,
-                                                                  return_kh:
-                                                                      khReturn
-                                                                          .round(),
-                                                                  return_us:
-                                                                      usReturn,
-                                                                ).then((value) {
-                                                                  printingLoadingIndicator();
-                                                                  _printWithNetwork(
-                                                                      value);
-                                                                })
-                                                              : payInternalPrint(
-                                                                  sale_master_id:
-                                                                      widget
-                                                                          .saleMasterId,
-                                                                  rate_us_id:
-                                                                      rateIdUS,
-                                                                  rate_kh_id:
-                                                                      rateIdKh,
-                                                                  exchange_rate_kh:
-                                                                      exChangeRateKh,
-                                                                  exchange_rate_us:
-                                                                      exChangeRateUS,
-                                                                  amount_us:
-                                                                      storeValInUS,
-                                                                  amount_kh:
-                                                                      storeValInKH,
-                                                                  return_kh:
-                                                                      khReturn
-                                                                          .round(),
-                                                                  return_us:
-                                                                      usReturn,
-                                                                ).then((index) {
-                                                                  imgListBytes
-                                                                      .clear();
-                                                                  printingLoadingIndicator();
-                                                                  _convertNetworkImageToByte(
-                                                                      index);
-                                                                })
-                                                          : Container();
-                                                    },
-                                                    splashColor: kPrimaryColor
-                                                        .withOpacity(.5),
-                                                    child: Container(
-                                                      width: double.infinity,
-                                                      height: 55,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10),
-                                                        border: isReturn
-                                                            ? Border.all(
+                                                border: Border.all(
+                                                  width: 1.2,
+                                                  color: Colors.grey[300],
+                                                ),
+                                              ),
+                                              child: Column(
+                                                children: <Widget>[
+                                                  Container(
+                                                    height: size.height * .4,
+                                                    child: Column(
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: new TabBar(
+                                                              tabs: [
+                                                                Tab(
+                                                                    text:
+                                                                        "CASH"),
+                                                                // Tab(
+                                                                //     text:
+                                                                //         "CREDIT / DEBIT CARD"),
+                                                                // Tab(text: "MEMBER"),
+                                                              ],
+                                                              labelColor:
+                                                                  Colors.white,
+                                                              unselectedLabelColor:
+                                                                  kPrimaryColor,
+                                                              indicatorPadding:
+                                                                  EdgeInsets.only(
+                                                                      left: 30,
+                                                                      right:
+                                                                          30),
+                                                              indicator:
+                                                                  BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            7),
                                                                 color:
                                                                     kPrimaryColor,
-                                                                width: 1.3,
-                                                              )
-                                                            : Border.all(
-                                                                color: Colors
-                                                                    .grey[400],
-                                                                width: 1.3,
+                                                              )),
+                                                        ),
+                                                        Expanded(
+                                                          flex: 1,
+                                                          child: Padding(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical:
+                                                                          10),
+                                                              child: TabBarView(
+                                                                  children: [
+                                                                    _buildPayOnCash(
+                                                                        size:
+                                                                            size,
+                                                                        textfieldWidth:
+                                                                            size
+                                                                                .width,
+                                                                        data: snapshot
+                                                                            .data[0]
+                                                                            .currency),
+                                                                    // _buildBankCard(
+                                                                    //     size,
+                                                                    //     size.width),
+                                                                    // _buildMemberShip(
+                                                                    //     size,
+                                                                    //     orientation)
+                                                                  ])),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    margin:
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 15,
+                                                            horizontal: 20),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                      child: Material(
+                                                        color:
+                                                            Colors.transparent,
+                                                        child: InkWell(
+                                                          onTap: () {
+                                                            isReturn
+                                                                ? globals.pay ==
+                                                                        1
+                                                                    ? payInternalPrintESCPos(
+                                                                        sale_master_id:
+                                                                            widget.saleMasterId,
+                                                                        rate_us_id:
+                                                                            rateIdUS,
+                                                                        rate_kh_id:
+                                                                            rateIdKh,
+                                                                        exchange_rate_kh:
+                                                                            exChangeRateKh,
+                                                                        exchange_rate_us:
+                                                                            exChangeRateUS,
+                                                                        amount_us:
+                                                                            storeValInUS,
+                                                                        amount_kh:
+                                                                            storeValInKH,
+                                                                        return_kh:
+                                                                            khReturn.round(),
+                                                                        return_us:
+                                                                            usReturn,
+                                                                      ).then(
+                                                                        (value) {
+                                                                        setState(
+                                                                            () {
+                                                                          _isLoading =
+                                                                              true;
+                                                                        });
+                                                                        _printWithNetwork(
+                                                                            value);
+                                                                      })
+                                                                    : payInternalPrint(
+                                                                        sale_master_id:
+                                                                            widget.saleMasterId,
+                                                                        rate_us_id:
+                                                                            rateIdUS,
+                                                                        rate_kh_id:
+                                                                            rateIdKh,
+                                                                        exchange_rate_kh:
+                                                                            exChangeRateKh,
+                                                                        exchange_rate_us:
+                                                                            exChangeRateUS,
+                                                                        amount_us:
+                                                                            storeValInUS,
+                                                                        amount_kh:
+                                                                            storeValInKH,
+                                                                        return_kh:
+                                                                            khReturn.round(),
+                                                                        return_us:
+                                                                            usReturn,
+                                                                      ).then(
+                                                                        (index) {
+                                                                        setState(
+                                                                            () {
+                                                                          _isLoading =
+                                                                              true;
+                                                                        });
+                                                                        imgListBytes
+                                                                            .clear();
+                                                                        _convertNetworkImageToByte(
+                                                                            index);
+                                                                      })
+                                                                : Container();
+                                                          },
+                                                          splashColor:
+                                                              kPrimaryColor
+                                                                  .withOpacity(
+                                                                      .5),
+                                                          child: Container(
+                                                            width:
+                                                                double.infinity,
+                                                            height: 55,
+                                                            alignment: Alignment
+                                                                .center,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10),
+                                                              border: isReturn
+                                                                  ? Border.all(
+                                                                      color:
+                                                                          kPrimaryColor,
+                                                                      width:
+                                                                          1.3,
+                                                                    )
+                                                                  : Border.all(
+                                                                      color: Colors
+                                                                              .grey[
+                                                                          400],
+                                                                      width:
+                                                                          1.3,
+                                                                    ),
+                                                            ),
+                                                            child: Text(
+                                                              'PAY NOW',
+                                                              style: TextStyle(
+                                                                fontSize: 15,
+                                                                color: isReturn
+                                                                    ? kPrimaryColor
+                                                                    : Colors.grey[
+                                                                        400],
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
                                                               ),
-                                                      ),
-                                                      child: Text(
-                                                        'PAY NOW',
-                                                        style: TextStyle(
-                                                          fontSize: 15,
-                                                          color: isReturn
-                                                              ? kPrimaryColor
-                                                              : Colors
-                                                                  .grey[400],
-                                                          fontFamily:
-                                                              'San-francisco',
-                                                          fontWeight:
-                                                              FontWeight.w800,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ),
+                                                  )
+                                                ],
                                               ),
                                             )
                                           ],
                                         ),
-                                      )
-                                    ],
+                                      );
+                                    },
                                   ),
-                                );
-                              },
+                                  length: 1,
+                                ),
+                              ),
                             ),
-                            length: 1,
-                          ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+                    ),
+                  ],
+                );
+              },
+            ),
     );
   }
 
@@ -715,7 +738,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           title: Text(
             "Payment",
             style: TextStyle(
-              fontFamily: 'NothingYouCouldDo',
+              fontFamily: 'San-francisco',
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -731,8 +754,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     exChangeRateUS = int.parse(data[0].rate);
     exChangeRateKh = int.parse(data[1].rate);
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: size.width * .08),
+      width: double.infinity,
+      height: size.height,
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),

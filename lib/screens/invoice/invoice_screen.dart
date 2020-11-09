@@ -14,8 +14,8 @@ import 'package:pointrestaurant/services/invoice/ListSaleSummary.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
-import 'package:pointrestaurant/widget/company_header.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import 'package:pointrestaurant/widget/company_header.dart';
 import '../../utilities/globals.dart' as globals;
 import 'package:image/image.dart' as Martin;
 
@@ -113,6 +113,7 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
         bluetooth.printNewLine();
         bluetooth.printNewLine();
         bluetooth.paperCut();
+        bluetooth.disconnect();
         Navigator.pop(context);
       }
     }
@@ -154,19 +155,13 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    bluetooth.disconnect();
-  }
-
-  @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    bool orientation =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: baseBackgroundColor,
       body: Container(
+        alignment: Alignment.center,
         child: Column(
           children: <Widget>[
             size.width < 360
@@ -178,9 +173,8 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                         height: 25,
                       )
                     : SizedBox(
-                        height: 20,
+                        height: 1,
                       ),
-            CampanyHeaderContianer(),
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -188,7 +182,9 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                   vertical: 15,
                 ),
                 color: Colors.white,
-                width: orientation ? size.width * .5 : size.width * .9,
+                width: size.width >= 1200
+                    ? size.width * 0.3
+                    : size.width >= 1000 ? size.width * 0.4 : null,
                 child: FutureBuilder(
                   future: listSaleData,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -230,7 +226,9 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                             ),
                             body: Container(
                               width: double.infinity,
-                              padding: EdgeInsets.symmetric(vertical: 10),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 15),
+                              decoration: cardDecoration,
                               child: Column(
                                 children: <Widget>[
                                   Row(
@@ -560,9 +558,19 @@ class _InvocieScreeenState extends State<InvocieScreeen> {
                     }
                     return Container(
                       child: Center(
-                        child: Text(
-                          'NO DATA',
-                          style: textStyle,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Image.asset('assets/images/empty.png'),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              'NO INVIOCES FOUND',
+                              style: textStyle,
+                            ),
+                          ],
                         ),
                       ),
                     );
