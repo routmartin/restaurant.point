@@ -30,7 +30,6 @@ Future cashIn(
     cashTwo = '',
     cashInKHR,
     cashInUSD}) async {
-  print(cashInKHR + '&&' + cashInUSD);
   Response response = await dio.post(
     serverIP + '/Api/CashIn',
     data: {
@@ -49,6 +48,33 @@ Future cashIn(
 
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
+  }
+  return null;
+}
+
+Future cashOut({cashRegisterId = '', cashInKHR, cashInUSD}) async {
+  print('cashRegisterId: $cashRegisterId');
+  print('cashInKHR: $cashInKHR');
+  print('cashInUSD: $cashInUSD');
+  Response response = await dio.post(
+    serverIP + '/Api/CashOut',
+    data: {
+      "userToken": userToken,
+      "cash_register_id": cashRegisterId,
+      "rate_us_id": '1',
+      "rate_kh_id": '2',
+      "cashout_amount_kh": cashInKHR,
+      "cashout_amount_us": cashInUSD,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    if (response.data == 'no_item') {
+      return response.data;
+    }
+    return jsonDecode(response.data);
   }
   return null;
 }

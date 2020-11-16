@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:pointrestaurant/screens/profile/setting.dart';
 import 'package:pointrestaurant/services/login.dart';
 
-import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/widget/action_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utilities/globals.dart' as globals;
@@ -45,8 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    var size = MediaQuery.of(context).size;
-    var textfieldWidth =
+    Size size = MediaQuery.of(context).size;
+    double textfieldWidth =
         MediaQuery.of(context).orientation == Orientation.landscape
             ? size.width * 0.4
             : size.width * 0.8;
@@ -69,7 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
                 alignment: Alignment.centerRight,
@@ -77,16 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: InkWell(
                   onTap: () {
                     _showAuthenticator();
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (_) => SettingScreen(),
-                    //   ),
-                    // ).then(
-                    //   (data) => data != null
-                    //       ? data ? getSharePreferencNetworkConfig() : null
-                    //       : null,
-                    // );
                   },
                   child: Container(
                     child: SvgPicture.asset(
@@ -99,27 +87,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               SizedBox(
-                height: size.width <= 360.0
-                    ? size.height * .07
-                    : size.width <= 400.0
-                        ? size.height * .2
-                        : size.width >= 1000.0
-                            ? size.height * .12
-                            : size.height * .15,
+                height: size.height * .06,
               ),
               Container(
+                alignment: Alignment.center,
                 height: size.width <= 360.0
                     ? size.height * .75
                     : size.width <= 400.0
-                        ? size.height * .6
-                        : size.width >= 1000.0
-                            ? size.height * .55
-                            : size.height * .5,
+                        ? size.height * .65
+                        : size.width >= 1200.0
+                            ? size.height * .7
+                            : size.height * .65,
                 width: size.width >= 1200
-                    ? size.width * 0.3
-                    : size.width >= 1000 ? size.width * 0.35 : size.width * 0.9,
+                    ? size.width * .3
+                    : size.width >= 1000 ? size.width * .35 : size.width * .9,
                 padding: EdgeInsets.symmetric(
-                  horizontal: orientation ? 40 : 15,
+                  horizontal: orientation ? 40 : 30,
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
@@ -134,17 +117,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: SingleChildScrollView(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.only(top: 40.0),
-                        child: Text(
-                          'SOFTPOINT AUTO ID',
-                          style: TextStyle(
-                            fontSize: 25,
-                            color: kPrimaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'San-francisco',
-                          ),
+                        child: SvgPicture.asset(
+                          'assets/icons/restuarantlogo.svg',
+                          width: 120,
                         ),
                       ),
                       Container(

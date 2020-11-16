@@ -34,6 +34,7 @@ Future overideDeleteItems({
   Response response = await dio.post(
     serverIP + '/Api/promptUserDeleteItem',
     data: {
+      "userToken": userToken,
       "userName": username,
       "pwd": password,
       "sale_detail_id": saleDetailId.toString(),
@@ -65,12 +66,13 @@ Future requestToVoidInvoice({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
+    print('response data: ${response.data}');
     return response.data;
   }
   return null;
 }
 
-Future overideVoidInvice({
+Future overrideDeleteWholeInvoices({
   int saleMasterId,
   String username,
   String password,
@@ -79,6 +81,7 @@ Future overideVoidInvice({
   Response response = await dio.post(
     serverIP + '/Api/OveridePermissionVoiceInvoice',
     data: {
+      "userToken": userToken,
       "userName": username,
       "pwd": password,
       "sale_master_id": saleMasterId,
@@ -88,6 +91,7 @@ Future overideVoidInvice({
       contentType: Headers.formUrlEncodedContentType,
     ),
   );
+  print(response.data);
   if (response.statusCode == 200 && response.data != "[]") {
     return response.data;
   }

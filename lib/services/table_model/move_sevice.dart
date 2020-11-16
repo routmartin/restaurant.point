@@ -11,9 +11,12 @@ List<MoveList> parseMoveList(String responseBody) {
   return parsed.map<MoveList>((json) => MoveList.fromJson(json)).toList();
 }
 
-Future<List<MoveList>> fetchMoveList() async {
+Future<List<MoveList>> fetchMoveList({tableId}) async {
   Response response = await dio.post(serverIP + '/api/ListAvailableMove',
-      data: {"userToken": userToken},
+      data: {
+        "userToken": userToken,
+        "table_id": tableId,
+      },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
       ));
@@ -28,7 +31,6 @@ Future requestPermissionToMove() async {
     serverIP + '/Api/getPermissionMoveTable',
     data: {
       "userToken": userToken,
-      "page_id": 216,
     },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
@@ -36,6 +38,7 @@ Future requestPermissionToMove() async {
   );
 
   if (response.statusCode == 200 && response.data != "[]") {
+    print(response.data);
     return response.data;
   }
   return null;

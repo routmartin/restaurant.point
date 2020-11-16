@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:esc_pos_printer/esc_pos_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:network_image_to_byte/network_image_to_byte.dart';
 import 'package:pointrestaurant/services/table_model/print_sevices.dart';
 import 'package:intl/intl.dart';
@@ -32,6 +33,7 @@ import 'package:pointrestaurant/utilities/switch.cofig.dart';
 import 'package:pointrestaurant/widget/action_button.dart';
 import 'package:pointrestaurant/widget/botton_middle_button.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
+import 'package:pointrestaurant/widget/header_dialog.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
 import '../../utilities/globals.dart' as globals;
 import 'package:image/image.dart' as Martin;
@@ -70,13 +72,14 @@ class _MenuScreenState extends State<MenuScreen> {
   String username;
   String password;
   // ignore: non_constant_identifier_names
-  String txt_percent;
+  String discountTxt;
   // ignore: non_constant_identifier_names
   String txt_reason;
   // ignore: non_constant_identifier_names
   bool move_with_auth = false;
   bool hasNote = false;
-
+  PrinterNetworkManager printerManager = PrinterNetworkManager();
+  bool _checkPrinterConnecton = false;
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   BluetoothDevice _device;
   Map<int, Uint8List> imgListBytes = Map();
@@ -95,21 +98,45 @@ class _MenuScreenState extends State<MenuScreen> {
 
 // ++++++++++++++++++++++++++++++++++ Section Working with Network Printer ++++++++++++++++++++++++++++++++
 
-  PrinterNetworkManager printerManager = PrinterNetworkManager();
+  Future _checkPrinterConnection() async {
+    if (globals.bill == 1 || globals.reprint == 1 || globals.pay == 1) {
+      await checkPrinterService().then((data) => _checkConnectPrinter(data));
+    }
+  }
+
+  Future _checkConnectPrinter(data) async {
+    int printerFailTime = 0;
+    for (var printer in data) {
+      printerManager.selectPrinter(printer['host'],
+          port: 9100, timeout: Duration(milliseconds: 800));
+      final PosPrintResult res = await printerManager.checkPrinterConnection();
+      if (res.value != 1) printerFailTime++;
+    }
+    if (printerFailTime > 0) {
+      setState(() {
+        _checkPrinterConnecton = true;
+      });
+    }
+  }
 
   Future _printWithNetwork(data) async {
     for (int i = 1; i <= data.length; i++) {
       String path = '$serverIP/temp/$i.png';
       await networkImageToByte(path).then((bytes) {
         imgListBytes[i] = bytes;
-        _connectPrinter(data[i - 1]['host'], i);
+        _printToNetworkPrinter(data[i - 1]['host'], i);
       });
     }
   }
 
-  _connectPrinter(host, int index) async {
-    printerManager.selectPrinter(host, port: 9100);
-    await printerManager.printTicket(await testTicket(index));
+  _printToNetworkPrinter(host, int index) async {
+    printerManager.selectPrinter(host,
+        port: 9100, timeout: Duration(milliseconds: 800));
+    final PosPrintResult res =
+        await printerManager.printTicket(await testTicket(index));
+    print('this is host: $host');
+    if (res.value == 2 || res.value == 3 || res.value == 4)
+      validationDialog(message: 'Printing is not completed !');
   }
 
   Future<Ticket> testTicket(index) async {
@@ -256,11 +283,17 @@ class _MenuScreenState extends State<MenuScreen> {
       pageState: _pageState,
     );
 
-    showActionBottomSheet({saleDetailId}) {
+    showActionBottomSheet({saleDetailId, disCountAmountItem = 0}) {
       return PlatformActionSheet().displaySheet(context: context, actions: [
         ActionSheetAction(
           text: "Order Now",
-          onPressed: () {
+          onPressed: () async {
+            await _checkPrinterConnection();
+            if (_checkPrinterConnecton) {
+              validationDialog(message: 'Printer is not connected!');
+              setState(() => _checkPrinterConnecton = false);
+              return;
+            }
             printtoKitchenESC(
               table_name: widget.tableName,
               sale_master_id: restoreSaleMasterId,
@@ -290,8 +323,12 @@ class _MenuScreenState extends State<MenuScreen> {
         ),
         ActionSheetAction(
           text: "Discount (\$)",
-          onPressed: () =>
-              showDiscountDialog(title: '\$', id: saleDetailId, runFunction: 1),
+          onPressed: () => showDiscountDialog(
+            title: '\$',
+            id: saleDetailId,
+            runFunction: 1,
+            disAmount: disCountAmountItem,
+          ),
         ),
         ActionSheetAction(
           text: "Cancel",
@@ -318,8 +355,10 @@ class _MenuScreenState extends State<MenuScreen> {
                           child: Column(
                             children: <Widget>[
                               Container(
+                                height: 70,
                                 width: double.infinity,
-                                alignment: Alignment.centerLeft,
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   boxShadow: [
@@ -332,31 +371,55 @@ class _MenuScreenState extends State<MenuScreen> {
                                 ),
                                 child: Row(
                                   children: <Widget>[
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.arrow_back_ios,
-                                        size: 20,
+                                    Container(
+                                      width: 100,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Material(
+                                          color: kPrimaryColor,
+                                          child: InkWell(
+                                            onTap: () => Navigator.pop(
+                                              context,
+                                              true,
+                                            ),
+                                            splashColor: Colors.black38,
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              height: 40,
+                                              child: Text(
+                                                'Back',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontFamily: 'San-francisco',
+                                                    letterSpacing: 0.8),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      onPressed: backToPreviewPage,
                                     ),
                                     Expanded(
                                       child: Container(
-                                        alignment: Alignment.centerRight,
-                                        margin: EdgeInsets.only(right: 20),
+                                        alignment: Alignment.center,
                                         child: Text(
                                           widget.tableName,
                                           style: TextStyle(
-                                            fontSize: 18,
+                                            fontSize: 20,
                                             fontFamily: 'San-francisco',
                                             fontWeight: FontWeight.bold,
                                             color: kPrimaryColor,
                                           ),
                                         ),
                                       ),
-                                    )
+                                    ),
+                                    Container(
+                                      child: SvgPicture.asset(
+                                        'assets/icons/restuarantlogo.svg',
+                                        width: 60,
+                                        height: 60,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -371,7 +434,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                     return VerticalTabs(
                                       indicatorColor: kPrimaryColor,
                                       selectedTabBackgroundColor:
-                                          baseBackgroundColor,
+                                          Colors.transparent,
                                       tabBackgroundColor: Color(0xfff7a116),
                                       tabsWidth: size.width <= 360.0
                                           ? size.width * .2
@@ -421,7 +484,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                                           ? size.height / 780
                                                           : size.width <= 400.0
                                                               ? size.height /
-                                                                  900
+                                                                  1100
                                                               : size
                                                                           .width >=
                                                                       1000.0
@@ -881,7 +944,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   AnimatedContainer(
                     alignment: Alignment.center,
                     width: size.width >= 1200
-                        ? size.width * .33
+                        ? size.width * .3
                         : size.width >= 1000 ? size.width * 0.35 : null,
                     height: size.height,
                     curve: Curves.fastLinearToSlowEaseIn,
@@ -939,6 +1002,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                                       showActionBottomSheet(
                                                     saleDetailId:
                                                         data.saleDetailId,
+                                                    disCountAmountItem:
+                                                        data.amount,
                                                   ),
                                                 ),
                                                 IconSlideAction(
@@ -1392,8 +1457,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                                   _showAuthenticator(
                                                       callFun: 2);
                                                 } else if (data == 'success') {
-                                                  movelistData =
-                                                      fetchMoveList();
+                                                  movelistData = fetchMoveList(
+                                                      tableId: widget.tableId);
                                                   showMovableDialog(
                                                     salMasterID:
                                                         restoreSaleMasterId,
@@ -1403,8 +1468,18 @@ class _MenuScreenState extends State<MenuScreen> {
                                             },
                                           ),
                                           Button(
-                                            buttonName: "KITCHEN",
-                                            press: () {
+                                            buttonName: "ORDER",
+                                            press: () async {
+                                              await _checkPrinterConnection();
+                                              if (_checkPrinterConnecton) {
+                                                validationDialog(
+                                                    message:
+                                                        'Printer is not connected!');
+                                                setState(() =>
+                                                    _checkPrinterConnecton =
+                                                        false);
+                                                return;
+                                              }
                                               printtoKitchenESC(
                                                 table_name: widget.tableName,
                                                 sale_master_id:
@@ -1538,7 +1613,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       ? AnimatedContainer(
                           margin: EdgeInsets.only(left: size.width * 0.009),
                           width: size.width >= 1200
-                              ? size.width * 0.28
+                              ? size.width * 0.25
                               : size.width >= 1000 ? size.width * 0.32 : null,
                           height: SwitchContainer.secondContainerHeight,
                           curve: Curves.fastLinearToSlowEaseIn,
@@ -1588,113 +1663,82 @@ class _MenuScreenState extends State<MenuScreen> {
                                               itemCount: snapshot.data.length,
                                               itemBuilder: (context, index) {
                                                 var data = snapshot.data[index];
-                                                return Material(
-                                                  color: Colors.transparent,
-                                                  child: InkWell(
-                                                    splashColor: Colors.black12,
-                                                    onTap: () {
-                                                      if (growableList.contains(
-                                                          data.noteId)) {
-                                                        growableList.remove(
-                                                            data.noteId);
-                                                      } else {
-                                                        growableList
-                                                            .add(data.noteId);
-                                                        growableList =
-                                                            growableList
-                                                                .toSet()
-                                                                .toList();
-                                                      }
-                                                      setState(() {});
-                                                    },
-                                                    child: Container(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                        vertical: 10,
-                                                        horizontal: 30,
-                                                      ),
-                                                      height: 55,
-                                                      decoration: BoxDecoration(
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                            width: 0.4,
-                                                            color: Colors
-                                                                .grey[400],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      child: Row(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                        children: <Widget>[
-                                                          Container(
-                                                            alignment: Alignment
-                                                                .centerRight,
-                                                            child: Checkbox(
-                                                              activeColor:
-                                                                  kPrimaryColor,
-                                                              checkColor:
-                                                                  Colors.white,
-                                                              value:
-                                                                  growableList
-                                                                      .any(
-                                                                (element) =>
-                                                                    element ==
-                                                                    data.noteId,
-                                                              ),
-                                                              onChanged:
-                                                                  (val) {},
-                                                            ),
-                                                          ),
-                                                          Expanded(
-                                                              child: Row(
-                                                            children: <Widget>[
-                                                              Text(
-                                                                data.noteName
-                                                                    .toString(),
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontFamily:
-                                                                      'San-francisco',
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w800,
-                                                                  fontSize: 16,
-                                                                ),
-                                                              ),
-                                                              Expanded(
-                                                                child: Text(
-                                                                  data.notePrice
-                                                                      .toString(),
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .right,
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontFamily:
-                                                                        'San-francisco',
-                                                                    color: Colors
-                                                                        .black,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w800,
-                                                                    fontSize:
-                                                                        13,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          )),
-                                                        ],
+                                                return Container(
+                                                  padding: const EdgeInsets
+                                                          .symmetric(
+                                                      horizontal: 20),
+                                                  decoration: BoxDecoration(
+                                                    border: Border(
+                                                      bottom: BorderSide(
+                                                        width: 0.4,
+                                                        color: Colors.grey[400],
                                                       ),
                                                     ),
                                                   ),
+                                                  child: CheckboxListTile(
+                                                      activeColor:
+                                                          Colors.black87,
+                                                      checkColor: Colors.white,
+                                                      value: growableList.any(
+                                                        (element) =>
+                                                            element ==
+                                                            data.noteId,
+                                                      ),
+                                                      onChanged: (val) {
+                                                        if (growableList
+                                                            .contains(
+                                                                data.noteId)) {
+                                                          growableList.remove(
+                                                              data.noteId);
+                                                        } else {
+                                                          growableList
+                                                              .add(data.noteId);
+                                                          growableList =
+                                                              growableList
+                                                                  .toSet()
+                                                                  .toList();
+                                                        }
+                                                        setState(() {});
+                                                      },
+                                                      title: Row(
+                                                        children: <Widget>[
+                                                          Text(
+                                                            data.noteName
+                                                                .toString(),
+                                                            textAlign:
+                                                                TextAlign.right,
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'San-francisco',
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 15,
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              data.notePrice
+                                                                  .toString(),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'San-francisco',
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                fontSize: 15,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )),
                                                 );
                                               },
                                             );
@@ -1772,7 +1816,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   _buildCancelButton(BuildContext context) {
     return Positioned(
-      top: 20,
+      top: 15,
       right: 15,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
@@ -1861,6 +1905,14 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  _validateDiscountPercent(discountTxt) {
+    if (double.parse(discountTxt.toString()) > 100 ||
+        double.parse(discountTxt.toString()) <= 0 ||
+        int.parse(discountTxt.toString()) > 100 ||
+        int.parse(discountTxt.toString()) <= 0) return true;
+    return false;
+  }
+
   showMessageDialog({message = 'NO ORDER ITEMS'}) {
     Timer(Duration(milliseconds: 1000), () {
       Navigator.of(context, rootNavigator: true).pop();
@@ -1916,7 +1968,7 @@ class _MenuScreenState extends State<MenuScreen> {
     return showDialog(
       context: context,
       builder: (BuildContext ctx) {
-        var size = MediaQuery.of(context).size;
+        Size size = MediaQuery.of(context).size;
         bool orientation =
             MediaQuery.of(context).orientation == Orientation.landscape;
         return AlertDialog(
@@ -1925,7 +1977,7 @@ class _MenuScreenState extends State<MenuScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'San-francisco',
-              fontSize: 18,
+              fontSize: 15,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -2180,8 +2232,9 @@ class _MenuScreenState extends State<MenuScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(7),
                     child: Material(
-                      color: Colors.transparent,
+                      color: kPrimaryColor,
                       child: InkWell(
+                        splashColor: Colors.black12,
                         onTap: () {
                           if (username != null && password != null) {
                             if (callFun == 0) {
@@ -2200,7 +2253,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                 }
                               });
                             } else if (callFun == 1) {
-                              overideVoidInvice(
+                              overrideDeleteWholeInvoices(
                                 saleMasterId: restoreSaleMasterId,
                                 username: username,
                                 password: password,
@@ -2228,22 +2281,16 @@ class _MenuScreenState extends State<MenuScreen> {
                                   showMovableDialog(
                                     salMasterID: restoreSaleMasterId,
                                   );
-                                } else {}
+                                }
                               });
                             }
-                          } else {
-                            print('no data');
                           }
                         },
-                        splashColor: Colors.black12,
                         child: Container(
                           height: 45.0,
                           width:
                               orientation ? size.width * .14 : size.width * .27,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor,
-                          ),
                           padding: EdgeInsets.symmetric(
                             vertical: 9,
                             horizontal: 20,
@@ -2274,14 +2321,14 @@ class _MenuScreenState extends State<MenuScreen> {
     return showGeneralDialog(
       barrierColor: Colors.black.withOpacity(0.2),
       transitionDuration: Duration(milliseconds: 100),
-      barrierDismissible: true,
+      barrierDismissible: false,
       barrierLabel: '',
       context: context,
       pageBuilder: (context, animation1, animation2) {
         return null;
       },
       transitionBuilder: (context, a1, a2, widget) {
-        var size = MediaQuery.of(context).size;
+        Size size = MediaQuery.of(context).size;
         bool orientation =
             MediaQuery.of(context).orientation == Orientation.landscape;
         return Transform.scale(
@@ -2292,6 +2339,7 @@ class _MenuScreenState extends State<MenuScreen> {
               child: Container(
                 width: orientation ? size.width * 0.8 : size.width,
                 height: orientation ? size.height * .9 : size.height * .7,
+                color: Colors.white,
                 child: FutureBuilder(
                   future: movelistData,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -2312,14 +2360,59 @@ class _MenuScreenState extends State<MenuScreen> {
                               color: Colors.grey[200],
                             ),
                             alignment: Alignment.center,
-                            child: Text(
-                              'Available Table'.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontFamily: 'San-francisco',
-                                color: Colors.black,
-                                fontWeight: FontWeight.w700,
-                                decoration: TextDecoration.none,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  SvgPicture.asset(
+                                    companyLogo,
+                                    width: 50,
+                                    height: 50,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Available Table'.toUpperCase(),
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontFamily: 'San-francisco',
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w700,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                    ),
+                                  ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Material(
+                                      color: Color(0xffcc2d2d),
+                                      borderRadius: BorderRadius.circular(18),
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                        },
+                                        splashColor: Colors.white38,
+                                        child: Container(
+                                          width: 36,
+                                          height: 36,
+                                          child: Center(
+                                            child: Text(
+                                              'x',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontFamily: "San-francisco",
+                                                fontWeight: FontWeight.w200,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -2368,7 +2461,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                   return Container(
                                     padding: EdgeInsets.only(
                                         left: 10, bottom: 10, right: 10),
-                                    color: Color(0xfff5f5f5),
                                     child: GridView.count(
                                       shrinkWrap: true,
                                       physics: ScrollPhysics(),
@@ -2377,7 +2469,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                       crossAxisSpacing: 5,
                                       childAspectRatio: orientation
                                           ? size.height / 950
-                                          : size.height / 500,
+                                          : size.height / 600,
                                       crossAxisCount: orientation
                                           ? size.width >= 1000.0 ? 5 : 4
                                           : 2,
@@ -2479,21 +2571,15 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  showDiscountDialog({title, int id, int runFunction}) {
-    txt_percent = null;
+  showDiscountDialog({title, int id, int runFunction, disAmount = 0}) {
+    discountTxt = null;
     return showDialog(
         context: context,
         builder: (BuildContext ctx) {
-          var size = MediaQuery.of(context).size;
+          Size size = MediaQuery.of(context).size;
           return AlertDialog(
-            title: Text(
-              'DISCOUNT ($title)',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'San-francisco',
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
+            title: HeaderDialogSoftpoint(
+              titleHeader: 'DISCOUNT ($title)',
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
@@ -2504,7 +2590,7 @@ class _MenuScreenState extends State<MenuScreen> {
               padding: EdgeInsets.all(10),
               width: size.width >= 1200 ? size.width * .25 : size.width * .5,
               height: size.width <= 400.0
-                  ? size.width * .95
+                  ? size.width * .4
                   : size.width >= 1000.0 ? size.height * .2 : size.height * .4,
               child: SingleChildScrollView(
                 child: Column(
@@ -2516,7 +2602,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         borderRadius: BorderRadius.circular(5),
                         child: TextFormField(
                           onChanged: (val) {
-                            txt_percent = val;
+                            discountTxt = val;
                           },
                           keyboardType: TextInputType.number,
                           autofocus: true,
@@ -2541,13 +2627,14 @@ class _MenuScreenState extends State<MenuScreen> {
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  },
-                                  splashColor: Colors.black12,
-                                  child: ActionButton(
-                                    btnLabel: 'close',
-                                  )),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                splashColor: Colors.black12,
+                                child: ActionButton(
+                                  btnLabel: 'cancel',
+                                ),
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -2558,31 +2645,40 @@ class _MenuScreenState extends State<MenuScreen> {
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
+                                splashColor: Colors.black12,
                                 onTap: () {
-                                  if (txt_percent != null) {
+                                  if (discountTxt != null) {
                                     switch (runFunction) {
                                       case 0:
-                                        applyPercentDisItem(
-                                                saleDetailId: id,
-                                                dis_percent_item: txt_percent)
-                                            .then(
-                                          (_) {
-                                            Navigator.pop(context);
-                                          },
-                                        );
+                                        _validateDiscountPercent(discountTxt)
+                                            ? showMessageDialog(
+                                                message: 'Invalid Discount! ')
+                                            : applyPercentDisItem(
+                                                    saleDetailId: id,
+                                                    dis_percent_item:
+                                                        discountTxt)
+                                                .then(
+                                                (_) {
+                                                  Navigator.pop(context);
+                                                },
+                                              );
                                         break;
                                       case 1:
-                                        applyPercentDollItem(
-                                          saleDetailId: id,
-                                          dis_cash_item: txt_percent,
-                                        ).then(
-                                          (_) => Navigator.pop(context),
-                                        );
+                                        double.parse(discountTxt) >
+                                                double.parse(disAmount)
+                                            ? showMessageDialog(
+                                                message: 'Invalid Discount!')
+                                            : applyPercentDollItem(
+                                                saleDetailId: id,
+                                                dis_cash_item: discountTxt,
+                                              ).then(
+                                                (_) => Navigator.pop(context),
+                                              );
                                         break;
                                       case 2:
                                         applyDiscountCashonInvoice(
                                           sale_master_id: id,
-                                          dis_cash_inv: txt_percent,
+                                          dis_cash_inv: discountTxt,
                                         ).then(
                                           (_) => Navigator.pop(context),
                                         );
@@ -2590,7 +2686,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                       case 3:
                                         applyDiscountPercentonInvoice(
                                           sale_master_id: id,
-                                          dis_percent_inv: txt_percent,
+                                          dis_percent_inv: discountTxt,
                                         ).then(
                                           (_) => Navigator.pop(context),
                                         );
@@ -2599,7 +2695,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                     }
                                   }
                                 },
-                                splashColor: Colors.black12,
                                 child: ActionButton(
                                   btnLabel: 'Confirm',
                                   active: true,
@@ -2622,18 +2717,12 @@ class _MenuScreenState extends State<MenuScreen> {
     return showDialog(
       context: context,
       builder: (BuildContext ctx) {
-        var size = MediaQuery.of(context).size;
+        Size size = MediaQuery.of(context).size;
         bool orientation =
             MediaQuery.of(context).orientation == Orientation.landscape;
         return AlertDialog(
-          title: Text(
-            'REQUEST TO VOID INVOICE',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'San-francisco',
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
+          title: HeaderDialogSoftpoint(
+            titleHeader: 'REQUEST TO VOID INVOICE',
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
@@ -2674,106 +2763,99 @@ class _MenuScreenState extends State<MenuScreen> {
                     height: 10,
                   ),
                   Container(
-                    child: FittedBox(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(7),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(7),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
                                 onTap: () {
                                   Navigator.pop(context);
                                 },
                                 splashColor: Colors.black12,
-                                child: Container(
-                                  width: orientation
-                                      ? size.width * .14
-                                      : size.width * .27,
-                                  height: 45.0,
-                                  alignment: Alignment.center,
-                                  decoration:
-                                      BoxDecoration(color: Colors.black12),
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 9,
-                                    horizontal: 20,
-                                  ),
-                                  child: Text(
-                                    'Cancel',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      decoration: TextDecoration.none,
-                                      color: Colors.black54,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                                child: ActionButton(
+                                  btnLabel: 'Cancel',
+                                )),
                           ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(7),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                splashColor: Colors.black12,
-                                onTap: () {
-                                  if (txt_reason != null) {
-                                    requestToVoidInvoice(
-                                            saleMasterId: restoreSaleMasterId,
-                                            reason: txt_reason)
-                                        .then((data) {
-                                      if (data == 'success') {
-                                        backToPreviewPage();
-                                        Navigator.pop(context, true);
-                                      } else if (data == 'voidBeforePaid' ||
-                                          data == 'voidAfterPaid') {
-                                        _showAuthenticator(
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(7),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.black12,
+                              onTap: () {
+                                if (txt_reason != null) {
+                                  requestToVoidInvoice(
                                           saleMasterId: restoreSaleMasterId,
-                                          callFun: 1,
-                                        );
-                                      }
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  height: 45.0,
-                                  width: orientation
-                                      ? size.width * .14
-                                      : size.width * .27,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: kPrimaryColor,
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 9,
-                                    horizontal: 20,
-                                  ),
-                                  child: Text(
-                                    'VOID',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      decoration: TextDecoration.none,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ),
+                                          reason: txt_reason)
+                                      .then((data) {
+                                    if (data == 'success') {
+                                      backToPreviewPage();
+                                      Navigator.pop(context, true);
+                                    } else if (data == 'voidBeforePaid' ||
+                                        data == 'voidAfterPaid') {
+                                      _showAuthenticator(
+                                        saleMasterId: restoreSaleMasterId,
+                                        callFun: 1,
+                                      );
+                                    }
+                                  });
+                                }
+                              },
+                              child: ActionButton(
+                                active: true,
+                                btnLabel: 'Void',
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   )
                 ],
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  validationDialog({String message}) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: new Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: "San-francisco",
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text(
+                "Cancel",
+                style: TextStyle(
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
         );
       },
     );

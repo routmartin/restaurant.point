@@ -26,7 +26,9 @@ class Button extends StatelessWidget {
           onTap: press,
           child: Container(
             alignment: Alignment.center,
-            width: screeOrientation == lanscape ? 120 : size.width * 0.28,
+            width: screeOrientation == lanscape
+                ? size.width * 0.08
+                : size.width * 0.28,
             height: screeOrientation == Orientation.landscape
                 ? size.height * 0.042
                 : 35,

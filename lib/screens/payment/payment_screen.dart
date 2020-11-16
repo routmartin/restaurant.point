@@ -64,15 +64,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   _connectPrinter(host, int index) async {
-    print('this is host' + host);
-    printerManager.selectPrinter(host, port: 9100);
-    await printerManager.printTicket(await testTicket(index));
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MainScreenPage(),
-      ),
+    printerManager.selectPrinter(
+      host,
+      port: 9100,
+      timeout: Duration(milliseconds: 500),
     );
+    PosPrintResult res =
+        await printerManager.printTicket(await testTicket(index));
+    if (res.value == 2 || res.value == 3 || res.value == 4) {
+      validationDialog(message: 'Printer is not connected !');
+      setState(() {
+        _isLoading = false;
+      });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MainScreenPage(),
+        ),
+      );
+    }
   }
 
   Future<Ticket> testTicket(index) async {
@@ -977,4 +988,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
   //     ),
   //   );
   // }
+  void validationDialog({String message}) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: new Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: "San-francisco",
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text(
+                "Cancel",
+                style: TextStyle(
+                  fontFamily: "San-francisco",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

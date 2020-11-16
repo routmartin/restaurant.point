@@ -7,6 +7,7 @@ const scaffoldBackgroundColor = Color(0xFFfcfcfc);
 const double iconSize = 17;
 const Color bkColor = Color(0xfffcfcfc);
 const radiusSize = 10;
+
 BoxDecoration cardDecoration = BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.circular(10),

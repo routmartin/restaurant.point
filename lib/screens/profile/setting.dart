@@ -22,37 +22,38 @@ class _SettingScreenState extends State<SettingScreen> {
       prefs.remove('IP');
     }
 
-    prefs.setString('Port', _txtPort);
-    prefs.setString('IP', _txtIP);
+    await prefs.setString('Port', _txtPort);
+    await prefs.setString('IP', _txtIP);
+
+    await prefs.setInt('bill', globals.bill);
+    await prefs.setInt('pay', globals.pay);
+    await prefs.setInt('reprint', globals.reprint);
 
     return true;
   }
 
-  Future setSharePreferencPrinterConfig() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  // Future setSharePreferencPrinterConfig() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setInt('bill', globals.bill);
+  //   prefs.setInt('pay', globals.pay);
+  //   prefs.setInt('reprint', globals.reprint);
 
-    prefs.setInt('bill', globals.bill);
-    prefs.setInt('pay', globals.pay);
-    prefs.setInt('reprint', globals.reprint);
-
-    return true;
-  }
+  //   return true;
+  // }
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
     double cardWidth =
-        size.width >= 1000 ? size.width * 0.26 : size.width * 0.9;
+        size.width >= 1000 ? size.width * 0.35 : size.width * 0.9;
     return Scaffold(
       backgroundColor: baseBackgroundColor,
-      appBar: AppBar(
-        elevation: 1,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black,
-          ),
-          onPressed: () => Navigator.pop(context, true),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pop(context, true),
+        backgroundColor: Colors.white,
+        child: Icon(
+          Icons.arrow_back_ios,
+          color: Colors.black,
         ),
       ),
       body: SafeArea(
@@ -94,7 +95,7 @@ class _SettingScreenState extends State<SettingScreen> {
                             height: 10,
                           ),
                           Text(
-                            'SOFTPOINT AUTU ID',
+                            'SOFTPOINT AUTO ID',
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 18,
@@ -109,168 +110,14 @@ class _SettingScreenState extends State<SettingScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                   height: size.width <= 360.0
-                      ? size.height * .65
-                      : size.width <= 400.0
-                          ? size.height * 0.5
-                          : size.width >= 1000.0
-                              ? size.height * 0.5
-                              : size.height * 0.45,
-                  width: cardWidth,
-                  alignment: Alignment.center,
-                  decoration: cardDecoration,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            'NETWORK configuration'.toUpperCase(),
-                            style: textStyle,
-                          ),
-                          Icon(Icons.wifi_tethering)
-                        ],
-                      ),
-                      SizedBox(
-                        height: 30,
-                      ),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Column(
-                            children: <Widget>[
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: <Widget>[
-                                  Text(
-                                    'IP Address',
-                                    textAlign: TextAlign.left,
-                                    style: textStyle,
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Container(
-                                    width: double.infinity,
-                                    height: 50.0,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: TextFormField(
-                                        onChanged: (txt) {
-                                          _txtIP = txt;
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          hintText: globals.ipAddress != null &&
-                                                  globals.ipAddress !=
-                                                      '124.248.164.229'
-                                              ? globals.ipAddress
-                                              : 'No Configuration IP Address',
-                                          contentPadding: EdgeInsets.all(15.0),
-                                          border: InputBorder.none,
-                                          filled: true,
-                                          fillColor: Colors.grey[200],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: <Widget>[
-                                  Text(
-                                    'Port',
-                                    textAlign: TextAlign.left,
-                                    style: textStyle,
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Container(
-                                    width: double.infinity,
-                                    height: 50.0,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: TextFormField(
-                                        onChanged: (txt) {
-                                          _txtPort = txt;
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          hintText: globals.port != null &&
-                                                  globals.port != '5006'
-                                              ? globals.port
-                                              : 'No Configuration Port',
-                                          contentPadding: EdgeInsets.all(15.0),
-                                          border: InputBorder.none,
-                                          filled: true,
-                                          fillColor: Colors.grey[200],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 40,
-                              ),
-                              Container(
-                                  child: InkWell(
-                                onTap: () {
-                                  if (_txtIP.trim().length > 0 &&
-                                      _txtPort.trim().length > 0) {
-                                    print('get here');
-                                    setSharePreferencNetworkConfig()
-                                        .then((data) {
-                                      if (data) {
-                                        Navigator.pop(context, true);
-                                      } else {
-                                        validateTextfield();
-                                      }
-                                    });
-                                  } else {
-                                    validateTextfield();
-                                  }
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(vertical: 15),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    'Save',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                      color: Colors.black,
-                                      fontFamily: 'San-francisco',
-                                    ),
-                                  ),
-                                ),
-                              )),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                  height: size.width <= 360.0
                       ? size.height * 0.58
                       : size.width <= 400.0
-                          ? size.height * 0.65
-                          : size.width >= 1000.0
-                              ? size.height * 0.45
-                              : size.height * 0.4,
+                          ? size.height * 0.5
+                          : size.width >= 1200.0
+                              ? size.height * 0.38
+                              : size.width >= 1000.0
+                                  ? size.height * 0.4
+                                  : size.height * 0.4,
                   width: cardWidth,
                   alignment: Alignment.center,
                   decoration: cardDecoration,
@@ -407,40 +254,163 @@ class _SettingScreenState extends State<SettingScreen> {
                               SizedBox(
                                 height: 20,
                               ),
-                              Container(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Material(
-                                    color: Colors.grey[300],
-                                    child: InkWell(
-                                      splashColor: Colors.black45,
-                                      onTap: () {
-                                        setSharePreferencPrinterConfig().then(
-                                            (response) => response
-                                                ? Navigator.pop(context, true)
-                                                : null);
-                                      },
-                                      child: Container(
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 15),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          'Save',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 16,
-                                            color: Colors.black,
-                                            fontFamily: 'San-francisco',
-                                          ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  height: size.width <= 360.0
+                      ? size.height * .65
+                      : size.width <= 400.0
+                          ? size.height * 0.5
+                          : size.width >= 1200.0
+                              ? size.height * 0.38
+                              : size.width >= 1000.0
+                                  ? size.height * 0.6
+                                  : size.height * 0.4,
+                  width: cardWidth,
+                  alignment: Alignment.center,
+                  decoration: cardDecoration,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'NETWORK configuration'.toUpperCase(),
+                            style: textStyle,
+                          ),
+                          Icon(Icons.wifi_tethering)
+                        ],
+                      ),
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            children: <Widget>[
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  Text(
+                                    'IP Address',
+                                    textAlign: TextAlign.left,
+                                    style: textStyle,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Container(
+                                    width: double.infinity,
+                                    height: 50.0,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: TextFormField(
+                                        onChanged: (txt) {
+                                          _txtIP = txt;
+                                        },
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          hintText: globals.ipAddress != null &&
+                                                  globals.ipAddress !=
+                                                      '124.248.164.229'
+                                              ? globals.ipAddress
+                                              : 'No Configuration IP Address',
+                                          contentPadding: EdgeInsets.all(15.0),
+                                          border: InputBorder.none,
+                                          filled: true,
+                                          fillColor: Colors.grey[200],
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  Text(
+                                    'Port',
+                                    textAlign: TextAlign.left,
+                                    style: textStyle,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Container(
+                                    width: double.infinity,
+                                    height: 50.0,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: TextFormField(
+                                        onChanged: (txt) {
+                                          _txtPort = txt;
+                                        },
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          hintText: globals.port != null &&
+                                                  globals.port != '5006'
+                                              ? globals.port
+                                              : 'No Configuration Port',
+                                          contentPadding: EdgeInsets.all(15.0),
+                                          border: InputBorder.none,
+                                          filled: true,
+                                          fillColor: Colors.grey[200],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 40,
+                              ),
+                              Container(
+                                  child: InkWell(
+                                onTap: () {
+                                  if (_txtIP.trim().length > 0 &&
+                                      _txtPort.trim().length > 0) {
+                                    setSharePreferencNetworkConfig()
+                                        .then((data) {
+                                      if (data) {
+                                        Navigator.pop(context, true);
+                                      } else {
+                                        validateTextfield();
+                                      }
+                                    });
+                                  } else {
+                                    validateTextfield();
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(vertical: 15),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Save',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                      fontFamily: 'San-francisco',
+                                    ),
+                                  ),
+                                ),
+                              )),
                             ],
                           ),
                         ),

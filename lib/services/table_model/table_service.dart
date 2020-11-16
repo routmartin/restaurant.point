@@ -12,6 +12,7 @@ List<Floor> parseDataFloor(String responseBody) {
 }
 
 Future<List<Floor>> fetchDataFloors() async {
+  print(globals.userToken);
   Response response = await dio.post(
     serverIP + '/api/TableLayout',
     data: {
@@ -25,5 +26,6 @@ Future<List<Floor>> fetchDataFloors() async {
   if (response.statusCode == 200 && response.data != "[]") {
     return parseDataFloor(response.data);
   }
+
   return null;
 }

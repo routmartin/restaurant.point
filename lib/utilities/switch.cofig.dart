@@ -38,7 +38,7 @@ class SwitchContainer {
             : size.width >= 1000 ? size.width * 0.2 : 10;
         firstContainerXOffset = size.width >= 1200
             ? size.height * .65
-            : size.width >= 1000 ? size.width * 0.2 : 0;
+            : size.width >= 1000 ? size.width * 0.2 : .65;
         seconndContainerYOffset = 120;
         seconndContainerXOffset = size.width >= 1200
             ? size.height * .68

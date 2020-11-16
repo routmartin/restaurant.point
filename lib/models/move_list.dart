@@ -34,12 +34,20 @@ class TableMove {
   TableMove({
     this.tableId,
     this.tableName,
+    this.groupMerge,
+    this.checkinDuration,
+    this.saleStatus,
+    this.masterId,
     this.tableImage,
   });
 
   int tableId;
   String tableName;
   String tableImage;
+  String groupMerge;
+  String checkinDuration;
+  String saleStatus;
+  String masterId;
 
   factory TableMove.fromRawJson(String str) =>
       TableMove.fromJson(json.decode(str));

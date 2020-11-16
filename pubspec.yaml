@@ -30,6 +30,12 @@ dependencies:
   esc_pos_utils: ^0.4.8
   esc_pos_printer: ^3.2.8
   toggle_switch: "^0.1.8"
+  slide_digital_clock: ^1.0.0
+  url_launcher: any
+  connectivity: any
+  ping_discover_network: ^0.2.0+1
+  # esc_pos_printer: ^4.0.3
+  # esc_pos_utils: ^1.0.0
   
 
 dev_dependencies:

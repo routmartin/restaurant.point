@@ -1,13 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pointrestaurant/models/floor.dart';
-import 'package:pointrestaurant/services/closeshift/closeshift_services.dart';
 import 'package:pointrestaurant/services/table_model/table_service.dart';
 import 'package:pointrestaurant/utilities/path.dart';
 import 'package:pointrestaurant/utilities/style.main.dart';
 import 'package:pointrestaurant/utilities/switch.cofig.dart';
-import 'package:pointrestaurant/widget/action_button.dart';
 import 'package:pointrestaurant/widget/center_loading_indecator.dart';
 import 'package:pointrestaurant/widget/company_header.dart';
 import 'package:vertical_tabs/vertical_tabs.dart';
@@ -20,7 +17,6 @@ class TableModeScreen extends StatefulWidget {
 
 class _TableModeScreenState extends State<TableModeScreen> {
   Future<List<Floor>> floorData;
-
 //________________Open Switch Container Layout________________________
 
   int _pageState = 0;
@@ -37,22 +33,11 @@ class _TableModeScreenState extends State<TableModeScreen> {
   int tableId;
   String tableName;
 
-  // showSumeryModal({tableList}) {
-  //   tableName = tableList.tableName;
-  //   tableId = tableList.tableId;
-  //   saleMasterId = tableList.saleMasterId;
-  //   orderSummery = fetchOrderSummery(
-  //     table_id: tableList.tableId,
-  //     sale_master_id: tableList.saleMasterId,
-  //   );
-  //   setState(() {
-  //     if (_pageState != 0) {
-  //       _pageState = 0;
-  //     } else {
-  //       _pageState = 1;
-  //     }
-  //   });
-  // }
+  _fetchTableData() {
+    setState(() {
+      floorData = fetchDataFloors();
+    });
+  }
 
   // ignore: non_constant_identifier_names
   pushToMenuScree({sale_master_id, table_id, table_name}) {
@@ -65,22 +50,14 @@ class _TableModeScreenState extends State<TableModeScreen> {
           tableName: table_name ?? tableName,
         ),
       ),
-    ).then((value) => value
-        ? {
-            setState(() {
-              floorData = fetchDataFloors();
-              _pageState = 0;
-            }),
-          }
-        : null);
+    ).then((value) => value ? _fetchTableData() : null);
   }
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
     bool orientation =
         MediaQuery.of(context).orientation == Orientation.landscape;
-
     SwitchContainer.windowHeight = size.height;
     SwitchContainer.windowWidth = size.width;
     SwitchContainer().rederAnimateContainer(
@@ -90,6 +67,15 @@ class _TableModeScreenState extends State<TableModeScreen> {
     );
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _fetchTableData(),
+        backgroundColor: Colors.white,
+        disabledElevation: 0.5,
+        child: Icon(
+          Icons.refresh,
+          color: Colors.black,
+        ),
+      ),
       body: Container(
         height: size.height,
         width: double.infinity,
@@ -156,7 +142,7 @@ class _TableModeScreenState extends State<TableModeScreen> {
                                         : size.width <= 400.0
                                             ? size.height / 900
                                             : size.width >= 1200.0
-                                                ? size.height / 1100
+                                                ? size.height / 1000
                                                 : size.height / 1000,
                                     crossAxisCount: size.width <= 500.0
                                         ? 2

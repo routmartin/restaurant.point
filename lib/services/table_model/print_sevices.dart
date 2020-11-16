@@ -273,3 +273,21 @@ Future reprintPrintInvoiceInternalESCPos({
   }
   return null;
 }
+
+Future checkPrinterService({
+  int saleMasterId,
+}) async {
+  Response response = await dio.post(
+    serverIP + '/Api/ListPrinter',
+    data: {
+      "userToken": userToken,
+    },
+    options: Options(
+      contentType: Headers.formUrlEncodedContentType,
+    ),
+  );
+  if (response.statusCode == 200 && response.data != "[]") {
+    return jsonDecode(response.data);
+  }
+  return null;
+}
