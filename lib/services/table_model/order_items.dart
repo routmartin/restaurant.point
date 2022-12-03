@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:pointrestaurant/utilities/path.dart';
+// import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
+String serverIP = 'http://$ipAddress:$port';
 Dio dio = Dio();
 
 Future addOrderItems({
@@ -8,7 +10,7 @@ Future addOrderItems({
   int saleMasterId,
   int saleDetailId,
   int tableId,
-  int qty = 1,
+  int qty,
 }) async {
   Response response = await dio.post(
     serverIP + '/Api/OrderItem',

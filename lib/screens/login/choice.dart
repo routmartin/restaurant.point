@@ -11,7 +11,6 @@ class ChoiceScreen extends StatelessWidget {
   //   lang.setBool('lang', language);
   // }
 
-  void initState() {}
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;

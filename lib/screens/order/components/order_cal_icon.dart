@@ -3,9 +3,13 @@ import 'package:pointrestaurant/utilities/style.main.dart';
 
 class CaculateIcon extends StatelessWidget {
   final String qty;
+  final Function funcMinus;
+  final Function funcPlus;
   const CaculateIcon({
     Key key,
     this.qty = '1',
+    this.funcMinus,
+    this.funcPlus,
   }) : super(key: key);
 
   @override
@@ -18,7 +22,8 @@ class CaculateIcon extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          _buildIconButton(sysbol: '-', action: () {}),
+          _buildIconButton(
+              sysbol: '-', action: int.parse(qty) > 1 ? funcMinus : null),
           Container(
             width: 30,
             alignment: Alignment.center,
@@ -30,7 +35,7 @@ class CaculateIcon extends StatelessWidget {
               ),
             ),
           ),
-          _buildIconButton(sysbol: '+', action: () {})
+          _buildIconButton(sysbol: '+', action: funcPlus)
         ],
       ),
     );
@@ -40,8 +45,8 @@ class CaculateIcon extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(15.0),
       child: Container(
-        width: 23,
-        height: 23,
+        width: 25,
+        height: 25,
         alignment: Alignment.centerRight,
         child: Material(
           borderRadius: BorderRadius.circular(15.0),

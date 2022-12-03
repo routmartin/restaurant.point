@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/utilities/path.dart';
+import '../../utilities/globals.dart';
 
 Dio dio = Dio();
 
@@ -30,7 +31,6 @@ Future overideDeleteItems({
   String username,
   String password,
 }) async {
-  print('calling fucn');
   Response response = await dio.post(
     serverIP + '/Api/promptUserDeleteItem',
     data: {
@@ -89,7 +89,6 @@ Future overideVoidInvice({
     ),
   );
   if (response.statusCode == 200 && response.data != "[]") {
-    print(response.data);
     return response.data;
   }
   return null;

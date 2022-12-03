@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/menu.dart';
+import '../../utilities/globals.dart';
 
-import 'package:pointrestaurant/utilities/path.dart';
-
+String serverIP = 'http://$ipAddress:$port';
 Dio dio = Dio();
 List<Menu> parseDataMenu(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();

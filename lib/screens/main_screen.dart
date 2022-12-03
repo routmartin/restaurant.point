@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pointrestaurant/screens/order/table_mode_screen.dart';
-import 'package:pointrestaurant/screens/payment/payment_screen.dart';
+import 'package:pointrestaurant/screens/profile/info.dart';
 
-import '../screens/home/home_screen.dart';
 import '../utilities/style.main.dart';
 
-import 'order/menu_screen.dart';
+import 'invoice/invoice_screen.dart';
 
 class MainScreenPage extends StatefulWidget {
-  final userToken;
-  MainScreenPage({this.userToken});
   @override
   _MainScreenPageState createState() => _MainScreenPageState();
 }
@@ -24,10 +21,9 @@ class _MainScreenPageState extends State<MainScreenPage> {
     _pageIndex = 0;
     super.initState();
     _pageList = [
-      HomeScreen(),
       TableModeScreen(),
-      MenuScreen(),
-      PaymentScreen(),
+      InvocieScreeen(),
+      Profile(),
     ];
   }
 
@@ -55,14 +51,18 @@ class _MainScreenPageState extends State<MainScreenPage> {
             type: BottomNavigationBarType.fixed,
             elevation: 20.0,
             iconSize: 24,
-            selectedFontSize: 13,
-            unselectedFontSize: 12,
             selectedItemColor: kPrimaryColor,
-            unselectedItemColor: Color(0xFF828282),
-            selectedLabelStyle: TextStyle(
-                fontFamily: 'San-francisco', fontWeight: FontWeight.w800),
-            unselectedLabelStyle: TextStyle(
-                fontFamily: 'San-francisco', fontWeight: FontWeight.bold),
+            selectedFontSize: 13,
+            unselectedFontSize: 13,
+            showUnselectedLabels: false,
+            // selectedLabelStyle: TextStyle(
+            //   fontFamily: 'San-francisco',
+            //   fontWeight: FontWeight.w800,
+            // ),
+            // unselectedLabelStyle: TextStyle(
+            //   fontFamily: 'San-francisco',
+            //   fontWeight: FontWeight.bold,
+            // ),
             currentIndex: _pageIndex,
             onTap: (index) {
               setState(() {
@@ -70,32 +70,42 @@ class _MainScreenPageState extends State<MainScreenPage> {
               });
             },
             items: [
+              // BottomNavigationBarItem(
+              //   icon: SvgPicture.asset(
+              //     'assets/icons/home.svg',
+              //     width: 20,
+              //     height: 20,
+              //   ),
+              //   title: Text(
+              //     'HOME',
+              //   ),
+              // ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.home,
-                  size: 30,
+                icon: SvgPicture.asset(
+                  'assets/icons/cart.svg',
+                  width: 20,
+                  height: 20,
                 ),
                 title: Text(
-                  'HOME',
+                  'ORDER',
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.view_list),
+                icon: SvgPicture.asset(
+                  'assets/icons/invoice.svg',
+                  width: 20,
+                  height: 20,
+                ),
                 title: Text(
-                  'ORDERS',
+                  'INVOICE',
                 ),
               ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.timelapse,
-                  size: 30,
+                icon: SvgPicture.asset(
+                  'assets/icons/account.svg',
+                  width: 20,
+                  height: 20,
                 ),
-                title: Text(
-                  'Pending',
-                ),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.account_circle),
                 title: Text(
                   'MY ACCOUNT',
                 ),

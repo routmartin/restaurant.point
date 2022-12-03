@@ -2,10 +2,11 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:pointrestaurant/models/note.dart';
-import 'package:pointrestaurant/utilities/path.dart';
+
+import '../utilities/globals.dart' as globals;
 
 Dio dio = Dio();
-
+String serverIP = 'http://${globals.ipAddress}:${globals.port}';
 List<Note> parseListNote(String responseBody) {
   final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
   return parsed.map<Note>((json) => Note.fromJson(json)).toList();
@@ -14,6 +15,9 @@ List<Note> parseListNote(String responseBody) {
 Future<List<Note>> fetchListNote({int saleMasterId}) async {
   Response response = await dio.post(
     serverIP + '/api/ListItemNote',
+    data: {
+      "userToken": globals.userToken,
+    },
     options: Options(
       contentType: Headers.formUrlEncodedContentType,
     ),
@@ -33,7 +37,7 @@ Future applySpecialRequest({
   Response response = await dio.post(
     serverIP + '/Api/AddNote',
     data: {
-      "userToken": userToken,
+      "userToken": globals.userToken,
       "note_id": noteList.join(','),
       "sale_detail_id": saleDetailId.toString(),
       "sale_master_id": saleMasterId.toString(),

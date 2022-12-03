@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'utilities/size.cofig.dart';
-import 'widget/loading.slash.dart';
+import 'screens/loading.slash.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +26,6 @@ class MyApp extends StatelessWidget {
         }
         return OrientationBuilder(
           builder: (context, orientation) {
-            SizeConfig().init(constraints, orientation);
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
